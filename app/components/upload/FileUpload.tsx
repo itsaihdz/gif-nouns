@@ -29,6 +29,7 @@ export function FileUpload({
   isLoading = false,
   className = "" 
 }: FileUploadProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
       const error = rejectedFiles[0].errors[0];
