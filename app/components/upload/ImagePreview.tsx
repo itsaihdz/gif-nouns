@@ -110,8 +110,10 @@ export function ImagePreview({
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw original image
+        // Draw the original image
+        ctx.globalAlpha = 1.0;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1.0;
 
         // Function to apply eye animation
         const applyEyeAnimation = () => {
@@ -119,14 +121,18 @@ export function ImagePreview({
             const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
             if (eyeAnimation && eyeAnimation.file) {
               try {
+                console.log(`Loading eye animation: ${eyeAnimation.file}`);
                 const eyeImg = new Image();
                 eyeImg.crossOrigin = "anonymous";
                 
                 eyeImg.onload = () => {
-                  // Apply eye animation overlay
+                  console.log(`Successfully loaded eye animation: ${eyeAnimation.file}`);
+                  // Apply eye animation overlay with 100% opacity
+                  ctx.globalAlpha = 1.0;
                   ctx.globalCompositeOperation = "overlay";
                   ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
                   ctx.globalCompositeOperation = "source-over";
+                  ctx.globalAlpha = 1.0;
                   
                   // Update preview URL
                   setPreviewUrl(canvas.toDataURL('image/png'));
@@ -156,14 +162,18 @@ export function ImagePreview({
           const noggleColor = NOGGLE_COLORS.find(c => c.value === selectedNoggleColor);
           if (noggleColor && noggleColor.file) {
             try {
+              console.log(`Loading noggle: ${noggleColor.file}`);
               const noggleImg = new Image();
               noggleImg.crossOrigin = "anonymous";
               
               noggleImg.onload = () => {
-                // Apply noggle overlay with proper blending
+                console.log(`Successfully loaded noggle: ${noggleColor.file}`);
+                // Apply noggle overlay with 100% opacity
+                ctx.globalAlpha = 1.0;
                 ctx.globalCompositeOperation = "multiply";
                 ctx.drawImage(noggleImg, 0, 0, canvas.width, canvas.height);
                 ctx.globalCompositeOperation = "source-over";
+                ctx.globalAlpha = 1.0;
                 
                 // Continue with eye animation
                 applyEyeAnimation();
