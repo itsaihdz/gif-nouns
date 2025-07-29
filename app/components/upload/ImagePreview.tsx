@@ -81,131 +81,30 @@ export function ImagePreview({
 }: ImagePreviewProps) {
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(originalImageUrl);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Update preview when selections change
+  // Update animated preview when selections change
   useEffect(() => {
-    updatePreview();
-  }, [selectedNoggleColor, selectedEyeAnimation, originalImageUrl]);
+    if (originalImageUrl) {
+      updateAnimatedPreview();
+    }
+  }, [originalImageUrl, selectedNoggleColor, selectedEyeAnimation]);
 
-  const updatePreview = async () => {
-    try {
-      if (!canvasRef.current) return;
-
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Set canvas size
-      canvas.width = 800;
-      canvas.height = 800;
-
-      // Load original image
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      
-      img.onload = async () => {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the original image
-        ctx.globalAlpha = 1.0;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 1.0;
-
-        // Function to apply eye animation
-        const applyEyeAnimation = () => {
-          if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
-            const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
-            if (eyeAnimation && eyeAnimation.file) {
-              try {
-                console.log(`Loading eye animation: ${eyeAnimation.file}`);
-                const eyeImg = new Image();
-                eyeImg.crossOrigin = "anonymous";
-                
-                eyeImg.onload = () => {
-                  console.log(`Successfully loaded eye animation: ${eyeAnimation.file}`);
-                  // Apply eye animation overlay with 100% opacity
-                  ctx.globalAlpha = 1.0;
-                  ctx.globalCompositeOperation = "overlay";
-                  ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-                  ctx.globalCompositeOperation = "source-over";
-                  ctx.globalAlpha = 1.0;
-                  
-                  // Update preview URL
-                  setPreviewUrl(canvas.toDataURL('image/png'));
-                };
-                
-                eyeImg.onerror = () => {
-                  console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
-                  // Update preview URL without eye animation
-                  setPreviewUrl(canvas.toDataURL('image/png'));
-                };
-                
-                eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
-              } catch (error) {
-                console.warn("Error loading eye animation:", error);
-                setPreviewUrl(canvas.toDataURL('image/png'));
-              }
-            } else {
-              setPreviewUrl(canvas.toDataURL('image/png'));
-            }
-          } else {
-            setPreviewUrl(canvas.toDataURL('image/png'));
-          }
-        };
-
-        // Apply noggle color overlay using actual PNG files
-        if (selectedNoggleColor && selectedNoggleColor !== "original") {
-          const noggleColor = NOGGLE_COLORS.find(c => c.value === selectedNoggleColor);
-          if (noggleColor && noggleColor.file) {
-            try {
-              console.log(`Loading noggle: ${noggleColor.file}`);
-              const noggleImg = new Image();
-              noggleImg.crossOrigin = "anonymous";
-              
-              noggleImg.onload = () => {
-                console.log(`Successfully loaded noggle: ${noggleColor.file}`);
-                // Apply noggle overlay with 100% opacity
-                ctx.globalAlpha = 1.0;
-                ctx.globalCompositeOperation = "multiply";
-                ctx.drawImage(noggleImg, 0, 0, canvas.width, canvas.height);
-                ctx.globalCompositeOperation = "source-over";
-                ctx.globalAlpha = 1.0;
-                
-                // Continue with eye animation
-                applyEyeAnimation();
-              };
-              
-              noggleImg.onerror = () => {
-                console.warn(`Failed to load noggle: ${noggleColor.file}`);
-                applyEyeAnimation();
-              };
-              
-              noggleImg.src = `/assets/noggles/${noggleColor.file}`;
-            } catch (error) {
-              console.warn("Error loading noggle overlay:", error);
-              applyEyeAnimation();
-            }
-          } else {
-            applyEyeAnimation();
-          }
-        } else {
-          applyEyeAnimation();
-        }
-      };
-
-      img.onerror = () => {
-        console.error("Failed to load original image");
-        onError("Failed to load original image");
-      };
-
-      img.src = originalImageUrl;
-    } catch (error) {
-      console.error("Error updating preview:", error);
-      onError("Failed to update preview");
+  const updateAnimatedPreview = () => {
+    // For now, show the selected eye animation GIF directly
+    // This gives users a preview of the animation style
+    if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
+      const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
+      if (eyeAnimation && eyeAnimation.file) {
+        setAnimatedPreviewUrl(`/assets/eyes/${eyeAnimation.file}`);
+      } else {
+        setAnimatedPreviewUrl(originalImageUrl);
+      }
+    } else {
+      setAnimatedPreviewUrl(originalImageUrl);
     }
   };
 
@@ -270,17 +169,38 @@ export function ImagePreview({
             </div>
           </div>
 
-          <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+          {/* Preview Section */}
+          <div className="relative">
             <canvas
               ref={canvasRef}
-              className="w-full h-96 object-contain"
+              className="w-full h-96 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
               style={{ display: 'none' }}
             />
-            <img
-              src={previewUrl}
-              alt="Animated Noun Preview"
-              className="w-full h-96 object-contain"
-            />
+            
+            {/* Animated Preview */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Original Image
+                </h4>
+                <img
+                  src={originalImageUrl}
+                  alt="Original Noun"
+                  className="w-full h-48 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                />
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Animated Preview
+                </h4>
+                <img
+                  src={animatedPreviewUrl}
+                  alt="Animated Noun Preview"
+                  className="w-full h-48 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Export Button */}
@@ -317,7 +237,19 @@ export function ImagePreview({
                 }`}
                 title={color.name}
               >
-                <div className={`w-full h-8 rounded ${color.class} mb-2`} />
+                {color.file ? (
+                  <img
+                    src={`/assets/noggles/${color.file}`}
+                    alt={color.name}
+                    className={`w-full h-8 object-contain mb-2 rounded ${
+                      selectedNoggleColor === color.value 
+                        ? "ring-2 ring-purple-500" 
+                        : ""
+                    }`}
+                  />
+                ) : (
+                  <div className={`w-full h-8 rounded ${color.class} mb-2`} />
+                )}
                 <p className={`text-xs font-medium ${
                   selectedNoggleColor === color.value 
                     ? "text-purple-600 dark:text-purple-400" 
@@ -349,15 +281,27 @@ export function ImagePreview({
                 }`}
               >
                 <div className="text-center">
-                  <Icon 
-                    name={animation.icon} 
-                    className={`mx-auto mb-2 ${
-                      selectedEyeAnimation === animation.value 
-                        ? "text-purple-600 dark:text-purple-400" 
-                        : "text-gray-400 dark:text-gray-500"
-                    }`} 
-                    size="lg" 
-                  />
+                  {animation.file ? (
+                    <img
+                      src={`/assets/eyes/${animation.file}`}
+                      alt={animation.name}
+                      className={`mx-auto mb-2 w-12 h-12 object-contain rounded ${
+                        selectedEyeAnimation === animation.value 
+                          ? "ring-2 ring-purple-500" 
+                          : ""
+                      }`}
+                    />
+                  ) : (
+                    <Icon 
+                      name={animation.icon} 
+                      className={`mx-auto mb-2 ${
+                        selectedEyeAnimation === animation.value 
+                          ? "text-purple-600 dark:text-purple-400" 
+                          : "text-gray-400 dark:text-gray-500"
+                      }`} 
+                      size="lg" 
+                    />
+                  )}
                   <p className={`text-sm font-medium ${
                     selectedEyeAnimation === animation.value 
                       ? "text-purple-600 dark:text-purple-400" 
