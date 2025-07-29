@@ -77,9 +77,10 @@ export function Hero({ className = "" }: HeroProps) {
                 variant="gradient" 
                 size="xl"
                 className="group"
+                href="/upload"
                 icon={<Icon name="sparkles" size="lg" />}
               >
-                Connect Farcaster & Start Creating
+                Start Creating Your Animated Noun
                 <Icon 
                   name="arrowRight" 
                   size="sm" 

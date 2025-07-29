@@ -1,0 +1,82 @@
+[
+  {
+    "name": "normal",
+    "file": "normal.gif",
+    "status": "missing"
+  },
+  {
+    "name": "blink",
+    "file": "blink.gif",
+    "status": "missing"
+  },
+  {
+    "name": "wink",
+    "file": "wink.gif",
+    "status": "missing"
+  },
+  {
+    "name": "glow",
+    "file": "glow.gif",
+    "status": "missing"
+  },
+  {
+    "name": "rainbow",
+    "file": "rainbow.gif",
+    "status": "missing"
+  },
+  {
+    "name": "laser",
+    "file": "laser.gif",
+    "status": "missing"
+  },
+  {
+    "name": "fire",
+    "file": "fire.gif",
+    "status": "missing"
+  },
+  {
+    "name": "ice",
+    "file": "ice.gif",
+    "status": "missing"
+  },
+  {
+    "name": "electric",
+    "file": "electric.gif",
+    "status": "missing"
+  },
+  {
+    "name": "cosmic",
+    "file": "cosmic.gif",
+    "status": "missing"
+  },
+  {
+    "name": "neon",
+    "file": "neon.gif",
+    "status": "missing"
+  },
+  {
+    "name": "holographic",
+    "file": "holographic.gif",
+    "status": "missing"
+  },
+  {
+    "name": "matrix",
+    "file": "matrix.gif",
+    "status": "missing"
+  },
+  {
+    "name": "galaxy",
+    "file": "galaxy.gif",
+    "status": "missing"
+  },
+  {
+    "name": "sunset",
+    "file": "sunset.gif",
+    "status": "missing"
+  },
+  {
+    "name": "ocean",
+    "file": "ocean.gif",
+    "status": "missing"
+  }
+]

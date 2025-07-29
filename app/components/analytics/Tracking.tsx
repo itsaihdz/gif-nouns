@@ -65,6 +65,23 @@ export const trackingEvents = {
   performanceMetric: (metric: string, value: number) => {
     track("performance_metric", { metric, value });
   },
+
+  // Upload & Preview System
+  uploadStart: (fileName: string, fileSize: number) => {
+    track("upload_start", { file_name: fileName, file_size: fileSize });
+  },
+
+  traitsDetected: (traits: any) => {
+    track("traits_detected", { traits });
+  },
+
+  exportComplete: (gifUrl: string) => {
+    track("export_complete", { gif_url: gifUrl });
+  },
+
+  downloadStart: () => {
+    track("download_start");
+  },
 };
 
 // Hook for easy tracking

@@ -1,0 +1,109 @@
+import '@testing-library/jest-dom'
+
+// Mock Next.js router
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      route: '/',
+      pathname: '/',
+      query: {},
+      asPath: '/',
+      push: jest.fn(),
+      pop: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      prefetch: jest.fn().mockResolvedValue(undefined),
+      beforePopState: jest.fn(),
+      events: {
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn(),
+      },
+      isFallback: false,
+    }
+  },
+}))
+
+// Mock Next.js navigation
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      replace: jest.fn(),
+      prefetch: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
+    }
+  },
+  useSearchParams() {
+    return new URLSearchParams()
+  },
+  usePathname() {
+    return '/'
+  },
+}))
+
+// Mock Vercel Analytics
+jest.mock('@vercel/analytics', () => ({
+  track: jest.fn(),
+  Analytics: () => null,
+}))
+
+// Mock Canvas API
+Object.defineProperty(window, 'HTMLCanvasElement', {
+  value: class HTMLCanvasElement {
+    constructor() {
+      this.width = 800
+      this.height = 800
+    }
+    getContext() {
+      return {
+        drawImage: jest.fn(),
+        clearRect: jest.fn(),
+        fillRect: jest.fn(),
+        fillStyle: '',
+        globalCompositeOperation: 'source-over',
+        shadowColor: '',
+        shadowBlur: 0,
+        toDataURL: jest.fn().mockReturnValue('data:image/png;base64,mock'),
+      }
+    }
+    toDataURL() {
+      return 'data:image/png;base64,mock'
+    }
+  },
+})
+
+// Mock File API
+Object.defineProperty(window, 'File', {
+  value: class File {
+    constructor(bits, name, options) {
+      this.name = name
+      this.size = bits.length
+      this.type = options?.type || 'image/png'
+    }
+  },
+})
+
+// Mock URL.createObjectURL
+Object.defineProperty(window, 'URL', {
+  value: {
+    ...window.URL,
+    createObjectURL: jest.fn().mockReturnValue('blob:mock-url'),
+    revokeObjectURL: jest.fn(),
+  },
+})
+
+// Mock fetch
+global.fetch = jest.fn()
+
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  log: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+} 

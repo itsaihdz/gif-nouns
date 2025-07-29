@@ -39,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
       address: false,
       telephone: false,
     },
-    metadataBase: new URL(baseUrl),
+    metadataBase: new URL(baseUrl || "https://gif-nouns.vercel.app"),
     alternates: {
       canonical: baseUrl,
     },
