@@ -82,7 +82,6 @@ export function ImagePreview({
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
