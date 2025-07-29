@@ -135,7 +135,13 @@ export class MockDatabase {
   }
 
   // GIF operations
-  async createGif(fileId: string, userId: string, originalTraitsId: string, noggleColor: string, eyeAnimation: string, gifUrl: string, metadata: Record<string, unknown>): Promise<GeneratedGif> {
+  async createGif(fileId: string, userId: string, originalTraitsId: string, noggleColor: string, eyeAnimation: string, gifUrl: string, metadata: {
+    width: number;
+    height: number;
+    frameCount: number;
+    duration: number;
+    fileSize: number;
+  }): Promise<GeneratedGif> {
     const gif: GeneratedGif = {
       id: `gif_${Date.now()}`,
       fileId,
