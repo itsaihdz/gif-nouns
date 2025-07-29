@@ -71,7 +71,7 @@ export const trackingEvents = {
     track("upload_start", { file_name: fileName, file_size: fileSize });
   },
 
-  traitsDetected: (traits: any) => {
+  traitsDetected: (traits: Record<string, unknown>) => {
     track("traits_detected", { traits });
   },
 

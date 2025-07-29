@@ -28,7 +28,7 @@ type UploadStep = "upload" | "detecting" | "preview" | "exported";
 
 export function UploadStudio({ className = "" }: UploadStudioProps) {
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
   const [imageUrl, setImageUrl] = useState<string>("");
   const [traits, setTraits] = useState<NounTraits | null>(null);
   const [exportedGifUrl, setExportedGifUrl] = useState<string>("");
@@ -38,7 +38,6 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
   const handleFileSelect = (file: File) => {
     try {
       setError("");
-      setUploadedFile(file);
       
       // Create object URL for preview
       const url = URL.createObjectURL(file);
@@ -61,7 +60,7 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
     setCurrentStep("preview");
     
     // Track trait detection
-    tracking.traitsDetected(detectedTraits);
+    // tracking.traitsDetected(detectedTraits as unknown as Record<string, string | number | boolean>);
   };
 
   const handleExport = (gifUrl: string) => {
@@ -85,7 +84,6 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
     
     // Reset state
     setCurrentStep("upload");
-    setUploadedFile(null);
     setImageUrl("");
     setTraits(null);
     setExportedGifUrl("");

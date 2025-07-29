@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // 3. Trigger notifications for critical feedback
     // 4. Send email confirmation if email provided
 
-    console.log("Feedback received:", feedbackData);
+    console.log("Feedback received:", feedbackData, "Message:", message);
 
     // Mock storage - replace with actual database call
     const mockStorage = {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // In a real implementation, you would fetch feedback from database
     // For now, return mock data

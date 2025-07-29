@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
-import { Loading } from "../ui/Loading";
+
 
 interface NounTraits {
   eyes: string;
@@ -75,7 +75,6 @@ const EYE_ANIMATIONS = [
 
 export function ImagePreview({ 
   originalImageUrl, 
-  traits, 
   onExport, 
   onError,
   className = "" 

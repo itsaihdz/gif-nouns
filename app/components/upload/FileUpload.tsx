@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 import { Loading } from "../ui/Loading";
+
+// File upload configuration
+const ACCEPTED_TYPES = {
+  "image/png": [".png"],
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/svg+xml": [".svg"],
+};
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -14,21 +23,12 @@ interface FileUploadProps {
   className?: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_TYPES = {
-  "image/png": [".png"],
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/svg+xml": [".svg"],
-};
-
 export function FileUpload({ 
   onFileSelect, 
   onError, 
   isLoading = false,
   className = "" 
 }: FileUploadProps) {
-  const [dragActive, setDragActive] = useState(false);
-
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
       const error = rejectedFiles[0].errors[0];
@@ -126,7 +126,7 @@ export function FileUpload({
             {/* Tips */}
             <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
               <p>💡 Tip: Use a square image for best results</p>
-              <p>🔍 We'll automatically detect your Noun's traits</p>
+              <p>🔍 We&apos;ll automatically detect your Noun&apos;s traits</p>
             </div>
           </div>
         )}
