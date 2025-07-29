@@ -81,7 +81,6 @@ export function ImagePreview({
 }: ImagePreviewProps) {
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
-  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -142,21 +141,20 @@ export function ImagePreview({
                   ctx.globalCompositeOperation = "source-over";
                   ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
                   
-                  // Update preview URL
-                  setPreviewUrl(canvas.toDataURL('image/png'));
+                  // Canvas is updated directly, no need to store URL
                 };
                 
                 eyeImg.onerror = () => {
                   console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
-                  setPreviewUrl(canvas.toDataURL('image/png'));
+                  // Canvas is updated directly, no need to store URL
                 };
                 
                 eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
               } else {
-                setPreviewUrl(canvas.toDataURL('image/png'));
+                // Canvas is updated directly, no need to store URL
               }
             } else {
-              setPreviewUrl(canvas.toDataURL('image/png'));
+              // Canvas is updated directly, no need to store URL
             }
           };
           
@@ -173,19 +171,20 @@ export function ImagePreview({
                   ctx.globalAlpha = 1.0;
                   ctx.globalCompositeOperation = "source-over";
                   ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-                  setPreviewUrl(canvas.toDataURL('image/png'));
+                  // Canvas is updated directly, no need to store URL
                 };
                 
                 eyeImg.onerror = () => {
-                  setPreviewUrl(canvas.toDataURL('image/png'));
+                  console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
+                  // Canvas is updated directly, no need to store URL
                 };
                 
                 eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
               } else {
-                setPreviewUrl(canvas.toDataURL('image/png'));
+                // Canvas is updated directly, no need to store URL
               }
             } else {
-              setPreviewUrl(canvas.toDataURL('image/png'));
+              // Canvas is updated directly, no need to store URL
             }
           };
           
@@ -202,19 +201,20 @@ export function ImagePreview({
                 ctx.globalAlpha = 1.0;
                 ctx.globalCompositeOperation = "source-over";
                 ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-                setPreviewUrl(canvas.toDataURL('image/png'));
+                // Canvas is updated directly, no need to store URL
               };
               
               eyeImg.onerror = () => {
-                setPreviewUrl(canvas.toDataURL('image/png'));
+                console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
+                // Canvas is updated directly, no need to store URL
               };
               
               eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
             } else {
-              setPreviewUrl(canvas.toDataURL('image/png'));
+              // Canvas is updated directly, no need to store URL
             }
           } else {
-            setPreviewUrl(canvas.toDataURL('image/png'));
+            // Canvas is updated directly, no need to store URL
           }
         }
       } else {
@@ -229,19 +229,20 @@ export function ImagePreview({
               ctx.globalAlpha = 1.0;
               ctx.globalCompositeOperation = "source-over";
               ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-              setPreviewUrl(canvas.toDataURL('image/png'));
+              // Canvas is updated directly, no need to store URL
             };
             
             eyeImg.onerror = () => {
-              setPreviewUrl(canvas.toDataURL('image/png'));
+              console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
+              // Canvas is updated directly, no need to store URL
             };
             
             eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
           } else {
-            setPreviewUrl(canvas.toDataURL('image/png'));
+            // Canvas is updated directly, no need to store URL
           }
         } else {
-          setPreviewUrl(canvas.toDataURL('image/png'));
+          // Canvas is updated directly, no need to store URL
         }
       }
     };
