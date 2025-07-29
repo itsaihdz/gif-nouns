@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://nouns-remix-studio.vercel.app/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+# Allow important pages
+Allow: /
+Allow: /manifest.json
+Allow: /sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1 

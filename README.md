@@ -10,6 +10,7 @@ A professional, modern landing page for the Nouns Remix Studio Mini App built wi
 - **SEO Optimized**: Comprehensive meta tags and structured data
 - **Performance**: Optimized for fast loading and high Lighthouse scores
 - **Accessibility**: WCAG compliant with proper focus management
+- **Analytics**: Vercel Analytics integration for user behavior tracking
 - **MiniKit Integration**: Seamless integration with Base MiniKit
 - **Farcaster Native**: Designed specifically for the Farcaster ecosystem
 - **Web3 Ready**: Complete wallet connection and transaction handling
@@ -44,6 +45,8 @@ app/
 │   │   ├── Card.tsx           # Card component
 │   │   ├── WalletConnect.tsx  # Wallet connection component
 │   │   └── TransactionHandler.tsx # Web3 transaction handling
+│   ├── analytics/
+│   │   └── Tracking.tsx       # Analytics tracking component
 │   └── icons/
 │       └── index.tsx          # Icon component library
 ├── globals.css                # Global styles and animations
@@ -78,6 +81,35 @@ config/
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/itsaihdz/gif-nouns.git
+   cd gif-nouns
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   ```bash
+   cp env.example .env.local
+   ```
+   Then edit `.env.local` with your actual values.
+
+4. **Run development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Run production audit:**
+   ```bash
+   node scripts/audit.js
+   ```
 
 ### Web3 Configuration
 Before running the app, you need to configure the Web3 environment variables:
@@ -236,20 +268,49 @@ Custom styles are in `app/globals.css`:
 - CSS purging with TailwindCSS
 - Minimal JavaScript bundle
 
-## 🚀 Deployment
+## 🚀 Production Deployment
 
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
+### **Vercel Deployment (Recommended)**
 
-### Environment Variables
-```bash
-NEXT_PUBLIC_URL=https://your-domain.com
-NEXT_PUBLIC_APP_HERO_IMAGE=/hero.png
-NEXT_PUBLIC_SPLASH_IMAGE=/splash.png
-NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR=#8B5CF6
-```
+1. **Connect to Vercel:**
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Configure environment variables in Vercel dashboard
+
+2. **Required Environment Variables:**
+   ```bash
+   NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_api_key
+   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_URL=https://your-domain.vercel.app
+   ```
+
+3. **Deploy:**
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+### **Pre-deployment Checklist**
+
+- [ ] All environment variables configured
+- [ ] TypeScript compilation passes (`npm run type-check`)
+- [ ] ESLint passes (`npm run lint`)
+- [ ] Production build succeeds (`npm run build`)
+- [ ] Performance audit passes (`node scripts/audit.js`)
+- [ ] Images optimized (< 100KB each)
+- [ ] Bundle size acceptable (< 500KB total)
+- [ ] Error boundaries implemented
+- [ ] Loading states added
+- [ ] SEO meta tags complete
+- [ ] Responsive design tested
+
+### **Performance Monitoring**
+
+- **Lighthouse Score**: Target 90+ in all categories
+- **Bundle Size**: Monitor with `npm run analyze`
+- **Error Tracking**: Implement error boundaries
+- **Analytics**: Vercel Analytics integrated for user behavior tracking
+- **Custom Events**: Track wallet connections, transactions, and demo interactions
 
 ## 🤝 Contributing
 

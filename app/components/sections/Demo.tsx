@@ -5,6 +5,7 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Icon } from "../icons";
 import { TransactionHandler } from "../ui/TransactionHandler";
+import { useTracking } from "../analytics/Tracking";
 
 interface DemoProps {
   className?: string;
@@ -15,6 +16,7 @@ export function Demo({ className = "" }: DemoProps) {
   const [selectedPalette, setSelectedPalette] = useState(0);
   const [selectedAnimation, setSelectedAnimation] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const tracking = useTracking();
 
   const palettes = [
     { name: "Purple", colors: ["from-purple-500", "to-pink-500"] },
@@ -45,10 +47,12 @@ export function Demo({ className = "" }: DemoProps) {
 
   const handlePaletteChange = (index: number) => {
     setSelectedPalette(index);
+    tracking.demoPaletteChange(palettes[index].name);
   };
 
   const handleAnimationChange = (index: number) => {
     setSelectedAnimation(index);
+    tracking.demoAnimationChange(animations[index].name);
   };
 
   const togglePlay = () => {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 import { WalletConnect } from "../ui/WalletConnect";
 

@@ -87,7 +87,7 @@ export function CTA({ className = "" }: CTAProps) {
             {/* Main headline */}
             <div className="space-y-4">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
-                Don't let your Noun stay{" "}
+                Don&apos;t let your Noun stay{" "}
                 <span className="text-yellow-300">
                   static
                 </span>{" "}
@@ -99,7 +99,7 @@ export function CTA({ className = "" }: CTAProps) {
               </h2>
               <p className="text-xl text-purple-100 max-w-2xl">
                 Join 500+ creators already earning from their animated art. 
-                The remix revolution is happening now - don't miss out!
+                The remix revolution is happening now - don&apos;t miss out!
               </p>
             </div>
 

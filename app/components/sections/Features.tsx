@@ -26,7 +26,7 @@ export function Features({ className = "" }: FeaturesProps) {
     {
       icon: "refresh",
       title: "Remix System",
-      description: "Build on others' creations with automatic attribution and credit chains. Every remix preserves the original creator's legacy.",
+              description: "Build on others&apos; creations with automatic attribution and credit chains. Every remix preserves the original creator&apos;s legacy.",
       highlight: "Automatic attribution",
       color: "from-blue-500 to-cyan-500",
     },
@@ -104,7 +104,7 @@ export function Features({ className = "" }: FeaturesProps) {
 
         {/* Features grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <Card
               key={feature.title}
               variant="elevated"
@@ -145,7 +145,7 @@ export function Features({ className = "" }: FeaturesProps) {
               </span>
             </h3>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Whether you're a creator, collector, or community member, 
+              Whether you&apos;re a creator, collector, or community member, 
               Nouns Remix Studio has something for everyone.
             </p>
           </div>

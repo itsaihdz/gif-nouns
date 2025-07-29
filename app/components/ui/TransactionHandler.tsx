@@ -5,7 +5,9 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagm
 import { parseEther } from "viem";
 import { Button } from "./Button";
 import { Icon } from "../icons";
-import { web3Config, walletErrors, transactionMessages } from "../../../config/web3";
+import { Loading } from "./Loading";
+import { web3Config, transactionMessages } from "../../../config/web3";
+import { useTracking } from "../analytics/Tracking";
 
 interface TransactionHandlerProps {
   onSuccess?: (hash: string) => void;
@@ -18,9 +20,9 @@ export function TransactionHandler({
   onError, 
   className = "" 
 }: TransactionHandlerProps) {
-  const { address, isConnected } = useAccount();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { isConnected } = useAccount();
   const [error, setError] = useState<string | null>(null);
+  const tracking = useTracking();
 
   // Contract configuration for NFT minting
   const contractConfig = {
@@ -49,8 +51,8 @@ export function TransactionHandler({
     }
 
     try {
-      setIsProcessing(true);
       setError(null);
+      tracking.transactionStart("mint");
 
       // Mint transaction
       writeContract({
@@ -61,10 +63,10 @@ export function TransactionHandler({
 
     } catch (err) {
       console.error("Transaction error:", err);
-      setError(err instanceof Error ? err.message : "Transaction failed");
+      const errorMessage = err instanceof Error ? err.message : "Transaction failed";
+      setError(errorMessage);
+      tracking.transactionError("mint", errorMessage);
       onError?.(err instanceof Error ? err : new Error("Transaction failed"));
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -75,8 +77,8 @@ export function TransactionHandler({
     }
 
     try {
-      setIsProcessing(true);
       setError(null);
+      tracking.transactionStart("remix");
 
       // Remix transaction
       writeContract({
@@ -87,15 +89,16 @@ export function TransactionHandler({
 
     } catch (err) {
       console.error("Remix error:", err);
-      setError(err instanceof Error ? err.message : "Remix failed");
+      const errorMessage = err instanceof Error ? err.message : "Remix failed";
+      setError(errorMessage);
+      tracking.transactionError("remix", errorMessage);
       onError?.(err instanceof Error ? err : new Error("Remix failed"));
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   // Handle transaction success
   if (isSuccess && hash) {
+    tracking.transactionSuccess("mint", hash);
     onSuccess?.(hash);
   }
 
@@ -107,24 +110,24 @@ export function TransactionHandler({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Transaction Status */}
-      {isPending && (
-        <div className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-            {transactionMessages.CONFIRMING}
-          </span>
-        </div>
-      )}
+                   {/* Transaction Status */}
+             {isPending && (
+               <div className="flex items-center space-x-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                 <Loading variant="spinner" size="sm" />
+                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                   {transactionMessages.CONFIRMING}
+                 </span>
+               </div>
+             )}
 
-      {isConfirming && (
-        <div className="flex items-center space-x-2 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-          <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
-            {transactionMessages.PROCESSING}
-          </span>
-        </div>
-      )}
+             {isConfirming && (
+               <div className="flex items-center space-x-2 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                 <Loading variant="spinner" size="sm" />
+                 <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                   {transactionMessages.PROCESSING}
+                 </span>
+               </div>
+             )}
 
       {isSuccess && (
         <div className="flex items-center space-x-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 rounded-lg">

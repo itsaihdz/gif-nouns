@@ -3,6 +3,8 @@ import "@coinbase/onchainkit/styles.css";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
+import { Analytics } from "@vercel/analytics/react";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -128,7 +130,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#8B5CF6" />
       </head>
       <body className="bg-background antialiased">
-        <Providers>{children}</Providers>
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );
