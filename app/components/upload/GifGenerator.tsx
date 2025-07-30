@@ -16,6 +16,51 @@ interface GifGeneratorProps {
   onError?: (error: string) => void;
 }
 
+// Mapping from values to actual file names
+const EYE_ANIMATION_FILES: Record<string, string> = {
+  "nouns": "nouns.gif",
+  "ojos-nouns": "ojos nouns.gif",
+  "ojos-pepepunk": "ojos pepepunk.gif",
+  "ojos-pepepunk-en-medio": "ojos pepepunk en medio.gif",
+  "arriba": "arriba.gif",
+  "arriba-derecha": "arriba derecha.gif",
+  "arriba-izquierda": "arriba izquierda.gif",
+  "abajo": "abajo.gif",
+  "abajo-derecha": "abajo derecha.gif",
+  "abajo-izquierda": "abajo izquierda.gif",
+  "viscos": "viscos.gif",
+  "viscos-derecha": "viscos derecha.gif",
+  "viscos-izquierda": "viscos izquierda.gif",
+  "locos": "locos.gif",
+  "serpiente": "serpiente.gif",
+  "vampiro": "vampiro.gif",
+};
+
+const NOGGLE_COLOR_FILES: Record<string, string> = {
+  "blue": "blue.png",
+  "deep-teal": "deep teal.png",
+  "gomita": "gomita.png",
+  "grass": "grass.png",
+  "green-blue": "green blue.png",
+  "grey-light": "grey light.png",
+  "guava": "guava.png",
+  "hip-rose": "hip rose.png",
+  "honey": "honey.png",
+  "hyper": "hyper.png",
+  "hyperliquid": "hyperliquid.png",
+  "lavender": "lavender.png",
+  "magenta": "magenta.png",
+  "orange": "orange.png",
+  "pink-purple": "pink purple.png",
+  "purple": "purple.png",
+  "red": "red.png",
+  "smoke": "smoke.png",
+  "teal": "teal.png",
+  "watermelon": "watermelon.png",
+  "yellow-orange": "yellow orange.png",
+  "yellow": "yellow.png",
+};
+
 export function useGifGenerator({
   originalImageUrl,
   noggleColor,
@@ -41,8 +86,14 @@ export function useGifGenerator({
         workerScript: '/gif.worker.js'
       });
 
+      // Get the correct file name for the eye animation
+      const eyeAnimationFile = EYE_ANIMATION_FILES[eyeAnimation || ""];
+      if (!eyeAnimationFile) {
+        throw new Error(`Unknown eye animation: ${eyeAnimation}`);
+      }
+
       // Load binary data of eye animation GIF
-      const response = await fetch(`/assets/eyes/${eyeAnimation}.gif`);
+      const response = await fetch(`/assets/eyes/${eyeAnimationFile}`);
       const arrayBuffer = await response.arrayBuffer();
       const gif = parseGIF(arrayBuffer);
       const framesData = decompressFrames(gif, true);
@@ -51,7 +102,10 @@ export function useGifGenerator({
       const originalImg = await loadImage(originalImageUrl);
       let noggleImg = null;
       if (noggleColor && noggleColor !== "original") {
-        noggleImg = await loadImage(`/assets/noggles/${noggleColor}.png`);
+        const noggleFile = NOGGLE_COLOR_FILES[noggleColor];
+        if (noggleFile) {
+          noggleImg = await loadImage(`/assets/noggles/${noggleFile}`);
+        }
       }
 
       // Iterate through each extracted GIF frame
