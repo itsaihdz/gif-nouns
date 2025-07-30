@@ -50,10 +50,10 @@ export function useGifGenerator({
         noggleImg = await loadImage(`/assets/noggles/${noggleColor}.png`);
       }
 
-      // Load eye animation frames
-      let eyeFrames: HTMLImageElement[] = [];
+      // Load eye animation GIF
+      let eyeGif: HTMLImageElement | null = null;
       if (eyeAnimation && eyeAnimation !== "normal") {
-        eyeFrames = await loadEyeAnimationFrames(eyeAnimation, frames);
+        eyeGif = await loadImage(`/assets/eyes/${eyeAnimation}.gif`);
       }
 
       // Calculate frame delay
@@ -85,12 +85,11 @@ export function useGifGenerator({
           ctx.drawImage(noggleImg, 0, 0, width, height);
         }
 
-        // Draw eye animation frame
-        if (eyeFrames.length > 0) {
-          const eyeFrame = eyeFrames[i % eyeFrames.length];
+        // Draw animated eye GIF
+        if (eyeGif) {
           ctx.globalAlpha = 1.0;
           ctx.globalCompositeOperation = "source-over";
-          ctx.drawImage(eyeFrame, 0, 0, width, height);
+          ctx.drawImage(eyeGif, 0, 0, width, height);
         }
 
         // Add frame to GIF
@@ -122,19 +121,6 @@ export function useGifGenerator({
       img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
       img.src = src;
     });
-  };
-
-  const loadEyeAnimationFrames = async (animationName: string, frameCount: number): Promise<HTMLImageElement[]> => {
-    // For now, we'll load the same GIF multiple times as frames
-    // In a real implementation, you'd extract actual frames from the GIF
-    const frames: HTMLImageElement[] = [];
-    const baseImg = await loadImage(`/assets/eyes/${animationName}.gif`);
-    
-    for (let i = 0; i < frameCount; i++) {
-      frames.push(baseImg);
-    }
-    
-    return frames;
   };
 
   const downloadGif = useCallback((gifUrl: string, filename: string = 'animated-noun.gif') => {
