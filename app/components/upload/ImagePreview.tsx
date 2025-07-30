@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
+import { useGifGenerator } from "./GifGenerator";
 
 
 interface NounTraits {
@@ -83,6 +84,31 @@ export function ImagePreview({
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
   const [isExporting, setIsExporting] = useState(false);
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
+  const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
+  const [exportProgress, setExportProgress] = useState(0);
+
+  // Initialize GIF generator
+  const { generateGif, downloadGif, mintAsNFT } = useGifGenerator({
+    originalImageUrl,
+    noggleColor: selectedNoggleColor,
+    eyeAnimation: selectedEyeAnimation,
+    width: 800,
+    height: 800,
+    fps: 8,
+    frames: 16,
+    duration: 2.0,
+    onProgress: setExportProgress,
+    onComplete: (gifUrl: string) => {
+      setGeneratedGifUrl(gifUrl);
+      setIsExporting(false);
+      setExportProgress(0);
+    },
+    onError: (error: string) => {
+      setIsExporting(false);
+      setExportProgress(0);
+      onError(error);
+    }
+  });
 
   // Update animated preview when selections change
   useEffect(() => {
@@ -109,43 +135,27 @@ export function ImagePreview({
 
   const handleExport = async () => {
     setIsExporting(true);
+    setExportProgress(0);
     try {
-      // Generate the actual animated GIF with all layers composited
-      const gifUrl = await generateAnimatedGif();
-      onExport(gifUrl);
+      await generateGif();
     } catch (error) {
       console.error("Export error:", error);
       onError("Failed to export GIF");
-    } finally {
       setIsExporting(false);
     }
   };
 
-  const generateAnimatedGif = async (): Promise<string> => {
-    // Call the API to generate the animated GIF with all layers
-    const response = await fetch('/api/generate-gif', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        imageUrl: originalImageUrl,
-        noggleColor: selectedNoggleColor,
-        eyeAnimation: selectedEyeAnimation,
-        width: 800,
-        height: 800,
-        fps: 8,
-        frames: 16,
-        duration: 2.0
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to generate GIF');
+  const handleDownload = () => {
+    if (generatedGifUrl) {
+      const filename = `animated-noun-${Date.now()}.gif`;
+      downloadGif(generatedGifUrl, filename);
     }
+  };
 
-    const data = await response.json();
-    return data.gifUrl;
+  const handleMintNFT = async () => {
+    if (generatedGifUrl) {
+      await mintAsNFT(generatedGifUrl);
+    }
   };
 
   return (
@@ -203,8 +213,28 @@ export function ImagePreview({
             )}
           </div>
 
-          {/* Export Button */}
-          <div className="mt-4 flex justify-center">
+          {/* Export Progress */}
+          {isExporting && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Generating GIF...
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {Math.round(exportProgress)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${exportProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="mt-4 flex flex-wrap gap-3 justify-center">
             <Button
               variant="gradient"
               size="lg"
@@ -213,9 +243,47 @@ export function ImagePreview({
               disabled={isExporting}
               icon={<Icon name="download" size="md" />}
             >
-              {isExporting ? "Generating GIF..." : "Export as GIF"}
+              {isExporting ? "Generating GIF..." : "Generate GIF"}
             </Button>
+
+            {generatedGifUrl && (
+              <>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleDownload}
+                  icon={<Icon name="download" size="md" />}
+                >
+                  Download GIF
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleMintNFT}
+                  icon={<Icon name="nft" size="md" />}
+                >
+                  Mint as NFT
+                </Button>
+              </>
+            )}
           </div>
+
+          {/* Generated GIF Preview */}
+          {generatedGifUrl && (
+            <div className="mt-6">
+              <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
+                Generated GIF Preview
+              </h4>
+              <div className="relative w-full h-64">
+                <img
+                  src={generatedGifUrl}
+                  alt="Generated animated GIF"
+                  className="w-full h-full object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
