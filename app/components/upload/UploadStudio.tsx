@@ -130,7 +130,6 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
           <ImagePreview
             originalImageUrl={imageUrl}
             traits={traits}
-            onExport={handleExport}
             onError={handleError}
             className="max-w-6xl mx-auto"
           />
