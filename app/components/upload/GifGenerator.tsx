@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import GIF from 'gif.js';
 import { parseGIF, decompressFrames } from 'gifuct-js';
 
