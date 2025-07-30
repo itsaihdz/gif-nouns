@@ -83,7 +83,6 @@ export function ImagePreview({
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
   const [isExporting, setIsExporting] = useState(false);
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Update animated preview when selections change
   useEffect(() => {
