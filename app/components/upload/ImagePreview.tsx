@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
@@ -21,7 +21,6 @@ interface NounTraits {
 interface ImagePreviewProps {
   originalImageUrl: string;
   traits: NounTraits;
-  onExport: (gifUrl: string) => void;
   onError: (error: string) => void;
   className?: string;
 }
@@ -76,7 +75,6 @@ const EYE_ANIMATIONS = [
 
 export function ImagePreview({ 
   originalImageUrl, 
-  onExport, 
   onError,
   className = "" 
 }: ImagePreviewProps) {
@@ -111,13 +109,7 @@ export function ImagePreview({
   });
 
   // Update animated preview when selections change
-  useEffect(() => {
-    if (originalImageUrl) {
-      updateAnimatedPreview();
-    }
-  }, [originalImageUrl, selectedNoggleColor, selectedEyeAnimation]);
-
-  const updateAnimatedPreview = () => {
+  const updateAnimatedPreview = useCallback(() => {
     // For preview, we'll show the eye animation GIF directly
     // since the user's image and noggle are static layers
     if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
@@ -131,7 +123,11 @@ export function ImagePreview({
     } else {
       setAnimatedPreviewUrl(originalImageUrl);
     }
-  };
+  }, [selectedEyeAnimation, originalImageUrl]);
+
+  useEffect(() => {
+    updateAnimatedPreview();
+  }, [updateAnimatedPreview]);
 
   const handleExport = async () => {
     setIsExporting(true);

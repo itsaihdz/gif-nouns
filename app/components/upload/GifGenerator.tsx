@@ -68,14 +68,11 @@ export function useGifGenerator({
   width = 800,
   height = 800,
   fps = 8,
-  frames = 16,
   duration = 2.0,
   onProgress,
   onComplete,
   onError
 }: GifGeneratorProps) {
-  const gifRef = useRef<GIF | null>(null);
-
   const generateGif = useCallback(async () => {
     try {
       // Get the correct file name for the eye animation
