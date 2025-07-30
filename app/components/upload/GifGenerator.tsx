@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import GIF from 'gif.js';
+import { parseGIF, decompressFrames } from 'gifuct-js';
 
 interface GifGeneratorProps {
   originalImageUrl: string;
@@ -14,6 +15,51 @@ interface GifGeneratorProps {
   onComplete?: (gifUrl: string) => void;
   onError?: (error: string) => void;
 }
+
+// Mapping from values to actual file names
+const EYE_ANIMATION_FILES: Record<string, string> = {
+  "nouns": "nouns.gif",
+  "ojos-nouns": "ojos nouns.gif",
+  "ojos-pepepunk": "ojos pepepunk.gif",
+  "ojos-pepepunk-en-medio": "ojos pepepunk en medio.gif",
+  "arriba": "arriba.gif",
+  "arriba-derecha": "arriba derecha.gif",
+  "arriba-izquierda": "arriba izquierda.gif",
+  "abajo": "abajo.gif",
+  "abajo-derecha": "abajo derecha.gif",
+  "abajo-izquierda": "abajo izquierda.gif",
+  "viscos": "viscos.gif",
+  "viscos-derecha": "viscos derecha.gif",
+  "viscos-izquierda": "viscos izquierda.gif",
+  "locos": "locos.gif",
+  "serpiente": "serpiente.gif",
+  "vampiro": "vampiro.gif",
+};
+
+const NOGGLE_COLOR_FILES: Record<string, string> = {
+  "blue": "blue.png",
+  "deep-teal": "deep teal.png",
+  "gomita": "gomita.png",
+  "grass": "grass.png",
+  "green-blue": "green blue.png",
+  "grey-light": "grey light.png",
+  "guava": "guava.png",
+  "hip-rose": "hip rose.png",
+  "honey": "honey.png",
+  "hyper": "hyper.png",
+  "hyperliquid": "hyperliquid.png",
+  "lavender": "lavender.png",
+  "magenta": "magenta.png",
+  "orange": "orange.png",
+  "pink-purple": "pink purple.png",
+  "purple": "purple.png",
+  "red": "red.png",
+  "smoke": "smoke.png",
+  "teal": "teal.png",
+  "watermelon": "watermelon.png",
+  "yellow-orange": "yellow orange.png",
+  "yellow": "yellow.png",
+};
 
 export function useGifGenerator({
   originalImageUrl,
@@ -32,86 +78,97 @@ export function useGifGenerator({
 
   const generateGif = useCallback(async () => {
     try {
-      // Create a new GIF instance
-      gifRef.current = new GIF({
+      // Get the correct file name for the eye animation
+      const eyeAnimationFile = EYE_ANIMATION_FILES[eyeAnimation || ""];
+      if (!eyeAnimationFile) {
+        throw new Error(`Unknown eye animation: ${eyeAnimation}`);
+      }
+
+      // Load binary data of eye animation GIF
+      const response = await fetch(`/assets/eyes/${eyeAnimationFile}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const gif = parseGIF(arrayBuffer);
+      const framesData = decompressFrames(gif, true);
+
+      // Load original image and noggle overlay
+      const originalImg = await loadImage(originalImageUrl);
+      let noggleImg = null;
+      if (noggleColor && noggleColor !== "original") {
+        const noggleFile = NOGGLE_COLOR_FILES[noggleColor];
+        if (noggleFile) {
+          noggleImg = await loadImage(`/assets/noggles/${noggleFile}`);
+        }
+      }
+
+      // Create GIF with the same frame count as the original eye animation
+      const gifRef = new GIF({
         workers: 2,
         quality: 10,
-        width: width,
-        height: height,
+        width,
+        height,
         workerScript: '/gif.worker.js'
       });
 
-      // Load the original image
-      const originalImg = await loadImage(originalImageUrl);
-      
-      // Load noggle if selected
-      let noggleImg: HTMLImageElement | null = null;
-      if (noggleColor && noggleColor !== "original") {
-        noggleImg = await loadImage(`/assets/noggles/${noggleColor}.png`);
-      }
+      // Calculate delay for 8fps (125ms per frame)
+      const frameDelay = 1000 / fps; // Convert fps to milliseconds
 
-      // Load eye animation GIF
-      let eyeGif: HTMLImageElement | null = null;
-      if (eyeAnimation && eyeAnimation !== "normal") {
-        eyeGif = await loadImage(`/assets/eyes/${eyeAnimation}.gif`);
-      }
-
-      // Calculate frame delay
-      const frameDelay = Math.round((duration * 1000) / frames);
-
-      // Generate frames
-      for (let i = 0; i < frames; i++) {
+      // Use the exact frame count from the original eye animation but with 8fps timing
+      for (let i = 0; i < framesData.length; i++) {
+        const frame = framesData[i];
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        
-        if (!ctx) {
-          throw new Error('Could not get canvas context');
-        }
 
-        // Clear canvas
+        if (!ctx) throw new Error('Canvas context error');
+
+        // Clear canvas with transparent background
         ctx.clearRect(0, 0, width, height);
 
-        // Draw original image
-        ctx.globalAlpha = 1.0;
-        ctx.globalCompositeOperation = "source-over";
+        // Draw base image
         ctx.drawImage(originalImg, 0, 0, width, height);
 
-        // Draw noggle if selected
+        // Optional noggle overlay
         if (noggleImg) {
-          ctx.globalAlpha = 1.0;
-          ctx.globalCompositeOperation = "source-over";
           ctx.drawImage(noggleImg, 0, 0, width, height);
         }
 
-        // Draw animated eye GIF
-        if (eyeGif) {
-          ctx.globalAlpha = 1.0;
-          ctx.globalCompositeOperation = "source-over";
-          ctx.drawImage(eyeGif, 0, 0, width, height);
-        }
+        // Create a temporary canvas for the eye frame to handle transparency properly
+        const eyeCanvas = document.createElement('canvas');
+        eyeCanvas.width = width;
+        eyeCanvas.height = height;
+        const eyeCtx = eyeCanvas.getContext('2d');
 
-        // Add frame to GIF
-        gifRef.current.addFrame(canvas, { delay: frameDelay });
+        if (!eyeCtx) throw new Error('Eye canvas context error');
 
-        // Update progress
-        onProgress?.((i + 1) / frames * 100);
+        // Clear eye canvas
+        eyeCtx.clearRect(0, 0, width, height);
+
+        // Draw the eye frame with proper positioning
+        const imageData = eyeCtx.createImageData(frame.dims.width, frame.dims.height);
+        imageData.data.set(frame.patch);
+        eyeCtx.putImageData(imageData, frame.dims.left, frame.dims.top);
+
+        // Composite the eye frame onto the main canvas
+        ctx.drawImage(eyeCanvas, 0, 0);
+
+        // Add frame with 8fps timing (125ms delay)
+        gifRef.addFrame(canvas, { delay: frameDelay });
+
+        onProgress?.(((i + 1) / framesData.length) * 100);
       }
 
-      // Render the GIF
-      gifRef.current.on('finished', (blob: Blob) => {
+      gifRef.on('finished', (blob: Blob) => {
         const gifUrl = URL.createObjectURL(blob);
         onComplete?.(gifUrl);
       });
 
-      gifRef.current.render();
-
-    } catch (error) {
-      console.error('Error generating GIF:', error);
-      onError?.(error instanceof Error ? error.message : 'Failed to generate GIF');
+      gifRef.render();
+    } catch (err) {
+      console.error('Error:', err);
+      onError?.(err instanceof Error ? err.message : 'GIF generation failed');
     }
-  }, [originalImageUrl, noggleColor, eyeAnimation, width, height, fps, frames, duration, onProgress, onComplete, onError]);
+  }, [originalImageUrl, noggleColor, eyeAnimation, width, height, fps, onProgress, onComplete, onError]);
 
   const loadImage = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
