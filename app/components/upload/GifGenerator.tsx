@@ -15,7 +15,7 @@ interface GifGeneratorProps {
   onError?: (error: string) => void;
 }
 
-export function GifGenerator({
+export function useGifGenerator({
   originalImageUrl,
   noggleColor,
   eyeAnimation,
@@ -38,7 +38,7 @@ export function GifGenerator({
         quality: 10,
         width: width,
         height: height,
-        workerScript: '/gif.worker.js' // We'll need to add this
+        workerScript: '/gif.worker.js'
       });
 
       // Load the original image

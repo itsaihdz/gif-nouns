@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
-import { GifGenerator } from "./GifGenerator";
+import { useGifGenerator } from "./GifGenerator";
 
 
 interface NounTraits {
@@ -88,7 +88,7 @@ export function ImagePreview({
   const [exportProgress, setExportProgress] = useState(0);
 
   // Initialize GIF generator
-  const { generateGif, downloadGif, mintAsNFT } = GifGenerator({
+  const { generateGif, downloadGif, mintAsNFT } = useGifGenerator({
     originalImageUrl,
     noggleColor: selectedNoggleColor,
     eyeAnimation: selectedEyeAnimation,
@@ -98,12 +98,12 @@ export function ImagePreview({
     frames: 16,
     duration: 2.0,
     onProgress: setExportProgress,
-    onComplete: (gifUrl) => {
+    onComplete: (gifUrl: string) => {
       setGeneratedGifUrl(gifUrl);
       setIsExporting(false);
       setExportProgress(0);
     },
-    onError: (error) => {
+    onError: (error: string) => {
       setIsExporting(false);
       setExportProgress(0);
       onError(error);
