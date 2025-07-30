@@ -78,14 +78,6 @@ export function useGifGenerator({
 
   const generateGif = useCallback(async () => {
     try {
-      const gifRef = new GIF({
-        workers: 2,
-        quality: 10,
-        width,
-        height,
-        workerScript: '/gif.worker.js'
-      });
-
       // Get the correct file name for the eye animation
       const eyeAnimationFile = EYE_ANIMATION_FILES[eyeAnimation || ""];
       if (!eyeAnimationFile) {
@@ -108,7 +100,16 @@ export function useGifGenerator({
         }
       }
 
-      // Iterate through each extracted GIF frame
+      // Create GIF with the same frame count as the original eye animation
+      const gifRef = new GIF({
+        workers: 2,
+        quality: 10,
+        width,
+        height,
+        workerScript: '/gif.worker.js'
+      });
+
+      // Use the exact frame count and timing from the original eye animation
       for (let i = 0; i < framesData.length; i++) {
         const frame = framesData[i];
         const canvas = document.createElement('canvas');
@@ -118,21 +119,40 @@ export function useGifGenerator({
 
         if (!ctx) throw new Error('Canvas context error');
 
+        // Clear canvas with transparent background
+        ctx.clearRect(0, 0, width, height);
+
         // Draw base image
         ctx.drawImage(originalImg, 0, 0, width, height);
 
-        // Optional overlay
+        // Optional noggle overlay
         if (noggleImg) {
           ctx.drawImage(noggleImg, 0, 0, width, height);
         }
 
-        // Draw GIF frame manually
-        const imageData = ctx.createImageData(frame.dims.width, frame.dims.height);
-        imageData.data.set(frame.patch);
-        ctx.putImageData(imageData, frame.dims.left, frame.dims.top);
+        // Create a temporary canvas for the eye frame to handle transparency properly
+        const eyeCanvas = document.createElement('canvas');
+        eyeCanvas.width = width;
+        eyeCanvas.height = height;
+        const eyeCtx = eyeCanvas.getContext('2d');
 
-        // Add to output GIF
-        gifRef.addFrame(canvas, { delay: frame.delay || 100 });
+        if (!eyeCtx) throw new Error('Eye canvas context error');
+
+        // Clear eye canvas
+        eyeCtx.clearRect(0, 0, width, height);
+
+        // Draw the eye frame with proper positioning
+        const imageData = eyeCtx.createImageData(frame.dims.width, frame.dims.height);
+        imageData.data.set(frame.patch);
+        eyeCtx.putImageData(imageData, frame.dims.left, frame.dims.top);
+
+        // Composite the eye frame onto the main canvas
+        ctx.drawImage(eyeCanvas, 0, 0);
+
+        // Add frame with the original delay from the eye animation
+        // Convert delay from centiseconds to milliseconds
+        const delay = frame.delay * 10; // Convert centiseconds to milliseconds
+        gifRef.addFrame(canvas, { delay });
 
         onProgress?.(((i + 1) / framesData.length) * 100);
       }
