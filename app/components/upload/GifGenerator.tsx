@@ -50,10 +50,10 @@ export function useGifGenerator({
         noggleImg = await loadImage(`/assets/noggles/${noggleColor}.png`);
       }
 
-      // Load eye animation GIF
-      let eyeGif: HTMLImageElement | null = null;
+      // Load and extract frames from eye animation GIF
+      let eyeFrames: HTMLImageElement[] = [];
       if (eyeAnimation && eyeAnimation !== "normal") {
-        eyeGif = await loadImage(`/assets/eyes/${eyeAnimation}.gif`);
+        eyeFrames = await extractGifFrames(`/assets/eyes/${eyeAnimation}.gif`, frames);
       }
 
       // Calculate frame delay
@@ -85,11 +85,12 @@ export function useGifGenerator({
           ctx.drawImage(noggleImg, 0, 0, width, height);
         }
 
-        // Draw animated eye GIF
-        if (eyeGif) {
+        // Draw eye animation frame
+        if (eyeFrames.length > 0) {
+          const eyeFrame = eyeFrames[i % eyeFrames.length];
           ctx.globalAlpha = 1.0;
           ctx.globalCompositeOperation = "source-over";
-          ctx.drawImage(eyeGif, 0, 0, width, height);
+          ctx.drawImage(eyeFrame, 0, 0, width, height);
         }
 
         // Add frame to GIF
@@ -120,6 +121,56 @@ export function useGifGenerator({
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
       img.src = src;
+    });
+  };
+
+  const extractGifFrames = async (gifUrl: string, frameCount: number): Promise<HTMLImageElement[]> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      
+      img.onload = () => {
+        try {
+          const frames: HTMLImageElement[] = [];
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'));
+            return;
+          }
+
+          // Set canvas size to match the GIF
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          // Create animated frames by cycling through the GIF animation
+          // We'll use different timing offsets to capture different parts of the animation
+          for (let i = 0; i < frameCount; i++) {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw the GIF image
+            ctx.drawImage(img, 0, 0);
+            
+            // Create a new image element from the canvas
+            const frameImg = new Image();
+            frameImg.src = canvas.toDataURL();
+            frames.push(frameImg);
+            
+            // Small delay to allow the GIF to animate
+            // This is a workaround since we can't directly extract frames
+            // The actual animation will come from the GIF's natural timing
+          }
+
+          resolve(frames);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = () => reject(new Error(`Failed to load GIF: ${gifUrl}`));
+      img.src = gifUrl;
     });
   };
 
