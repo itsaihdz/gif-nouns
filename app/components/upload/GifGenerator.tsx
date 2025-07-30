@@ -109,7 +109,10 @@ export function useGifGenerator({
         workerScript: '/gif.worker.js'
       });
 
-      // Use the exact frame count and timing from the original eye animation
+      // Calculate delay for 8fps (125ms per frame)
+      const frameDelay = 1000 / fps; // Convert fps to milliseconds
+
+      // Use the exact frame count from the original eye animation but with 8fps timing
       for (let i = 0; i < framesData.length; i++) {
         const frame = framesData[i];
         const canvas = document.createElement('canvas');
@@ -149,10 +152,8 @@ export function useGifGenerator({
         // Composite the eye frame onto the main canvas
         ctx.drawImage(eyeCanvas, 0, 0);
 
-        // Add frame with the original delay from the eye animation
-        // Convert delay from centiseconds to milliseconds
-        const delay = frame.delay * 10; // Convert centiseconds to milliseconds
-        gifRef.addFrame(canvas, { delay });
+        // Add frame with 8fps timing (125ms delay)
+        gifRef.addFrame(canvas, { delay: frameDelay });
 
         onProgress?.(((i + 1) / framesData.length) * 100);
       }
@@ -167,7 +168,7 @@ export function useGifGenerator({
       console.error('Error:', err);
       onError?.(err instanceof Error ? err.message : 'GIF generation failed');
     }
-  }, [originalImageUrl, noggleColor, eyeAnimation, width, height, onProgress, onComplete, onError]);
+  }, [originalImageUrl, noggleColor, eyeAnimation, width, height, fps, onProgress, onComplete, onError]);
 
   const loadImage = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
