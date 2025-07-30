@@ -87,9 +87,6 @@ async function generateAnimatedGif({
   duration: number;
 }) {
   try {
-    // For now, we'll create a simple animated GIF by cycling through the eye animation frames
-    // In a real implementation, you would use a library like gif.js or similar
-    
     // Log the parameters for debugging (this prevents unused variable warnings)
     console.log('Generating animated GIF with:', {
       imageUrl,
@@ -101,6 +98,9 @@ async function generateAnimatedGif({
       frames,
       duration
     });
+    
+    // For now, we'll create a simple animated GIF by cycling through the eye animation frames
+    // In a real implementation, you would use a library like gif.js or similar
     
     // Create a data URL that represents an animated GIF
     // This is a simplified approach - in production you'd use proper GIF generation

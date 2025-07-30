@@ -82,6 +82,7 @@ export function ImagePreview({
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
   const [isExporting, setIsExporting] = useState(false);
+  const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Update animated preview when selections change
@@ -92,331 +93,115 @@ export function ImagePreview({
   }, [originalImageUrl, selectedNoggleColor, selectedEyeAnimation]);
 
   const updateAnimatedPreview = () => {
-    // Create a composite preview by layering the images
-    if (!canvasRef.current) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    // Set canvas size
-    canvas.width = 800;
-    canvas.height = 800;
-    
-    // Load original image first
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    
-    img.onload = () => {
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw original image
-      ctx.globalAlpha = 1.0;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
-      // Apply noggle overlay if selected
-      if (selectedNoggleColor && selectedNoggleColor !== "original") {
-        const noggleColor = NOGGLE_COLORS.find(c => c.value === selectedNoggleColor);
-        if (noggleColor && noggleColor.file) {
-          const noggleImg = new Image();
-          noggleImg.crossOrigin = "anonymous";
-          
-          noggleImg.onload = () => {
-            // Apply noggle with normal 100% opacity
-            ctx.globalAlpha = 1.0;
-            ctx.globalCompositeOperation = "source-over";
-            ctx.drawImage(noggleImg, 0, 0, canvas.width, canvas.height);
-            
-            // Apply eye animation if selected
-            if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
-              const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
-              if (eyeAnimation && eyeAnimation.file) {
-                const eyeImg = new Image();
-                eyeImg.crossOrigin = "anonymous";
-                
-                eyeImg.onload = () => {
-                  // Apply eye animation with normal 100% opacity
-                  ctx.globalAlpha = 1.0;
-                  ctx.globalCompositeOperation = "source-over";
-                  ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-                  
-                  // Canvas is updated directly, no need to store URL
-                };
-                
-                eyeImg.onerror = () => {
-                  console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
-                  // Canvas is updated directly, no need to store URL
-                };
-                
-                eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
-              } else {
-                // Canvas is updated directly, no need to store URL
-              }
-            } else {
-              // Canvas is updated directly, no need to store URL
-            }
-          };
-          
-          noggleImg.onerror = () => {
-            console.warn(`Failed to load noggle: ${noggleColor.file}`);
-            // Continue without noggle
-            if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
-              const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
-              if (eyeAnimation && eyeAnimation.file) {
-                const eyeImg = new Image();
-                eyeImg.crossOrigin = "anonymous";
-                
-                eyeImg.onload = () => {
-                  ctx.globalAlpha = 1.0;
-                  ctx.globalCompositeOperation = "source-over";
-                  ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-                  // Canvas is updated directly, no need to store URL
-                };
-                
-                eyeImg.onerror = () => {
-                  console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
-                  // Canvas is updated directly, no need to store URL
-                };
-                
-                eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
-              } else {
-                // Canvas is updated directly, no need to store URL
-              }
-            } else {
-              // Canvas is updated directly, no need to store URL
-            }
-          };
-          
-          noggleImg.src = `/assets/noggles/${noggleColor.file}`;
-        } else {
-          // No noggle, apply eye animation directly
-          if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
-            const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
-            if (eyeAnimation && eyeAnimation.file) {
-              const eyeImg = new Image();
-              eyeImg.crossOrigin = "anonymous";
-              
-              eyeImg.onload = () => {
-                ctx.globalAlpha = 1.0;
-                ctx.globalCompositeOperation = "source-over";
-                ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-                // Canvas is updated directly, no need to store URL
-              };
-              
-              eyeImg.onerror = () => {
-                console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
-                // Canvas is updated directly, no need to store URL
-              };
-              
-              eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
-            } else {
-              // Canvas is updated directly, no need to store URL
-            }
-          } else {
-            // Canvas is updated directly, no need to store URL
-          }
-        }
+    // For preview, we'll show the eye animation GIF directly
+    // since the user's image and noggle are static layers
+    if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
+      const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
+      if (eyeAnimation && eyeAnimation.file) {
+        // Show the animated eye GIF directly for preview
+        setAnimatedPreviewUrl(`/assets/eyes/${eyeAnimation.file}`);
       } else {
-        // No noggle, apply eye animation directly
-        if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
-          const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
-          if (eyeAnimation && eyeAnimation.file) {
-            const eyeImg = new Image();
-            eyeImg.crossOrigin = "anonymous";
-            
-            eyeImg.onload = () => {
-              ctx.globalAlpha = 1.0;
-              ctx.globalCompositeOperation = "source-over";
-              ctx.drawImage(eyeImg, 0, 0, canvas.width, canvas.height);
-              // Canvas is updated directly, no need to store URL
-            };
-            
-            eyeImg.onerror = () => {
-              console.warn(`Failed to load eye animation: ${eyeAnimation.file}`);
-              // Canvas is updated directly, no need to store URL
-            };
-            
-            eyeImg.src = `/assets/eyes/${eyeAnimation.file}`;
-          } else {
-            // Canvas is updated directly, no need to store URL
-          }
-        } else {
-          // Canvas is updated directly, no need to store URL
-        }
+        setAnimatedPreviewUrl(originalImageUrl);
       }
-    };
-    
-    img.onerror = () => {
-      console.error("Failed to load original image");
-      onError("Failed to load original image");
-    };
-    
-    img.src = originalImageUrl;
+    } else {
+      setAnimatedPreviewUrl(originalImageUrl);
+    }
   };
 
   const handleExport = async () => {
+    setIsExporting(true);
     try {
-      setIsExporting(true);
-
-      // Generate animated GIF with specifications: 800px, 8 fps, 16 frames (2 seconds)
-      if (!canvasRef.current) {
-        throw new Error("Canvas not available");
-      }
-
-      // Create animated GIF by compositing the original image with noggle and eye animation
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error("Canvas context not available");
-      }
-
-      // Set canvas size for export
-      canvas.width = 800;
-      canvas.height = 800;
-
-      // Load original image
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      
-      img.onload = async () => {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw original image
-        ctx.globalAlpha = 1.0;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Apply noggle if selected
-        if (selectedNoggleColor && selectedNoggleColor !== "original") {
-          const noggleColor = NOGGLE_COLORS.find(c => c.value === selectedNoggleColor);
-          if (noggleColor && noggleColor.file) {
-            const noggleImg = new Image();
-            noggleImg.crossOrigin = "anonymous";
-            
-            noggleImg.onload = async () => {
-              // Apply noggle
-              ctx.globalAlpha = 1.0;
-              ctx.globalCompositeOperation = "source-over";
-              ctx.drawImage(noggleImg, 0, 0, canvas.width, canvas.height);
-              
-              // Apply eye animation if selected
-              if (selectedEyeAnimation && selectedEyeAnimation !== "normal") {
-                const eyeAnimation = EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation);
-                if (eyeAnimation && eyeAnimation.file) {
-                  // For animated GIF, we need to create multiple frames
-                  // For now, we'll use the API to generate the animated GIF
-                  await generateAnimatedGif();
-                } else {
-                  // No eye animation, export static image
-                  const dataUrl = canvas.toDataURL('image/png');
-                  onExport(dataUrl);
-                }
-              } else {
-                // No eye animation, export static image
-                const dataUrl = canvas.toDataURL('image/png');
-                onExport(dataUrl);
-              }
-            };
-            
-            noggleImg.onerror = async () => {
-              console.warn(`Failed to load noggle: ${noggleColor.file}`);
-              await generateAnimatedGif();
-            };
-            
-            noggleImg.src = `/assets/noggles/${noggleColor.file}`;
-          } else {
-            await generateAnimatedGif();
-          }
-        } else {
-          await generateAnimatedGif();
-        }
-      };
-      
-      img.onerror = () => {
-        throw new Error("Failed to load original image");
-      };
-      
-      img.src = originalImageUrl;
+      // Generate the actual animated GIF with all layers composited
+      const gifUrl = await generateAnimatedGif();
+      onExport(gifUrl);
     } catch (error) {
-      console.error("Error exporting:", error);
-      onError("Failed to export image");
+      console.error("Export error:", error);
+      onError("Failed to export GIF");
     } finally {
       setIsExporting(false);
     }
   };
 
-  const generateAnimatedGif = async () => {
-    try {
-      // Call the GIF generation API to create actual animated GIF
-      const response = await fetch('/api/generate-gif', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageUrl: originalImageUrl,
-          noggleColor: selectedNoggleColor,
-          eyeAnimation: selectedEyeAnimation,
-          width: 800,
-          height: 800,
-          fps: 8,
-          frames: 16,
-          duration: 2.0
-        }),
-      });
+  const generateAnimatedGif = async (): Promise<string> => {
+    // Call the API to generate the animated GIF with all layers
+    const response = await fetch('/api/generate-gif', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        imageUrl: originalImageUrl,
+        noggleColor: selectedNoggleColor,
+        eyeAnimation: selectedEyeAnimation,
+        width: 800,
+        height: 800,
+        fps: 8,
+        frames: 16,
+        duration: 2.0
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate GIF');
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        onExport(result.gifUrl);
-      } else {
-        throw new Error(result.error || 'Failed to generate GIF');
-      }
-    } catch (error) {
-      console.error("Error generating animated GIF:", error);
-      onError("Failed to generate animated GIF");
+    if (!response.ok) {
+      throw new Error('Failed to generate GIF');
     }
+
+    const data = await response.json();
+    return data.gifUrl;
   };
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Preview Canvas */}
-      <Card variant="elevated" className="relative overflow-hidden">
+      {/* Preview Section */}
+      <Card variant="outlined">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Live Preview
-            </h3>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-green-600 dark:text-green-400">Live</span>
-            </div>
-          </div>
-
-          {/* Preview Section */}
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Animated Preview
+          </h3>
+          
+          {/* Animated Preview */}
           <div className="relative">
-            <canvas
-              ref={canvasRef}
-              className="w-full h-96 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
-              style={{ display: 'block' }}
-            />
-            
-            {/* Original Image for Reference */}
-            <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Original Image (Reference)
-              </h4>
-              <img
-                src={originalImageUrl}
-                alt="Original Noun"
-                className="w-full h-32 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
-              />
-            </div>
+            {animatedPreviewUrl ? (
+              <div className="relative">
+                {/* Base image with noggle (static) */}
+                <div className="relative w-full h-96">
+                  <img
+                    src={originalImageUrl}
+                    alt="Original Noun"
+                    className="w-full h-full object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                  />
+                  
+                  {/* Noggle overlay if selected */}
+                  {selectedNoggleColor && selectedNoggleColor !== "original" && (
+                    <div className="absolute inset-0">
+                      <img
+                        src={`/assets/noggles/${NOGGLE_COLORS.find(c => c.value === selectedNoggleColor)?.file}`}
+                        alt="Noggle overlay"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Animated eye overlay if selected */}
+                  {selectedEyeAnimation && selectedEyeAnimation !== "normal" && (
+                    <div className="absolute inset-0">
+                      <img
+                        src={`/assets/eyes/${EYE_ANIMATIONS.find(e => e.value === selectedEyeAnimation)?.file}`}
+                        alt="Eye animation"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Preview shows static layers. Export to see the full animated GIF.
+                </p>
+              </div>
+            ) : (
+              <div className="w-full h-96 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500 dark:text-gray-400">Upload an image to see preview</p>
+              </div>
+            )}
           </div>
 
           {/* Export Button */}
