@@ -59,16 +59,8 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
     setTraits(detectedTraits);
     setCurrentStep("preview");
     
-    // Track trait detection
-    // tracking.traitsDetected(detectedTraits as unknown as Record<string, string | number | boolean>);
-  };
-
-  const handleExport = (gifUrl: string) => {
-    setExportedGifUrl(gifUrl);
-    setCurrentStep("exported");
-    
-    // Track export event
-    tracking.exportComplete(gifUrl);
+    // Track traits detected event
+    // tracking.traitsDetected(detectedTraits);
   };
 
   const handleError = (errorMessage: string) => {
