@@ -1,47 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserByFid, getUserByUsername } from '../../../../lib/neynar';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fid, username } = body;
+    const { signerUuid, messageBytes, signature } = body;
 
-    if (!fid && !username) {
-      return NextResponse.json(
-        { success: false, error: 'FID or username is required' },
-        { status: 400 }
-      );
-    }
+    // TODO: Implement real Neynar authentication
+    // For now, return a mock successful response
+    console.log('Farcaster auth request:', { signerUuid, messageBytes, signature });
 
-    let userData;
-
-    if (fid) {
-      // Get user by FID
-      const response = await getUserByFid(fid);
-      userData = response.user;
-    } else if (username) {
-      // Get user by username
-      const response = await getUserByUsername(username);
-      userData = response.user;
-    }
-
-    if (!userData) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
-    }
+    // Mock successful authentication
+    const mockUser = {
+      fid: 12345,
+      username: "demo.noun",
+      displayName: "Demo User",
+      pfp: "https://picsum.photos/32/32?random=1",
+      bio: "Nouns Remix Studio user",
+      followerCount: 42,
+      followingCount: 38
+    };
 
     return NextResponse.json({
       success: true,
-      user: {
-        fid: userData.fid,
-        username: userData.username,
-        displayName: userData.displayName,
-        pfp: userData.pfp,
-        followerCount: userData.followerCount,
-        followingCount: userData.followingCount
-      }
+      user: mockUser,
+      message: "Authentication successful"
     });
 
   } catch (error) {
@@ -57,42 +39,29 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const fid = searchParams.get('fid');
-    const username = searchParams.get('username');
 
-    if (!fid && !username) {
+    if (!fid) {
       return NextResponse.json(
-        { success: false, error: 'FID or username is required' },
+        { success: false, error: 'FID parameter required' },
         { status: 400 }
       );
     }
 
-    let userData;
-
-    if (fid) {
-      const response = await getUserByFid(parseInt(fid));
-      userData = response.user;
-    } else if (username) {
-      const response = await getUserByUsername(username);
-      userData = response.user;
-    }
-
-    if (!userData) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
-    }
+    // TODO: Implement real Neynar user lookup
+    // For now, return mock user data
+    const mockUser = {
+      fid: parseInt(fid),
+      username: `user${fid}.noun`,
+      displayName: `User ${fid}`,
+      pfp: `https://picsum.photos/32/32?random=${fid}`,
+      bio: "Nouns Remix Studio user",
+      followerCount: Math.floor(Math.random() * 100) + 10,
+      followingCount: Math.floor(Math.random() * 50) + 5
+    };
 
     return NextResponse.json({
       success: true,
-      user: {
-        fid: userData.fid,
-        username: userData.username,
-        displayName: userData.displayName,
-        pfp: userData.pfp,
-        followerCount: userData.followerCount,
-        followingCount: userData.followingCount
-      }
+      user: mockUser
     });
 
   } catch (error) {

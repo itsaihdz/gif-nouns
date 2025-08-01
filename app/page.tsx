@@ -9,6 +9,7 @@ import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
 import { FarcasterAuth } from "./components/auth/FarcasterAuth";
 import { FarcasterReady } from "./components/FarcasterReady";
+import { AuthGate } from "./components/auth/AuthGate";
 
 interface GalleryItem {
   id: string;
@@ -73,6 +74,10 @@ export default function HomePage() {
               Create animated Nouns and discover community creations
             </p>
             
+          </div>
+
+          {/* Auth Gate - Requires wallet + Farcaster connection */}
+          <AuthGate>
             {/* Farcaster Auth */}
             <div className="max-w-md mx-auto mb-8">
               <FarcasterAuth />
@@ -109,14 +114,14 @@ export default function HomePage() {
                 <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
               </div>
             </div>
-          </div>
 
-          {/* Main Content */}
-          {currentView === "create" ? (
-            <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
-          ) : (
-            <Gallery items={galleryItems} setItems={setGalleryItems} className="max-w-7xl mx-auto" />
-          )}
+            {/* Main Content */}
+            {currentView === "create" ? (
+              <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
+            ) : (
+              <Gallery items={galleryItems} setItems={setGalleryItems} className="max-w-7xl mx-auto" />
+            )}
+          </AuthGate>
         </main>
       </div>
     </UserProvider>
