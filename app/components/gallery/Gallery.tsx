@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Icon } from "../icons";
-import { FarcasterShare } from "../social/FarcasterShare";
+import { ShareButton } from "../social/ShareButton";
 
 interface GalleryItem {
   id: string;
@@ -221,13 +221,28 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
       {showShareDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <FarcasterShare
-              gifUrl={items.find(item => item.id === showShareDialog)?.gifUrl || ""}
-              title={items.find(item => item.id === showShareDialog)?.title || ""}
-              noggleColor={items.find(item => item.id === showShareDialog)?.noggleColor || ""}
-              eyeAnimation={items.find(item => item.id === showShareDialog)?.eyeAnimation || ""}
-              onClose={handleCloseShare}
-            />
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Share this creation
+                </h3>
+                <button
+                  onClick={handleCloseShare}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <Icon name="x" size="sm" />
+                </button>
+              </div>
+              <ShareButton
+                gifUrl={items.find(item => item.id === showShareDialog)?.gifUrl || ""}
+                title={items.find(item => item.id === showShareDialog)?.title || ""}
+                noggleColor={items.find(item => item.id === showShareDialog)?.noggleColor || ""}
+                eyeAnimation={items.find(item => item.id === showShareDialog)?.eyeAnimation || ""}
+                votes={items.find(item => item.id === showShareDialog)?.votes || 0}
+                creator={items.find(item => item.id === showShareDialog)?.creator || { fid: 0, username: "", pfp: "" }}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
       )}
