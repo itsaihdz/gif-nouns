@@ -1,89 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Icon } from "../icons";
-
-interface FarcasterUser {
-  fid: number;
-  username: string;
-  displayName: string;
-  pfp: string;
-  followerCount: number;
-  followingCount: number;
-}
+import { useUser } from "../../contexts/UserContext";
 
 interface FarcasterAuthProps {
-  onLogin: (user: FarcasterUser) => void;
-  onLogout: () => void;
   className?: string;
 }
 
-export function FarcasterAuth({ onLogin, onLogout, className = "" }: FarcasterAuthProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<FarcasterUser | null>(null);
+export function FarcasterAuth({ className = "" }: FarcasterAuthProps) {
+  const { user, login, logout, isLoading } = useUser();
+  const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string>("");
 
-  // Check if user is already authenticated
-  useEffect(() => {
-    const checkAuth = async () => {
-      const storedUser = localStorage.getItem("farcaster_user");
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          onLogin(userData);
-        } catch (err) {
-          localStorage.removeItem("farcaster_user");
-        }
-      }
-    };
-    
-    checkAuth();
-  }, [onLogin]);
-
   const handleLogin = async () => {
-    setIsLoading(true);
+    setIsConnecting(true);
     setError("");
 
     try {
-      // TODO: Implement actual Farcaster login
-      // This would typically involve:
-      // 1. Opening Farcaster sign-in modal
-      // 2. Getting user's FID and profile data
-      // 3. Storing authentication state
+      // Test Neynar API connection first
+      console.log("Testing Neynar API connection...");
+      const testResponse = await fetch('/api/test/neynar?test=connection');
+      const testResult = await testResponse.json();
       
-      // Mock login for now
-      const mockUser: FarcasterUser = {
-        fid: 12345,
-        username: "you.noun",
-        displayName: "Your Noun",
-        pfp: "https://picsum.photos/32/32?random=8",
-        followerCount: 42,
-        followingCount: 38
-      };
-
-      // Store user data
-      localStorage.setItem("farcaster_user", JSON.stringify(mockUser));
-      setUser(mockUser);
-      onLogin(mockUser);
-
-      console.log("Farcaster login successful:", mockUser);
+      if (!testResult.success) {
+        throw new Error('Failed to connect to Neynar API');
+      }
+      
+      console.log("Neynar API connection successful:", testResult);
+      
+      // For now, simulate a login with a test user
+      // In production, this would integrate with Warpcast's sign-in
+      const testUserResponse = await fetch('/api/test/neynar?test=user&fid=12345');
+      const userResult = await testUserResponse.json();
+      
+      if (userResult.success) {
+        login(userResult.user);
+        console.log("Farcaster login successful:", userResult.user);
+      } else {
+        throw new Error('Failed to fetch user data');
+      }
       
     } catch (err) {
       console.error("Farcaster login error:", err);
       setError("Failed to login with Farcaster. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsConnecting(false);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("farcaster_user");
-    setUser(null);
-    onLogout();
+    logout();
   };
+
+  if (isLoading) {
+    return (
+      <Card variant="outlined" className={`p-6 text-center ${className}`}>
+        <div className="animate-pulse">
+          <div className="w-12 h-12 bg-gray-200 rounded-full mx-auto mb-3"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+          <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </Card>
+    );
+  }
 
   if (user) {
     return (
@@ -101,6 +83,9 @@ export function FarcasterAuth({ onLogin, onLogout, className = "" }: FarcasterAu
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 @{user.username}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">
+                {user.followerCount} followers
               </p>
             </div>
           </div>
@@ -139,11 +124,11 @@ export function FarcasterAuth({ onLogin, onLogout, className = "" }: FarcasterAu
         variant="gradient"
         size="lg"
         onClick={handleLogin}
-        disabled={isLoading}
+        disabled={isConnecting}
         icon={<Icon name="farcaster" size="md" />}
         className="w-full"
       >
-        {isLoading ? "Connecting..." : "Connect with Farcaster"}
+        {isConnecting ? "Connecting..." : "Connect with Farcaster"}
       </Button>
 
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
