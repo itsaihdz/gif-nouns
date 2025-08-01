@@ -26,21 +26,81 @@ export function FarcasterReady() {
           location: window.location.href
         });
         
-        // Try to import the SDK dynamically
+        // Try multiple approaches to get the SDK
+        let sdk;
+        let readyCalled = false;
+        
+        // Approach 1: Try direct import (documented approach)
         try {
-          const { sdk } = await import('@farcaster/miniapp-sdk');
-          console.log('📦 SDK imported successfully:', sdk);
-          console.log('🔧 SDK actions:', sdk.actions);
+          const { sdk: importedSdk } = await import('@farcaster/miniapp-sdk');
+          sdk = importedSdk;
+          console.log('📦 SDK imported successfully via import:', sdk);
           
-          // Call ready() to signal that the app is ready
-          console.log('📞 Calling sdk.actions.ready()...');
-          await sdk.actions.ready();
-          console.log('✅ Farcaster Mini App SDK ready() called successfully');
-          setStatus('success');
-          
+          if (sdk && sdk.actions && sdk.actions.ready) {
+            console.log('📞 Calling sdk.actions.ready()...');
+            await sdk.actions.ready();
+            console.log('✅ Farcaster Mini App SDK ready() called successfully');
+            setStatus('success');
+            readyCalled = true;
+          }
         } catch (importError) {
-          console.log('⚠️ SDK import failed (normal in regular browser):', importError);
-          console.log('ℹ️ This is expected when not running in a Farcaster Mini App environment');
+          console.log('⚠️ Import failed, trying alternative approaches...', importError);
+        }
+        
+        // Approach 2: Try window.farcaster (if not already called)
+        if (!readyCalled && (window as any).farcaster) {
+          try {
+            sdk = (window as any).farcaster;
+            console.log('📦 SDK found on window.farcaster:', sdk);
+            
+            if (sdk && sdk.actions && sdk.actions.ready) {
+              console.log('📞 Calling window.farcaster.actions.ready()...');
+              await sdk.actions.ready();
+              console.log('✅ Farcaster Mini App SDK ready() called successfully');
+              setStatus('success');
+              readyCalled = true;
+            }
+          } catch (windowError) {
+            console.log('⚠️ window.farcaster approach failed:', windowError);
+          }
+        }
+        
+        // Approach 3: Try globalThis.farcaster (if not already called)
+        if (!readyCalled && (globalThis as any).farcaster) {
+          try {
+            sdk = (globalThis as any).farcaster;
+            console.log('📦 SDK found on globalThis.farcaster:', sdk);
+            
+            if (sdk && sdk.actions && sdk.actions.ready) {
+              console.log('📞 Calling globalThis.farcaster.actions.ready()...');
+              await sdk.actions.ready();
+              console.log('✅ Farcaster Mini App SDK ready() called successfully');
+              setStatus('success');
+              readyCalled = true;
+            }
+          } catch (globalError) {
+            console.log('⚠️ globalThis.farcaster approach failed:', globalError);
+          }
+        }
+        
+        // Approach 4: Try calling ready() directly if we're in a Mini App environment
+        if (!readyCalled && isInIframe) {
+          try {
+            console.log('📞 Trying direct ready() call in iframe environment...');
+            // This is a fallback for when the SDK is injected by the Mini App environment
+            if ((window as any).farcasterReady) {
+              await (window as any).farcasterReady();
+              console.log('✅ Direct farcasterReady() called successfully');
+              setStatus('success');
+              readyCalled = true;
+            }
+          } catch (directError) {
+            console.log('⚠️ Direct ready() approach failed:', directError);
+          }
+        }
+        
+        if (!readyCalled) {
+          console.log('⚠️ No SDK found or ready() could not be called, this is normal in regular browser');
           setStatus('not-supported');
         }
         
@@ -55,6 +115,7 @@ export function FarcasterReady() {
       }
     };
 
+    // Call ready immediately
     callReady();
   }, []);
 
