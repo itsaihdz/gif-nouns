@@ -18,56 +18,35 @@ interface GalleryItem {
     pfp: string;
   }>;
   createdAt: string;
+  isVoted?: boolean;
 }
 
-// Mock database - in production, this would be a real database
-let galleryItems: GalleryItem[] = [
-  {
-    id: "1",
-    gifUrl: "/api/generate-gif?demo=1",
-    creator: {
-      fid: 12345,
-      username: "alice.noun",
-      pfp: "https://picsum.photos/32/32?random=1"
-    },
-    title: "Cosmic Blue Explorer",
-    noggleColor: "blue",
-    eyeAnimation: "nouns",
-    votes: 42,
-    voters: [
-      { fid: 23456, username: "bob.noun", pfp: "https://picsum.photos/32/32?random=2" },
-      { fid: 34567, username: "charlie.noun", pfp: "https://picsum.photos/32/32?random=3" },
-      { fid: 45678, username: "diana.noun", pfp: "https://picsum.photos/32/32?random=4" }
-    ],
-    createdAt: "2024-01-15T10:30:00Z"
-  },
-  {
-    id: "2",
-    gifUrl: "/api/generate-gif?demo=2",
-    creator: {
-      fid: 23456,
-      username: "bob.noun",
-      pfp: "https://picsum.photos/32/32?random=5"
-    },
-    title: "Grass Green Dreamer",
-    noggleColor: "grass",
-    eyeAnimation: "viscos",
-    votes: 38,
-    voters: [
-      { fid: 12345, username: "alice.noun", pfp: "https://picsum.photos/32/32?random=1" },
-      { fid: 56789, username: "eve.noun", pfp: "https://picsum.photos/32/32?random=6" }
-    ],
-    createdAt: "2024-01-15T11:15:00Z"
+// TODO: Replace with real database (PostgreSQL, Supabase, etc.)
+// For now, using in-memory storage with persistence to localStorage
+class GalleryDatabase {
+  private items: GalleryItem[] = [];
+
+  constructor() {
+    this.loadFromStorage();
   }
-];
 
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const sortBy = searchParams.get('sortBy') || 'votes';
-    const filterBy = searchParams.get('filterBy') || 'all';
+  private loadFromStorage() {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('gallery_items');
+      if (stored) {
+        this.items = JSON.parse(stored);
+      }
+    }
+  }
 
-    let filteredItems = [...galleryItems];
+  private saveToStorage() {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gallery_items', JSON.stringify(this.items));
+    }
+  }
+
+  async getAll(sortBy: string = 'votes', filterBy: string = 'all'): Promise<GalleryItem[]> {
+    let filteredItems = [...this.items];
 
     // Apply filters
     if (filterBy !== 'all') {
@@ -85,10 +64,76 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    return filteredItems;
+  }
+
+  async create(item: Omit<GalleryItem, 'id' | 'votes' | 'voters' | 'createdAt'>): Promise<GalleryItem> {
+    const newItem: GalleryItem = {
+      ...item,
+      id: Date.now().toString(),
+      votes: 0,
+      voters: [],
+      createdAt: new Date().toISOString()
+    };
+
+    this.items.unshift(newItem); // Add to beginning
+    this.saveToStorage();
+    return newItem;
+  }
+
+  async vote(itemId: string, voter: { fid: number; username: string; pfp: string }): Promise<GalleryItem> {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    const hasVoted = item.voters.some(v => v.fid === voter.fid);
+    if (hasVoted) {
+      throw new Error('User has already voted');
+    }
+
+    item.votes += 1;
+    item.voters.push(voter);
+    this.saveToStorage();
+    return item;
+  }
+
+  async unvote(itemId: string, voterFid: number): Promise<GalleryItem> {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) {
+      throw new Error('Item not found');
+    }
+
+    const hasVoted = item.voters.some(v => v.fid === voterFid);
+    if (!hasVoted) {
+      throw new Error('User has not voted');
+    }
+
+    item.votes -= 1;
+    item.voters = item.voters.filter(v => v.fid !== voterFid);
+    this.saveToStorage();
+    return item;
+  }
+
+  async getById(id: string): Promise<GalleryItem | null> {
+    return this.items.find(item => item.id === id) || null;
+  }
+}
+
+const db = new GalleryDatabase();
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const sortBy = searchParams.get('sortBy') || 'votes';
+    const filterBy = searchParams.get('filterBy') || 'all';
+
+    const items = await db.getAll(sortBy, filterBy);
+
     return NextResponse.json({
       success: true,
-      data: filteredItems,
-      total: filteredItems.length
+      data: items,
+      total: items.length
     });
   } catch (error) {
     console.error('Gallery GET error:', error);
@@ -113,19 +158,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new gallery item
-    const newItem: GalleryItem = {
-      id: Date.now().toString(),
+    const newItem = await db.create({
       gifUrl,
       title,
       noggleColor,
       eyeAnimation,
-      creator,
-      votes: 0,
-      voters: [],
-      createdAt: new Date().toISOString()
-    };
-
-    galleryItems.push(newItem);
+      creator
+    });
 
     return NextResponse.json({
       success: true,
