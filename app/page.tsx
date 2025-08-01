@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "./components/layout/Header";
 import { UploadStudio } from "./components/upload/UploadStudio";
 import { Gallery } from "./components/gallery/Gallery";
@@ -35,27 +35,80 @@ type AppView = "create" | "gallery";
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<AppView>("create");
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([
-    // Initial mock data
-    { id: "1", gifUrl: "/api/generate-gif?demo=1", creator: { fid: 12345, username: "alice.noun", pfp: "https://picsum.photos/32/32?random=1" }, title: "Cosmic Blue Explorer", noggleColor: "blue", eyeAnimation: "nouns", votes: 42, voters: [], createdAt: "2024-01-15T10:30:00Z", isVoted: false },
-    { id: "2", gifUrl: "/api/generate-gif?demo=2", creator: { fid: 23456, username: "bob.noun", pfp: "https://picsum.photos/32/32?random=5" }, title: "Grass Green Dreamer", noggleColor: "grass", eyeAnimation: "viscos", votes: 38, voters: [], createdAt: "2024-01-15T11:15:00Z", isVoted: true }
-  ]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleGifCreated = (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => {
-    const newItem: GalleryItem = {
-      id: Date.now().toString(),
-      gifUrl: gifData.gifUrl,
-      creator: { fid: 12345, username: "you.noun", pfp: "https://picsum.photos/32/32?random=8" },
-      title: gifData.title || "My Animated Noun",
-      noggleColor: gifData.noggleColor,
-      eyeAnimation: gifData.eyeAnimation,
-      votes: 0,
-      voters: [],
-      createdAt: new Date().toISOString(),
-      isVoted: false
+  // Fetch gallery items from Supabase
+  useEffect(() => {
+    const fetchGalleryItems = async () => {
+      try {
+        const response = await fetch('/api/gallery');
+        if (response.ok) {
+          const items = await response.json();
+          // Add voters array (empty for now, will be populated when needed)
+          const itemsWithVoters = items.map((item: any) => ({
+            ...item,
+            voters: [],
+            isVoted: false,
+          }));
+          setGalleryItems(itemsWithVoters);
+        } else {
+          console.error('Failed to fetch gallery items');
+        }
+      } catch (error) {
+        console.error('Error fetching gallery items:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setGalleryItems(prev => [newItem, ...prev]);
-    setCurrentView("gallery"); // Auto-switch to gallery
+
+    fetchGalleryItems();
+  }, []);
+
+  const handleGifCreated = async (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => {
+    try {
+      // Get current user from localStorage or context
+      const storedUser = localStorage.getItem("farcaster_user");
+      if (!storedUser) {
+        console.error('No user found for creating gallery item');
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+      
+      const response = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gifUrl: gifData.gifUrl,
+          creator: {
+            fid: user.fid,
+            username: user.username,
+            pfp: user.pfp,
+          },
+          title: gifData.title || "My Animated Noun",
+          noggleColor: gifData.noggleColor,
+          eyeAnimation: gifData.eyeAnimation,
+        }),
+      });
+
+      if (response.ok) {
+        const newItem = await response.json();
+        const itemWithVoters = {
+          ...newItem,
+          voters: [],
+          isVoted: false,
+        };
+        setGalleryItems(prev => [itemWithVoters, ...prev]);
+        setCurrentView("gallery"); // Auto-switch to gallery
+      } else {
+        console.error('Failed to create gallery item');
+      }
+    } catch (error) {
+      console.error('Error creating gallery item:', error);
+    }
   };
 
   return (
@@ -102,12 +155,14 @@ export default function HomePage() {
             {/* Quick Stats */}
             <div className="flex justify-center gap-8 mb-8">
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{galleryItems.length}</div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {isLoading ? "..." : galleryItems.length}
+                </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Creations</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  {galleryItems.reduce((sum, item) => sum + item.votes, 0)}
+                  {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + item.votes, 0)}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
               </div>

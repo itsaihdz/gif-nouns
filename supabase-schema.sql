@@ -1,0 +1,109 @@
+-- Enable Row Level Security
+ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
+
+-- Create users table
+CREATE TABLE IF NOT EXISTS users (
+  fid BIGINT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  display_name VARCHAR(255) NOT NULL,
+  pfp TEXT NOT NULL,
+  follower_count INTEGER DEFAULT 0,
+  following_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create gallery_items table
+CREATE TABLE IF NOT EXISTS gallery_items (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  gif_url TEXT NOT NULL,
+  creator_fid BIGINT NOT NULL REFERENCES users(fid) ON DELETE CASCADE,
+  creator_username VARCHAR(255) NOT NULL,
+  creator_pfp TEXT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  noggle_color VARCHAR(50) NOT NULL,
+  eye_animation VARCHAR(50) NOT NULL,
+  votes INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create votes table
+CREATE TABLE IF NOT EXISTS votes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  gallery_item_id UUID NOT NULL REFERENCES gallery_items(id) ON DELETE CASCADE,
+  voter_fid BIGINT NOT NULL REFERENCES users(fid) ON DELETE CASCADE,
+  voter_username VARCHAR(255) NOT NULL,
+  voter_pfp TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(gallery_item_id, voter_fid)
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_gallery_items_created_at ON gallery_items(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_gallery_items_creator_fid ON gallery_items(creator_fid);
+CREATE INDEX IF NOT EXISTS idx_votes_gallery_item_id ON votes(gallery_item_id);
+CREATE INDEX IF NOT EXISTS idx_votes_voter_fid ON votes(voter_fid);
+
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gallery_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for public read access
+CREATE POLICY "Users are viewable by everyone" ON users
+  FOR SELECT USING (true);
+
+CREATE POLICY "Gallery items are viewable by everyone" ON gallery_items
+  FOR SELECT USING (true);
+
+CREATE POLICY "Votes are viewable by everyone" ON votes
+  FOR SELECT USING (true);
+
+-- Create policies for authenticated users
+CREATE POLICY "Users can insert their own data" ON users
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update their own data" ON users
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Authenticated users can create gallery items" ON gallery_items
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Authenticated users can update gallery items" ON gallery_items
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Authenticated users can vote" ON votes
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can remove their own votes" ON votes
+  FOR DELETE USING (true);
+
+-- Create function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Create triggers to automatically update updated_at
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_gallery_items_updated_at BEFORE UPDATE ON gallery_items
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Insert some sample data
+INSERT INTO users (fid, username, display_name, pfp, follower_count, following_count) VALUES
+  (12345, 'alice.noun', 'Alice Noun', 'https://picsum.photos/32/32?random=1', 42, 38),
+  (23456, 'bob.noun', 'Bob Noun', 'https://picsum.photos/32/32?random=5', 38, 42),
+  (34567, 'charlie.noun', 'Charlie Noun', 'https://picsum.photos/32/32?random=3', 25, 30),
+  (45678, 'diana.noun', 'Diana Noun', 'https://picsum.photos/32/32?random=4', 55, 45)
+ON CONFLICT (fid) DO NOTHING;
+
+INSERT INTO gallery_items (gif_url, creator_fid, creator_username, creator_pfp, title, noggle_color, eye_animation, votes) VALUES
+  ('/api/generate-gif?demo=1', 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'Cosmic Blue Explorer', 'blue', 'nouns', 42),
+  ('/api/generate-gif?demo=2', 23456, 'bob.noun', 'https://picsum.photos/32/32?random=5', 'Grass Green Dreamer', 'grass', 'viscos', 38)
+ON CONFLICT DO NOTHING; 

@@ -1,35 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { userService } from '../../../../lib/supabase-service';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { signerUuid, messageBytes, signature } = body;
+    const { fid, username, displayName, pfp, followerCount, followingCount } = body;
 
-    // TODO: Implement real Neynar authentication
-    // For now, return a mock successful response
-    console.log('Farcaster auth request:', { signerUuid, messageBytes, signature });
+    // Validate required fields
+    if (!fid || !username || !displayName || !pfp) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
 
-    // Mock successful authentication
-    const mockUser = {
-      fid: 12345,
-      username: "demo.noun",
-      displayName: "Demo User",
-      pfp: "https://picsum.photos/32/32?random=1",
-      bio: "Nouns Remix Studio user",
-      followerCount: 42,
-      followingCount: 38
-    };
+    // Create or update user in Supabase
+    const user = await userService.upsertUser({
+      fid,
+      username,
+      displayName,
+      pfp,
+      followerCount,
+      followingCount,
+    });
 
     return NextResponse.json({
       success: true,
-      user: mockUser,
-      message: "Authentication successful"
+      user: {
+        fid: user.fid,
+        username: user.username,
+        displayName: user.display_name,
+        pfp: user.pfp,
+        followerCount: user.follower_count,
+        followingCount: user.following_count,
+      }
     });
-
   } catch (error) {
-    console.error('Farcaster auth error:', error);
+    console.error('Error in Farcaster auth:', error);
     return NextResponse.json(
-      { success: false, error: 'Authentication failed' },
+      { error: 'Authentication failed' },
       { status: 500 }
     );
   }
@@ -42,32 +51,35 @@ export async function GET(request: NextRequest) {
 
     if (!fid) {
       return NextResponse.json(
-        { success: false, error: 'FID parameter required' },
+        { error: 'FID parameter is required' },
         { status: 400 }
       );
     }
 
-    // TODO: Implement real Neynar user lookup
-    // For now, return mock user data
-    const mockUser = {
-      fid: parseInt(fid),
-      username: `user${fid}.noun`,
-      displayName: `User ${fid}`,
-      pfp: `https://picsum.photos/32/32?random=${fid}`,
-      bio: "Nouns Remix Studio user",
-      followerCount: Math.floor(Math.random() * 100) + 10,
-      followingCount: Math.floor(Math.random() * 50) + 5
-    };
+    const user = await userService.getUserByFid(parseInt(fid));
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      user: mockUser
+      user: {
+        fid: user.fid,
+        username: user.username,
+        displayName: user.display_name,
+        pfp: user.pfp,
+        followerCount: user.follower_count,
+        followingCount: user.following_count,
+      }
     });
-
   } catch (error) {
-    console.error('Farcaster user lookup error:', error);
+    console.error('Error fetching user:', error);
     return NextResponse.json(
-      { success: false, error: 'User lookup failed' },
+      { error: 'Failed to fetch user' },
       { status: 500 }
     );
   }
