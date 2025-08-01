@@ -17,13 +17,26 @@ export function AuthGate({ children, className = "" }: AuthGateProps) {
   const { user, isLoading } = useUser();
   const [showAuth, setShowAuth] = useState(false);
 
+  console.log('🔐 AuthGate: Current state:', { 
+    isConnected, 
+    user: user ? `@${user.username}` : null, 
+    isLoading,
+    showAuth 
+  });
+
   useEffect(() => {
     // Show auth gate if user is not connected to wallet OR not logged into Farcaster
     const needsAuth = !isConnected || !user;
+    console.log('🔐 AuthGate: needsAuth calculation:', { 
+      isConnected, 
+      hasUser: !!user, 
+      needsAuth 
+    });
     setShowAuth(needsAuth);
   }, [isConnected, user]);
 
   if (isLoading) {
+    console.log('⏳ AuthGate: Showing loading state');
     return (
       <div className={`flex items-center justify-center min-h-[400px] ${className}`}>
         <div className="text-center">
@@ -35,6 +48,7 @@ export function AuthGate({ children, className = "" }: AuthGateProps) {
   }
 
   if (showAuth) {
+    console.log('🔒 AuthGate: Showing auth gate');
     return (
       <div className={`flex items-center justify-center min-h-[400px] ${className}`}>
         <Card variant="outlined" className="max-w-md mx-auto p-8 text-center">
@@ -112,5 +126,6 @@ export function AuthGate({ children, className = "" }: AuthGateProps) {
     );
   }
 
+  console.log('✅ AuthGate: Showing main content');
   return <>{children}</>;
 } 

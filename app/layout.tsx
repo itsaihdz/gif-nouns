@@ -99,20 +99,20 @@ export async function generateMetadata(): Promise<Metadata> {
       "farcaster:app:social:farcaster:channel": "nouns-remix-studio",
       "farcaster:app:social:farcaster:description": "Share your animated Nouns with the community",
       
-      // Farcaster Frame configuration
-      "fc:frame": JSON.stringify({
-        version: "next",
-        imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || "/hero.png",
+      // Farcaster Mini App configuration
+      "fc:miniapp": JSON.stringify({
+        version: "1",
+        imageUrl: "https://gif-nouns.vercel.app/hero.png",
         button: {
-          title: "Launch Nouns Remix Studio",
+          title: "Open Nouns Remix Studio",
           action: {
             type: "launch_frame",
             name: "Nouns Remix Studio",
-            url: baseUrl,
-            splashImageUrl: process.env.NEXT_PUBLIC_SPLASH_IMAGE || "/splash.png",
-            splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || "#8B5CF6",
-          },
-        },
+            url: "https://gif-nouns.vercel.app",
+            splashImageUrl: "https://gif-nouns.vercel.app/splash.png",
+            splashBackgroundColor: "#8B5CF6"
+          }
+        }
       }),
       "theme-color": "#8B5CF6",
       "msapplication-TileColor": "#8B5CF6",

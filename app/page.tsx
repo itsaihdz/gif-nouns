@@ -73,11 +73,10 @@ export default function HomePage() {
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
               Create animated Nouns and discover community creations
             </p>
-            
           </div>
 
-          {/* Auth Gate - Requires wallet + Farcaster connection */}
-          <AuthGate>
+          {/* Temporarily bypass AuthGate for testing */}
+          {/* <AuthGate> */}
             {/* Farcaster Auth */}
             <div className="max-w-md mx-auto mb-8">
               <FarcasterAuth />
@@ -121,7 +120,7 @@ export default function HomePage() {
             ) : (
               <Gallery items={galleryItems} setItems={setGalleryItems} className="max-w-7xl mx-auto" />
             )}
-          </AuthGate>
+          {/* </AuthGate> */}
         </main>
       </div>
     </UserProvider>

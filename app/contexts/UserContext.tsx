@@ -28,16 +28,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // Check for existing user session on mount
   useEffect(() => {
     const checkAuth = () => {
+      console.log('🔍 UserContext: Starting auth check...');
       try {
         const storedUser = localStorage.getItem("farcaster_user");
+        console.log('📦 UserContext: Stored user data:', storedUser);
         if (storedUser) {
           const userData = JSON.parse(storedUser);
+          console.log('✅ UserContext: Found user data:', userData);
           setUser(userData);
+        } else {
+          console.log('ℹ️ UserContext: No stored user data found');
         }
       } catch (error) {
-        console.error("Error loading user from storage:", error);
+        console.error("❌ UserContext: Error loading user from storage:", error);
         localStorage.removeItem("farcaster_user");
       } finally {
+        console.log('🏁 UserContext: Setting isLoading to false');
         setIsLoading(false);
       }
     };
@@ -46,11 +52,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (userData: FarcasterUser) => {
+    console.log('🔐 UserContext: Logging in user:', userData);
     setUser(userData);
     localStorage.setItem("farcaster_user", JSON.stringify(userData));
   };
 
   const logout = () => {
+    console.log('🚪 UserContext: Logging out user');
     setUser(null);
     localStorage.removeItem("farcaster_user");
   };
@@ -62,6 +70,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     logout,
     isAuthenticated: !!user,
   };
+
+  console.log('🔄 UserContext: Current state:', { user, isLoading, isAuthenticated: !!user });
 
   return (
     <UserContext.Provider value={value}>

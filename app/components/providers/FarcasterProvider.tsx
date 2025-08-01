@@ -2,17 +2,6 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-// Extend Window interface for Farcaster
-declare global {
-  interface Window {
-    farcaster?: {
-      actions: {
-        ready(): Promise<void>;
-      };
-    };
-  }
-}
-
 interface FarcasterContextType {
   isReady: boolean;
   error: string | null;
@@ -30,16 +19,33 @@ export function FarcasterProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeFrame = async () => {
       try {
-        // Check if we're in a Farcaster Frame environment
-        if (typeof window !== 'undefined' && window.farcaster) {
-          // Call ready() to signal that the app is ready
-          await window.farcaster.actions.ready();
-          console.log('Farcaster Frame SDK ready() called successfully');
+        console.log('🏗️ FarcasterProvider: Starting initialization...');
+        
+        // Check if we're in a browser environment
+        if (typeof window === 'undefined') {
+          console.log('❌ Not in browser environment, skipping SDK initialization');
+          setIsReady(true);
+          return;
         }
         
-        setIsReady(true);
+        // Try to import the SDK dynamically
+        try {
+          const { sdk } = await import('@farcaster/miniapp-sdk');
+          console.log('📦 SDK imported successfully in provider:', sdk);
+          console.log('🔧 SDK actions in provider:', sdk.actions);
+          
+          // Call ready() to signal that the app is ready
+          console.log('📞 FarcasterProvider: Calling sdk.actions.ready()...');
+          await sdk.actions.ready();
+          console.log('✅ FarcasterProvider: SDK ready() called successfully');
+          setIsReady(true);
+        } catch (importError) {
+          console.log('⚠️ SDK import failed in provider (normal in regular browser):', importError);
+          console.log('ℹ️ This is expected when not running in a Farcaster Mini App environment');
+          setIsReady(true);
+        }
       } catch (err) {
-        console.error('Failed to initialize Farcaster Frame SDK:', err);
+        console.error('❌ FarcasterProvider: Failed to initialize SDK:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
         // Still mark as ready even if there's an error
         setIsReady(true);
