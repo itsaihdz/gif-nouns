@@ -154,6 +154,22 @@ export function ImagePreview({
     }
   };
 
+  const handleShareToFarcaster = () => {
+    if (generatedGifUrl) {
+      // This would typically involve a library or API to share to Farcaster
+      // For now, we'll just show a placeholder message
+      alert("Share on Farcaster functionality coming soon!");
+    }
+  };
+
+  const handleUploadToGallery = () => {
+    if (generatedGifUrl) {
+      // This would typically involve a library or API to upload to a gallery
+      // For now, we'll just show a placeholder message
+      alert("Upload to Community Gallery functionality coming soon!");
+    }
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Preview Section */}
@@ -209,77 +225,103 @@ export function ImagePreview({
             )}
           </div>
 
-          {/* Export Progress */}
-          {isExporting && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Generating GIF...
-                </span>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {Math.round(exportProgress)}%
-                </span>
-              </div>
+          {/* Export Actions */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="gradient"
+                size="lg"
+                onClick={handleExport}
+                disabled={isExporting}
+                icon={<Icon name="sparkles" size="md" />}
+                className="flex-1"
+              >
+                {isExporting ? `Generating... ${exportProgress.toFixed(0)}%` : "Generate Animated GIF"}
+              </Button>
+            </div>
+
+            {/* Export Progress */}
+            {isExporting && (
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${exportProgress}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="mt-4 flex flex-wrap gap-3 justify-center">
-            <Button
-              variant="gradient"
-              size="lg"
-              onClick={handleExport}
-              loading={isExporting}
-              disabled={isExporting}
-              icon={<Icon name="download" size="md" />}
-            >
-              {isExporting ? "Generating GIF..." : "Generate GIF"}
-            </Button>
-
-            {generatedGifUrl && (
-              <>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleDownload}
-                  icon={<Icon name="download" size="md" />}
-                >
-                  Download GIF
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleMintNFT}
-                  icon={<Icon name="nft" size="md" />}
-                >
-                  Mint as NFT
-                </Button>
-              </>
-            )}
-          </div>
-
-          {/* Generated GIF Preview */}
-          {generatedGifUrl && (
-            <div className="mt-6">
-              <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
-                Generated GIF Preview
-              </h4>
-              <div className="relative w-full h-64">
-                <img
-                  src={generatedGifUrl}
-                  alt="Generated animated GIF"
-                  className="w-full h-full object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
                 />
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Generated GIF Actions */}
+            {generatedGifUrl && (
+              <div className="space-y-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="text-center">
+                  <h4 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+                    🎉 Your Animated Noun is Ready!
+                  </h4>
+                  <p className="text-sm text-green-600 dark:text-green-300 mb-4">
+                    Share it with the Farcaster community or mint it as an NFT!
+                  </p>
+                </div>
+
+                {/* Preview of generated GIF */}
+                <div className="flex justify-center">
+                  <img 
+                    src={generatedGifUrl} 
+                    alt="Generated Animated Noun" 
+                    className="w-32 h-32 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                  />
+                </div>
+
+                {/* Social Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button
+                    variant="gradient"
+                    size="lg"
+                    onClick={handleShareToFarcaster}
+                    icon={<Icon name="share" size="md" />}
+                    className="w-full"
+                  >
+                    Share on Farcaster
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={handleMintNFT}
+                    icon={<Icon name="nft" size="md" />}
+                    className="w-full"
+                  >
+                    Mint as NFT
+                  </Button>
+                </div>
+
+                {/* Gallery Upload */}
+                <div className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUploadToGallery}
+                    icon={<Icon name="gallery" size="sm" />}
+                    className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
+                  >
+                    Add to Community Gallery
+                  </Button>
+                </div>
+
+                {/* Download option */}
+                <div className="text-center pt-2 border-t border-green-200 dark:border-green-800">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDownload}
+                    icon={<Icon name="download" size="sm" />}
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  >
+                    Download GIF
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </Card>
 

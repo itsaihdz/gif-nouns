@@ -12,10 +12,10 @@ export function Header({ className = "" }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
+    { name: "Create", href: "/upload" },
+    { name: "Gallery", href: "/gallery" },
     { name: "Features", href: "#features" },
     { name: "Demo", href: "#demo" },
-    { name: "Gallery", href: "#gallery" },
-    { name: "Community", href: "#community" },
   ];
 
   return (
