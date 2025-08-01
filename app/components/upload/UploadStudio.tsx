@@ -67,19 +67,6 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     onGifCreated?.(gifData);
   };
 
-  const handleReset = () => {
-    // Cleanup object URL
-    if (imageUrl) {
-      URL.revokeObjectURL(imageUrl);
-    }
-    
-    // Reset state
-    setCurrentStep("upload");
-    setImageUrl("");
-    setTraits(null);
-    setError("");
-  };
-
   const renderStep = () => {
     switch (currentStep) {
       case "upload":
