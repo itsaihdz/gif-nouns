@@ -22,7 +22,7 @@ interface NounTraits {
 
 interface UploadStudioProps {
   className?: string;
-  onGifCreated?: (gifData: any) => void;
+  onGifCreated?: (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => void;
 }
 
 type UploadStep = "upload" | "detecting" | "preview";
@@ -34,7 +34,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
   const [error, setError] = useState<string>("");
   const tracking = useTracking();
 
-  const handleFileSelect = (file: File) => {
+  const handleFileUpload = (file: File) => {
     try {
       setError("");
       
@@ -57,19 +57,14 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
   const handleTraitsDetected = (detectedTraits: NounTraits) => {
     setTraits(detectedTraits);
     setCurrentStep("preview");
-    
-    // Track traits detected event
-    // tracking.traitsDetected(detectedTraits);
-  };
-
-  const handleGifCreated = (gifData: any) => {
-    // Auto-add to gallery and notify parent
-    onGifCreated?.(gifData);
   };
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
-    console.error("Upload studio error:", errorMessage);
+  };
+
+  const handleGifCreated = (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => {
+    onGifCreated?.(gifData);
   };
 
   const handleReset = () => {
@@ -90,7 +85,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       case "upload":
         return (
           <FileUpload
-            onFileSelect={handleFileSelect}
+            onFileSelect={handleFileUpload}
             onError={handleError}
             className="max-w-2xl mx-auto"
           />

@@ -9,18 +9,39 @@ import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
 import { FarcasterAuth } from "./components/auth/FarcasterAuth";
 
+interface GalleryItem {
+  id: string;
+  gifUrl: string;
+  creator: {
+    fid: number;
+    username: string;
+    pfp: string;
+  };
+  title: string;
+  noggleColor: string;
+  eyeAnimation: string;
+  votes: number;
+  voters: Array<{
+    fid: number;
+    username: string;
+    pfp: string;
+  }>;
+  createdAt: string;
+  isVoted?: boolean;
+}
+
 type AppView = "create" | "gallery";
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<AppView>("create");
-  const [galleryItems, setGalleryItems] = useState<any[]>([
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([
     // Initial mock data
     { id: "1", gifUrl: "/api/generate-gif?demo=1", creator: { fid: 12345, username: "alice.noun", pfp: "https://picsum.photos/32/32?random=1" }, title: "Cosmic Blue Explorer", noggleColor: "blue", eyeAnimation: "nouns", votes: 42, voters: [], createdAt: "2024-01-15T10:30:00Z", isVoted: false },
     { id: "2", gifUrl: "/api/generate-gif?demo=2", creator: { fid: 23456, username: "bob.noun", pfp: "https://picsum.photos/32/32?random=5" }, title: "Grass Green Dreamer", noggleColor: "grass", eyeAnimation: "viscos", votes: 38, voters: [], createdAt: "2024-01-15T11:15:00Z", isVoted: true }
   ]);
 
-  const handleGifCreated = (gifData: any) => {
-    const newItem = {
+  const handleGifCreated = (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => {
+    const newItem: GalleryItem = {
       id: Date.now().toString(),
       gifUrl: gifData.gifUrl,
       creator: { fid: 12345, username: "you.noun", pfp: "https://picsum.photos/32/32?random=8" },

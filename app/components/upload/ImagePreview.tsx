@@ -22,7 +22,7 @@ interface ImagePreviewProps {
   originalImageUrl: string;
   traits: NounTraits;
   onError: (error: string) => void;
-  onGifCreated?: (gifData: any) => void;
+  onGifCreated?: (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => void;
   className?: string;
 }
 
@@ -102,7 +102,7 @@ export function ImagePreview({
       setGeneratedGifUrl(gifUrl);
       setIsExporting(false);
       setExportProgress(0);
-      onGifCreated?.({ url: gifUrl });
+      onGifCreated?.({ gifUrl, title: "Animated Noun", noggleColor: selectedNoggleColor, eyeAnimation: selectedEyeAnimation });
     },
     onError: (error: string) => {
       setIsExporting(false);

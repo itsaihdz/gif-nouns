@@ -25,7 +25,7 @@ export function NFTMint({
   className = ""
 }: NFTMintProps) {
   const [isMinting, setIsMinting] = useState(false);
-  const [mintPrice, setMintPrice] = useState("0.01"); // ETH
+  const [mintPrice] = useState("0.01"); // ETH
   const [error, setError] = useState<string>("");
 
   const handleMint = async () => {
@@ -163,7 +163,7 @@ export function NFTMint({
         {/* Info */}
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            💡 Minting creates a unique NFT on Base L2. You'll own the exclusive rights to this animated Noun!
+            💡 Minting creates a unique NFT on Base L2. You&apos;ll own the exclusive rights to this animated Noun!
           </p>
         </div>
       </div>

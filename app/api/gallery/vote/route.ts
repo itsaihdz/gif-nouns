@@ -11,23 +11,43 @@ interface VoteRequest {
 }
 
 // Mock database - in production, this would be a real database
-let galleryItems = [
+const galleryItems = [
   {
     id: "1",
+    gifUrl: "/api/generate-gif?demo=1",
+    creator: {
+      fid: 12345,
+      username: "alice.noun",
+      pfp: "https://picsum.photos/32/32?random=1"
+    },
+    title: "Cosmic Blue Explorer",
+    noggleColor: "blue",
+    eyeAnimation: "nouns",
     votes: 42,
     voters: [
       { fid: 23456, username: "bob.noun", pfp: "https://picsum.photos/32/32?random=2" },
       { fid: 34567, username: "charlie.noun", pfp: "https://picsum.photos/32/32?random=3" },
       { fid: 45678, username: "diana.noun", pfp: "https://picsum.photos/32/32?random=4" }
-    ]
+    ],
+    createdAt: "2024-01-15T10:30:00Z"
   },
   {
     id: "2",
+    gifUrl: "/api/generate-gif?demo=2",
+    creator: {
+      fid: 23456,
+      username: "bob.noun",
+      pfp: "https://picsum.photos/32/32?random=5"
+    },
+    title: "Grass Green Dreamer",
+    noggleColor: "grass",
+    eyeAnimation: "viscos",
     votes: 38,
     voters: [
       { fid: 12345, username: "alice.noun", pfp: "https://picsum.photos/32/32?random=1" },
       { fid: 56789, username: "eve.noun", pfp: "https://picsum.photos/32/32?random=6" }
-    ]
+    ],
+    createdAt: "2024-01-15T11:15:00Z"
   }
 ];
 
@@ -36,15 +56,6 @@ export async function POST(request: NextRequest) {
     const body: VoteRequest = await request.json();
     const { itemId, voter, action } = body;
 
-    // Validate required fields
-    if (!itemId || !voter || !action) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    // Find the item
     const item = galleryItems.find(item => item.id === itemId);
     if (!item) {
       return NextResponse.json(
@@ -53,45 +64,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user has already voted
-    const hasVoted = item.voters.some(v => v.fid === voter.fid);
-
     if (action === 'vote') {
+      // Check if user already voted
+      const hasVoted = item.voters.some(v => v.fid === voter.fid);
       if (hasVoted) {
         return NextResponse.json(
-          { success: false, error: 'User has already voted for this item' },
+          { success: false, error: 'User has already voted' },
           { status: 400 }
         );
       }
 
-      // Add vote
       item.votes += 1;
       item.voters.push(voter);
     } else if (action === 'unvote') {
+      // Check if user has voted
+      const hasVoted = item.voters.some(v => v.fid === voter.fid);
       if (!hasVoted) {
         return NextResponse.json(
-          { success: false, error: 'User has not voted for this item' },
+          { success: false, error: 'User has not voted' },
           { status: 400 }
         );
       }
 
-      // Remove vote
       item.votes -= 1;
       item.voters = item.voters.filter(v => v.fid !== voter.fid);
     }
 
     return NextResponse.json({
       success: true,
-      data: {
-        itemId,
-        votes: item.votes,
-        voters: item.voters,
-        hasVoted: action === 'vote'
-      },
-      message: `Successfully ${action === 'vote' ? 'voted for' : 'unvoted from'} item`
+      data: item,
+      message: `Successfully ${action}d`
     });
+
   } catch (error) {
-    console.error('Vote POST error:', error);
+    console.error('Vote error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to process vote' },
       { status: 500 }
