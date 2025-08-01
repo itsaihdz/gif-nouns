@@ -147,84 +147,55 @@ export const voteService = {
 
 // Users
 export const userService = {
-  // Get user by FID
-  async getUserByFid(fid: number): Promise<User | null> {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('fid', fid)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching user:', error);
-      throw error;
-    }
-
-    return data;
-  },
-
-  // Create or update user
-  async upsertUser(user: {
+  async upsertUser(userData: {
     fid: number;
     username: string;
     displayName: string;
     pfp: string;
     followerCount?: number;
     followingCount?: number;
-  }): Promise<User> {
+  }) {
     const { data, error } = await supabase
       .from('users')
       .upsert({
-        fid: user.fid,
-        username: user.username,
-        display_name: user.displayName,
-        pfp: user.pfp,
-        follower_count: user.followerCount || 0,
-        following_count: user.followingCount || 0,
+        fid: userData.fid,
+        username: userData.username,
+        display_name: userData.displayName,
+        pfp: userData.pfp,
+        follower_count: userData.followerCount || 0,
+        following_count: userData.followingCount || 0,
       })
       .select()
       .single();
 
-    if (error) {
-      console.error('Error upserting user:', error);
-      throw error;
-    }
+    if (error) throw error;
+    return data;
+  },
 
+  async getUserByFid(fid: number) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('fid', fid)
+      .single();
+
+    if (error) throw error;
     return data;
   },
 };
 
-// Real-time subscriptions
 export const realtimeService = {
-  // Subscribe to gallery item changes
-  subscribeToGalleryItems(callback: (payload: any) => void) {
+  subscribeToGallery(callback: (payload: any) => void) {
     return supabase
-      .channel('gallery_items_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'gallery_items',
-        },
-        callback
-      )
+      .channel('gallery_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery_items' }, callback)
       .subscribe();
   },
 
-  // Subscribe to vote changes
   subscribeToVotes(callback: (payload: any) => void) {
     return supabase
-      .channel('votes_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'votes',
-        },
-        callback
-      )
+      .channel('vote_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, callback)
       .subscribe();
   },
 }; 

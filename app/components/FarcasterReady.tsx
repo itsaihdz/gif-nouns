@@ -27,7 +27,7 @@ export function FarcasterReady() {
         });
         
         // Try multiple approaches to get the SDK
-        let sdk;
+        let sdk: any;
         let readyCalled = false;
         
         // Approach 1: Try direct import (documented approach)

@@ -46,7 +46,7 @@ export default function HomePage() {
         if (response.ok) {
           const items = await response.json();
           // Add voters array (empty for now, will be populated when needed)
-          const itemsWithVoters = items.map((item: any) => ({
+          const itemsWithVoters = items.map((item: GalleryItem) => ({
             ...item,
             voters: [],
             isVoted: false,
