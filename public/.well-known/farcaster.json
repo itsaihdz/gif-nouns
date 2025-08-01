@@ -1,0 +1,35 @@
+{
+  "name": "Nouns Remix Studio",
+  "description": "Create animated Nouns and discover community creations",
+  "icon": "https://gif-nouns.vercel.app/icon.png",
+  "splash": "https://gif-nouns.vercel.app/splash.png",
+  "url": "https://gif-nouns.vercel.app",
+  "permissions": ["farcaster", "ethereum"],
+  "features": {
+    "upload": {
+      "description": "Upload and animate Noun PFPs",
+      "icon": "🎨"
+    },
+    "gallery": {
+      "description": "Discover community creations",
+      "icon": "🖼️"
+    },
+    "voting": {
+      "description": "Vote for your favorite animations",
+      "icon": "🗳️"
+    },
+    "nft": {
+      "description": "Mint animated Nouns as NFTs",
+      "icon": "🏆"
+    }
+  },
+  "social": {
+    "farcaster": {
+      "channel": "nouns-remix-studio",
+      "description": "Share your animated Nouns with the community"
+    }
+  },
+  "tags": ["nouns", "animation", "gif", "nft", "base", "farcaster"],
+  "category": "creative",
+  "version": "1.0.0"
+} 

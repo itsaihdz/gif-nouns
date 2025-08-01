@@ -84,6 +84,22 @@ export async function generateMetadata(): Promise<Metadata> {
       yahoo: "your-yahoo-verification-code",
     },
     other: {
+      // Farcaster Mini App specific meta tags
+      "farcaster:app": "nouns-remix-studio",
+      "farcaster:app:name": "Nouns Remix Studio",
+      "farcaster:app:description": "Create animated Nouns and discover community creations",
+      "farcaster:app:icon": "https://gif-nouns.vercel.app/icon.png",
+      "farcaster:app:url": "https://gif-nouns.vercel.app",
+      "farcaster:app:category": "creative",
+      "farcaster:app:permissions": "farcaster,ethereum",
+      "farcaster:app:version": "1.0.0",
+      "farcaster:app:tags": "nouns,animation,gif,nft,base,farcaster",
+      "farcaster:app:features": "upload,gallery,voting,nft",
+      "farcaster:app:social": "farcaster",
+      "farcaster:app:social:farcaster:channel": "nouns-remix-studio",
+      "farcaster:app:social:farcaster:description": "Share your animated Nouns with the community",
+      
+      // Farcaster Frame configuration
       "fc:frame": JSON.stringify({
         version: "next",
         imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || "/hero.png",
