@@ -9,7 +9,6 @@ import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
 import { FarcasterAuth } from "./components/auth/FarcasterAuth";
 import { FarcasterReady } from "./components/FarcasterReady";
-import { AuthGate } from "./components/auth/AuthGate";
 
 interface GalleryItem {
   id: string;
