@@ -22,6 +22,7 @@ interface ImagePreviewProps {
   originalImageUrl: string;
   traits: NounTraits;
   onError: (error: string) => void;
+  onGifCreated?: (gifData: any) => void;
   className?: string;
 }
 
@@ -76,6 +77,7 @@ const EYE_ANIMATIONS = [
 export function ImagePreview({ 
   originalImageUrl, 
   onError,
+  onGifCreated,
   className = "" 
 }: ImagePreviewProps) {
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
@@ -100,6 +102,7 @@ export function ImagePreview({
       setGeneratedGifUrl(gifUrl);
       setIsExporting(false);
       setExportProgress(0);
+      onGifCreated?.({ url: gifUrl });
     },
     onError: (error: string) => {
       setIsExporting(false);

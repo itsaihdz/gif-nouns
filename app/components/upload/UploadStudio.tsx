@@ -22,16 +22,15 @@ interface NounTraits {
 
 interface UploadStudioProps {
   className?: string;
+  onGifCreated?: (gifData: any) => void;
 }
 
-type UploadStep = "upload" | "detecting" | "preview" | "exported";
+type UploadStep = "upload" | "detecting" | "preview";
 
-export function UploadStudio({ className = "" }: UploadStudioProps) {
+export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps) {
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
-
   const [imageUrl, setImageUrl] = useState<string>("");
   const [traits, setTraits] = useState<NounTraits | null>(null);
-  const [exportedGifUrl, setExportedGifUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
   const tracking = useTracking();
 
@@ -63,6 +62,11 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
     // tracking.traitsDetected(detectedTraits);
   };
 
+  const handleGifCreated = (gifData: any) => {
+    // Auto-add to gallery and notify parent
+    onGifCreated?.(gifData);
+  };
+
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
     console.error("Upload studio error:", errorMessage);
@@ -78,22 +82,7 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
     setCurrentStep("upload");
     setImageUrl("");
     setTraits(null);
-    setExportedGifUrl("");
     setError("");
-  };
-
-  const handleDownload = () => {
-    if (exportedGifUrl) {
-      const link = document.createElement('a');
-      link.href = exportedGifUrl;
-      link.download = `animated-noun-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Track download
-      tracking.downloadStart();
-    }
   };
 
   const renderStep = () => {
@@ -123,56 +112,10 @@ export function UploadStudio({ className = "" }: UploadStudioProps) {
             originalImageUrl={imageUrl}
             traits={traits}
             onError={handleError}
+            onGifCreated={handleGifCreated}
             className="max-w-6xl mx-auto"
           />
         ) : null;
-
-      case "exported":
-        return (
-          <Card variant="elevated" className="max-w-2xl mx-auto">
-            <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Icon name="check" className="text-green-600 dark:text-green-400" size="xl" />
-              </div>
-              
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Your Animated Noun is Ready!
-              </h2>
-              
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Your animated Noun has been generated successfully. Download it and share it with the Farcaster community!
-              </p>
-
-              <div className="space-y-4">
-                <Button
-                  variant="gradient"
-                  size="lg"
-                  onClick={handleDownload}
-                  icon={<Icon name="download" size="md" />}
-                  className="w-full"
-                >
-                  Download Animated Noun
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleReset}
-                  icon={<Icon name="refresh" size="md" />}
-                  className="w-full"
-                >
-                  Create Another
-                </Button>
-              </div>
-
-              <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <p className="text-sm text-purple-700 dark:text-purple-300">
-                  💡 Ready to mint as NFT? Connect your wallet to mint your animated Noun on Base L2!
-                </p>
-              </div>
-            </div>
-          </Card>
-        );
 
       default:
         return null;

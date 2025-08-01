@@ -28,82 +28,14 @@ interface GalleryItem {
 
 interface GalleryProps {
   className?: string;
+  items: GalleryItem[];
+  setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
 }
 
-export function Gallery({ className = "" }: GalleryProps) {
-  const [items, setItems] = useState<GalleryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+export function Gallery({ className = "", items, setItems }: GalleryProps) {
+  const [loading, setLoading] = useState(false);
   const [sortBy, setSortBy] = useState<"votes" | "recent">("votes");
   const [filterBy, setFilterBy] = useState<string>("all");
-
-  // Mock data for demonstration
-  useEffect(() => {
-    const mockItems: GalleryItem[] = [
-      {
-        id: "1",
-        gifUrl: "/api/generate-gif?demo=1",
-        creator: {
-          fid: 12345,
-          username: "alice.noun",
-          pfp: "https://picsum.photos/32/32?random=1"
-        },
-        title: "Cosmic Blue Explorer",
-        noggleColor: "blue",
-        eyeAnimation: "nouns",
-        votes: 42,
-        voters: [
-          { fid: 23456, username: "bob.noun", pfp: "https://picsum.photos/32/32?random=2" },
-          { fid: 34567, username: "charlie.noun", pfp: "https://picsum.photos/32/32?random=3" },
-          { fid: 45678, username: "diana.noun", pfp: "https://picsum.photos/32/32?random=4" }
-        ],
-        createdAt: "2024-01-15T10:30:00Z",
-        isVoted: false
-      },
-      {
-        id: "2",
-        gifUrl: "/api/generate-gif?demo=2",
-        creator: {
-          fid: 23456,
-          username: "bob.noun",
-          pfp: "https://picsum.photos/32/32?random=5"
-        },
-        title: "Grass Green Dreamer",
-        noggleColor: "grass",
-        eyeAnimation: "viscos",
-        votes: 38,
-        voters: [
-          { fid: 12345, username: "alice.noun", pfp: "https://picsum.photos/32/32?random=1" },
-          { fid: 56789, username: "eve.noun", pfp: "https://picsum.photos/32/32?random=6" }
-        ],
-        createdAt: "2024-01-15T11:15:00Z",
-        isVoted: true
-      },
-      {
-        id: "3",
-        gifUrl: "/api/generate-gif?demo=3",
-        creator: {
-          fid: 34567,
-          username: "charlie.noun",
-          pfp: "https://picsum.photos/32/32?random=7"
-        },
-        title: "Purple Haze Master",
-        noggleColor: "purple",
-        eyeAnimation: "locos",
-        votes: 29,
-        voters: [
-          { fid: 12345, username: "alice.noun", pfp: "https://picsum.photos/32/32?random=1" },
-          { fid: 23456, username: "bob.noun", pfp: "https://picsum.photos/32/32?random=5" },
-          { fid: 45678, username: "diana.noun", pfp: "https://picsum.photos/32/32?random=4" },
-          { fid: 56789, username: "eve.noun", pfp: "https://picsum.photos/32/32?random=6" }
-        ],
-        createdAt: "2024-01-15T12:00:00Z",
-        isVoted: false
-      }
-    ];
-
-    setItems(mockItems);
-    setLoading(false);
-  }, []);
 
   const handleVote = async (itemId: string) => {
     // Optimistic update

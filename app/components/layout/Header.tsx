@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Icon } from "../icons";
 import { WalletConnect } from "../ui/WalletConnect";
 
@@ -9,15 +8,6 @@ interface HeaderProps {
 }
 
 export function Header({ className = "" }: HeaderProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const navigation = [
-    { name: "Create", href: "/upload" },
-    { name: "Gallery", href: "/gallery" },
-    { name: "Features", href: "#features" },
-    { name: "Demo", href: "#demo" },
-  ];
-
   return (
     <header className={`sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,55 +26,11 @@ export function Header({ className = "" }: HeaderProps) {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 px-3 py-2 text-sm font-medium transition-colors duration-200"
-              >
-                {item.name}
-              </a>
-            ))}
-          </nav>
-
-          {/* Desktop Wallet */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Wallet Connect */}
+          <div className="flex items-center space-x-4">
             <WalletConnect variant="button" size="md" />
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 p-2"
-            >
-              <Icon name={isMobileMenuOpen ? "close" : "menu"} size="lg" />
-            </button>
-          </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200 dark:border-gray-700">
-              {navigation.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 block px-3 py-2 text-base font-medium transition-colors duration-200"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </a>
-              ))}
-              <div className="pt-4">
-                <WalletConnect variant="button" size="md" className="w-full" />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );
