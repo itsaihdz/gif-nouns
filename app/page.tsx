@@ -7,7 +7,6 @@ import { Gallery } from "./components/gallery/Gallery";
 import { Button } from "./components/ui/Button";
 import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
-import { FarcasterAuth } from "./components/auth/FarcasterAuth";
 import { FarcasterReady } from "./components/FarcasterReady";
 
 interface GalleryItem {
@@ -127,54 +126,46 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Temporarily bypass AuthGate for testing */}
-          {/* <AuthGate> */}
-            {/* Farcaster Auth */}
-            <div className="max-w-md mx-auto mb-8">
-              <FarcasterAuth />
-            </div>
+          {/* View Toggle */}
+          <div className="flex justify-center gap-4 mb-8">
+            <Button
+              variant={currentView === "create" ? "gradient" : "outline"}
+              onClick={() => setCurrentView("create")}
+              icon={<Icon name="upload" size="sm" />}
+            >
+              Create
+            </Button>
+            <Button
+              variant={currentView === "gallery" ? "gradient" : "outline"}
+              onClick={() => setCurrentView("gallery")}
+              icon={<Icon name="gallery" size="sm" />}
+            >
+              Gallery
+            </Button>
+          </div>
 
-            {/* View Toggle */}
-            <div className="flex justify-center gap-4 mb-8">
-              <Button
-                variant={currentView === "create" ? "gradient" : "outline"}
-                onClick={() => setCurrentView("create")}
-                icon={<Icon name="upload" size="sm" />}
-              >
-                Create
-              </Button>
-              <Button
-                variant={currentView === "gallery" ? "gradient" : "outline"}
-                onClick={() => setCurrentView("gallery")}
-                icon={<Icon name="gallery" size="sm" />}
-              >
-                Gallery
-              </Button>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="flex justify-center gap-8 mb-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {isLoading ? "..." : galleryItems.length}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Creations</div>
+          {/* Quick Stats */}
+          <div className="flex justify-center gap-8 mb-8">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {isLoading ? "..." : galleryItems.length}
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + item.votes, 0)}
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Creations</div>
             </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + item.votes, 0)}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
+            </div>
+          </div>
 
-            {/* Main Content */}
-            {currentView === "create" ? (
-              <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
-            ) : (
-              <Gallery items={galleryItems} setItems={setGalleryItems} className="max-w-7xl mx-auto" />
-            )}
-          {/* </AuthGate> */}
+          {/* Main Content */}
+          {currentView === "create" ? (
+            <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
+          ) : (
+            <Gallery items={galleryItems} setItems={setGalleryItems} className="max-w-7xl mx-auto" />
+          )}
         </main>
       </div>
     </UserProvider>
