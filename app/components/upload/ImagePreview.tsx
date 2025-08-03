@@ -90,8 +90,26 @@ export function ImagePreview({
   const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
   const [exportProgress, setExportProgress] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [nextGifNumber, setNextGifNumber] = useState(1);
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
+
+  // Get the next sequential number when component mounts
+  useEffect(() => {
+    const fetchNextNumber = async () => {
+      try {
+        const response = await fetch('/api/gallery');
+        if (response.ok) {
+          const items = await response.json();
+          setNextGifNumber(items.length + 1);
+        }
+      } catch (error) {
+        console.log("Could not fetch gallery count, using default number");
+      }
+    };
+    
+    fetchNextNumber();
+  }, []);
 
   // Initialize GIF generator
   const { generateGif, downloadGif, mintAsNFT } = useGifGenerator({
@@ -220,9 +238,21 @@ export function ImagePreview({
         return;
       }
 
+      // Get the next sequential number from the gallery
+      let nextNumber = 1;
+      try {
+        const response = await fetch('/api/gallery');
+        if (response.ok) {
+          const items = await response.json();
+          nextNumber = items.length + 1;
+        }
+      } catch (error) {
+        console.log("Could not fetch gallery count, using default number");
+      }
+
       const gifData = {
         gifUrl: generatedGifUrl,
-        title: `Animated Noun - ${selectedNoggleColor} noggle, ${selectedEyeAnimation} eyes`,
+        title: `gifnouns #${nextNumber}`,
         noggleColor: selectedNoggleColor,
         eyeAnimation: selectedEyeAnimation,
         creator: creatorData,
@@ -408,7 +438,7 @@ export function ImagePreview({
               </div>
               <ShareButton
                 gifUrl={generatedGifUrl}
-                title={`Animated Noun - ${selectedNoggleColor} noggle, ${selectedEyeAnimation} eyes`}
+                title={`gifnouns #${nextGifNumber}`}
                 noggleColor={selectedNoggleColor}
                 eyeAnimation={selectedEyeAnimation}
                 className="w-full"

@@ -73,8 +73,8 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       // Generate share image (stored for potential future use)
       await generateShareImage();
       
-      // Create share text
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun on Nouns Remix Studio\n\n#Nouns #AnimatedNouns #Farcaster`;
+      // Create share text with GIF URL
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       
       // For now, use URL fallback since compose method may not be available
       const encodedText = encodeURIComponent(shareText);
@@ -101,7 +101,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
     try {
       setIsSharing(true);
       
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun on Nouns Remix Studio\n\n#Nouns #AnimatedNouns #Farcaster`;
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       const encodedText = encodeURIComponent(shareText);
       const url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodeURIComponent('https://gif-nouns.vercel.app')}`;
       
@@ -125,8 +125,8 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
 
   const copyLink = async () => {
     try {
-      const url = `https://gif-nouns.vercel.app?gif=${encodeURIComponent(gifUrl)}&title=${encodeURIComponent(title)}`;
-      await navigator.clipboard.writeText(url);
+      // Copy the direct GIF URL instead of the app URL
+      await navigator.clipboard.writeText(gifUrl);
       
       // Track copy event
       if (typeof gtag !== 'undefined') {
