@@ -1,8 +1,9 @@
-// Vercel-compatible IPFS service using Lighthouse Storage API
-// This version avoids Node.js file system operations that don't work in serverless
+// Vercel-compatible IPFS service using Lighthouse Storage SDK
+// Based on https://docs.lighthouse.storage/lighthouse-1
+
+import lighthouse from '@lighthouse-web3/sdk';
 
 const LIGHTHOUSE_API_KEY = process.env.LIGHTHOUSE_API_KEY || 'a7ed4f0a.5df477d33a9a4ef9af5228feedfd4d26';
-const LIGHTHOUSE_BASE_URL = 'https://api.lighthouse.storage/api/v0';
 
 export interface IPFSUploadResult {
   hash: string;
@@ -10,47 +11,26 @@ export interface IPFSUploadResult {
   size: number;
 }
 
-// Convert blob to base64 for API upload
-async function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove data URL prefix
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
 export async function uploadGifToIPFS(gifBlob: Blob, filename: string): Promise<IPFSUploadResult> {
   try {
     console.log('Uploading GIF to IPFS via Lighthouse Storage:', filename);
 
-    // Convert blob to base64
-    const base64Data = await blobToBase64(gifBlob);
+    // Convert blob to buffer for Lighthouse SDK
+    const arrayBuffer = await gifBlob.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     
-    // Upload to Lighthouse Storage using base64
-    const response = await fetch(`${LIGHTHOUSE_BASE_URL}/add`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LIGHTHOUSE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        file: base64Data,
-        filename: filename
-      })
-    });
+    // Upload using Lighthouse SDK uploadBuffer method
+    const uploadResponse = await lighthouse.uploadBuffer(
+      buffer,
+      LIGHTHOUSE_API_KEY,
+      1 // cidVersion
+    );
 
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    if (!uploadResponse.data) {
+      throw new Error('Upload failed: No data returned from Lighthouse');
     }
 
-    const result = await response.json();
-    const ipfsHash = result.Hash;
+    const ipfsHash = uploadResponse.data.Hash;
     const ipfsUrl = `https://ipfs.io/ipfs/${ipfsHash}`;
 
     console.log('GIF uploaded to IPFS:', {
@@ -74,41 +54,34 @@ export async function uploadMetadataToIPFS(metadata: any, filename: string): Pro
   try {
     console.log('Uploading metadata to IPFS via Lighthouse Storage:', filename);
 
-    // Create metadata blob and convert to base64
-    const metadataBlob = new Blob([JSON.stringify(metadata, null, 2)], { type: 'application/json' });
-    const base64Data = await blobToBase64(metadataBlob);
+    // Create metadata JSON string and convert to buffer
+    const metadataString = JSON.stringify(metadata, null, 2);
+    const buffer = Buffer.from(metadataString, 'utf8');
     
-    // Upload to Lighthouse Storage using base64
-    const response = await fetch(`${LIGHTHOUSE_BASE_URL}/add`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LIGHTHOUSE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        file: base64Data,
-        filename: filename
-      })
-    });
+    // Upload using Lighthouse SDK uploadBuffer method
+    const uploadResponse = await lighthouse.uploadBuffer(
+      buffer,
+      LIGHTHOUSE_API_KEY,
+      1 // cidVersion
+    );
 
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    if (!uploadResponse.data) {
+      throw new Error('Upload failed: No data returned from Lighthouse');
     }
 
-    const result = await response.json();
-    const ipfsHash = result.Hash;
+    const ipfsHash = uploadResponse.data.Hash;
     const ipfsUrl = `https://ipfs.io/ipfs/${ipfsHash}`;
 
     console.log('Metadata uploaded to IPFS:', {
       hash: ipfsHash,
       url: ipfsUrl,
-      size: metadataBlob.size
+      size: buffer.length
     });
 
     return {
       hash: ipfsHash,
       url: ipfsUrl,
-      size: metadataBlob.size
+      size: buffer.length
     };
   } catch (error) {
     console.error('Error uploading metadata to IPFS:', error);
@@ -122,29 +95,21 @@ export async function testIPFSConnection(): Promise<{ success: boolean; message:
     
     // Test with a simple text file
     const testContent = 'Hello IPFS!';
-    const testBlob = new Blob([testContent], { type: 'text/plain' });
-    const base64Data = await blobToBase64(testBlob);
+    const buffer = Buffer.from(testContent, 'utf8');
     
-    const response = await fetch(`${LIGHTHOUSE_BASE_URL}/add`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LIGHTHOUSE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        file: base64Data,
-        filename: 'test.txt'
-      })
-    });
+    const uploadResponse = await lighthouse.uploadBuffer(
+      buffer,
+      LIGHTHOUSE_API_KEY,
+      1 // cidVersion
+    );
 
-    if (!response.ok) {
-      throw new Error(`Test failed: ${response.status} ${response.statusText}`);
+    if (!uploadResponse.data) {
+      throw new Error('Test failed: No data returned from Lighthouse');
     }
 
-    const result = await response.json();
     return { 
       success: true, 
-      message: `IPFS connection successful. Test file uploaded: ${result.Hash}` 
+      message: `IPFS connection successful. Test file uploaded: ${uploadResponse.data.Hash}` 
     };
   } catch (error) {
     console.error('IPFS connection test failed:', error);

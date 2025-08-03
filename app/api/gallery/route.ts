@@ -1,43 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { galleryService } from '../../../lib/supabase-service';
 
-// Mock data for fallback when Supabase is not available
-const mockGalleryItems = [
-  {
-    id: "1",
-    gifUrl: "/api/generate-gif?demo=1",
-    creator: {
-      fid: 12345,
-      username: "alice.noun",
-      pfp: "https://picsum.photos/32/32?random=1"
-    },
-    title: "gifnouns #1",
-    noggleColor: "blue",
-    eyeAnimation: "nouns",
-    upvotes: 42,
-    downvotes: 5,
-    createdAt: "2024-01-15T10:30:00Z"
-  },
-  {
-    id: "2",
-    gifUrl: "/api/generate-gif?demo=2",
-    creator: {
-      fid: 23456,
-      username: "bob.noun",
-      pfp: "https://picsum.photos/32/32?random=5"
-    },
-    title: "gifnouns #2",
-    noggleColor: "grass",
-    eyeAnimation: "viscos",
-    upvotes: 38,
-    downvotes: 2,
-    createdAt: "2024-01-15T11:15:00Z"
-  }
-];
-
 export async function GET() {
   try {
-    // Try to fetch from Supabase first
+    // Fetch from Supabase
     const items = await galleryService.getAllItems();
     
     // Transform to match the frontend interface
@@ -60,17 +26,13 @@ export async function GET() {
     return NextResponse.json(transformedItems);
   } catch (error) {
     console.error('Error fetching gallery items from Supabase:', error);
-    
-    // Fallback to mock data if Supabase is not available
-    console.log('Falling back to mock gallery data');
-    return NextResponse.json(mockGalleryItems);
+    return NextResponse.json({ error: 'Failed to fetch gallery items' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  let body;
   try {
-    body = await request.json();
+    const body = await request.json();
     const { gifUrl, creator, title, noggleColor, eyeAnimation } = body;
 
     const newItem = await galleryService.createItem({
@@ -103,24 +65,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(transformedItem);
   } catch (error) {
     console.error('Error creating gallery item:', error);
-    
-    // Fallback: return a mock item if Supabase is not available
-    const mockItem = {
-      id: Date.now().toString(),
-      gifUrl: body?.gifUrl || "/api/generate-gif?demo=1",
-      creator: body?.creator || {
-        fid: 0,
-        username: "anonymous.noun",
-        pfp: "https://picsum.photos/32/32?random=1"
-      },
-      title: body?.title || "gifnouns #1",
-      noggleColor: body?.noggleColor || "blue",
-      eyeAnimation: body?.eyeAnimation || "nouns",
-      upvotes: 0,
-      downvotes: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json(mockItem);
+    return NextResponse.json({ error: 'Failed to create gallery item' }, { status: 500 });
   }
 } 

@@ -28,16 +28,8 @@ export function Providers(props: { children: ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <MiniKitProvider
-          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+          apiKey={process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY}
           chain={base}
-          config={{
-            appearance: {
-              mode: "auto",
-              theme: "mini-app-theme",
-              name: "Nouns Remix Studio",
-              logo: "/icon.png",
-            },
-          }}
         >
           {props.children}
         </MiniKitProvider>

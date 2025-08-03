@@ -9,6 +9,7 @@ import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
 
 interface GalleryItem {
   id: string;
@@ -39,6 +40,14 @@ export default function HomePage() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
+  const { setFrameReady, isFrameReady } = useMiniKit();
+
+  // Initialize MiniKit frame readiness
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady();
+    }
+  }, [setFrameReady, isFrameReady]);
 
   // Fetch gallery items from Supabase
   useEffect(() => {

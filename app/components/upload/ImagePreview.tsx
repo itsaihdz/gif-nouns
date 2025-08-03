@@ -170,6 +170,7 @@ export function ImagePreview({
     try {
       // First generate the GIF
       await generateGif();
+      setExportProgress(25);
       
       // Then upload to IPFS if generation was successful
       if (generatedGifUrl) {
@@ -210,7 +211,7 @@ export function ImagePreview({
           description: `An animated Noun with ${selectedNoggleColor} noggle and ${selectedEyeAnimation} eyes. Created with gifnouns.`,
           image: ipfsGifUrl,
           animation_url: ipfsGifUrl,
-          external_url: "https://gifnouns.freezerserve.com",
+          external_url: "https://gifnouns.freezerverse.com",
           attributes: [
             {
               trait_type: "Noggle Color",
@@ -261,10 +262,15 @@ export function ImagePreview({
         setGeneratedGifUrl(ipfsGifUrl);
         setIpfsMetadataUrl(ipfsMetadataUrl);
 
+        setExportProgress(95);
+
+        // Automatically add to gallery
+        await handleUploadToGallery();
+
         setExportProgress(100);
 
         // Show success message
-        onError(`GIF uploaded to IPFS! Hash: ${ipfsGifHash}`);
+        onError(`GIF created successfully! Uploaded to IPFS and added to gallery.`);
         
         console.log('IPFS Upload Results:', {
           gifUrl: ipfsGifUrl,
@@ -467,7 +473,7 @@ export function ImagePreview({
                 icon={<Icon name="sparkles" size="md" />}
                 className="flex-1"
               >
-                {isExporting ? `Generating... ${exportProgress.toFixed(0)}%` : "Generate Animated GIF"}
+                {isExporting ? `Creating... ${exportProgress.toFixed(0)}%` : "Create & Upload GIF"}
               </Button>
             </div>
 
@@ -484,35 +490,13 @@ export function ImagePreview({
             {/* Generated GIF Actions */}
             {generatedGifUrl && (
               <div className="space-y-4">
-                {/* Action Buttons */}
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    variant="gradient"
-                    onClick={handleExport}
-                    disabled={!generatedGifUrl || isExporting}
-                    icon={<Icon name="download" size="sm" />}
-                    className="flex-1"
-                  >
-                    {isExporting ? "Uploading to IPFS..." : "Export to IPFS"}
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={handleDownload}
-                    disabled={!generatedGifUrl}
-                    icon={<Icon name="download" size="sm" />}
-                  >
-                    Download
-                  </Button>
-                </div>
-
                 {/* IPFS Status */}
                 {generatedGifUrl && generatedGifUrl.startsWith('https://ipfs.io/') && (
                   <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                     <div className="flex items-center gap-2">
                       <Icon name="check" className="text-green-600" size="sm" />
                       <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                        Stored on IPFS
+                        Stored on IPFS & Added to Gallery
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-green-600 dark:text-green-400">
@@ -521,33 +505,45 @@ export function ImagePreview({
                   </div>
                 )}
 
-                {/* NFT Minting */}
+                {/* Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={handleDownload}
+                    disabled={!generatedGifUrl}
+                    icon={<Icon name="download" size="sm" />}
+                    className="w-full"
+                  >
+                    Download GIF
+                  </Button>
+                  
+                  <Button
+                    variant="gradient"
+                    onClick={handleMintNFT}
+                    disabled={!ipfsMetadataUrl}
+                    icon={<Icon name="sparkles" size="sm" />}
+                    className="w-full"
+                  >
+                    Mint NFT
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleShareToFarcaster}
+                    disabled={!generatedGifUrl}
+                    icon={<Icon name="share" size="sm" />}
+                    className="w-full"
+                  >
+                    Share Creation
+                  </Button>
+                </div>
+
+                {/* NFT Metadata Info */}
                 {ipfsMetadataUrl && (
-                  <div className="mb-4">
-                    <Button
-                      variant="gradient"
-                      onClick={handleMintNFT}
-                      icon={<Icon name="sparkles" size="sm" />}
-                      className="w-full"
-                    >
-                      Mint as NFT
-                    </Button>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      Metadata: {ipfsMetadataUrl.split('/').pop()}
-                    </div>
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                    NFT Metadata: {ipfsMetadataUrl.split('/').pop()}
                   </div>
                 )}
-
-                {/* Gallery Upload */}
-                <Button
-                  variant="outline"
-                  onClick={handleUploadToGallery}
-                  disabled={!generatedGifUrl}
-                  icon={<Icon name="gallery" size="sm" />}
-                  className="w-full mb-4"
-                >
-                  Add to Community Gallery
-                </Button>
               </div>
             )}
           </div>
