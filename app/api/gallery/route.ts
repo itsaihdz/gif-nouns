@@ -11,10 +11,11 @@ const mockGalleryItems = [
       username: "alice.noun",
       pfp: "https://picsum.photos/32/32?random=1"
     },
-    title: "Cosmic Blue Explorer",
+    title: "gifnouns #1",
     noggleColor: "blue",
     eyeAnimation: "nouns",
-    votes: 42,
+    upvotes: 42,
+    downvotes: 5,
     createdAt: "2024-01-15T10:30:00Z"
   },
   {
@@ -25,10 +26,11 @@ const mockGalleryItems = [
       username: "bob.noun",
       pfp: "https://picsum.photos/32/32?random=5"
     },
-    title: "Grass Green Dreamer",
+    title: "gifnouns #2",
     noggleColor: "grass",
     eyeAnimation: "viscos",
-    votes: 38,
+    upvotes: 38,
+    downvotes: 2,
     createdAt: "2024-01-15T11:15:00Z"
   }
 ];
@@ -50,7 +52,8 @@ export async function GET() {
       title: item.title,
       noggleColor: item.noggle_color,
       eyeAnimation: item.eye_animation,
-      votes: item.votes,
+      upvotes: item.upvotes,
+      downvotes: item.downvotes,
       createdAt: item.created_at,
     }));
 
@@ -92,7 +95,8 @@ export async function POST(request: NextRequest) {
       title: newItem.title,
       noggleColor: newItem.noggle_color,
       eyeAnimation: newItem.eye_animation,
-      votes: newItem.votes,
+      upvotes: newItem.upvotes,
+      downvotes: newItem.downvotes,
       createdAt: newItem.created_at,
     };
 
@@ -105,14 +109,15 @@ export async function POST(request: NextRequest) {
       id: Date.now().toString(),
       gifUrl: body?.gifUrl || "/api/generate-gif?demo=1",
       creator: body?.creator || {
-        fid: 12345,
-        username: "demo.noun",
+        fid: 0,
+        username: "anonymous.noun",
         pfp: "https://picsum.photos/32/32?random=1"
       },
-      title: body?.title || "Demo Creation",
+      title: body?.title || "gifnouns #1",
       noggleColor: body?.noggleColor || "blue",
       eyeAnimation: body?.eyeAnimation || "nouns",
-      votes: 0,
+      upvotes: 0,
+      downvotes: 0,
       createdAt: new Date().toISOString(),
     };
 

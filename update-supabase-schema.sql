@@ -1,3 +1,11 @@
+-- Update Supabase Database Schema
+-- Run this in your Supabase SQL Editor to fix the vote_type column issue
+
+-- First, drop existing tables if they exist (this will clear all data)
+DROP TABLE IF EXISTS votes CASCADE;
+DROP TABLE IF EXISTS gallery_items CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
   fid BIGINT PRIMARY KEY,
@@ -98,12 +106,17 @@ CREATE TRIGGER update_gallery_items_updated_at BEFORE UPDATE ON gallery_items
 -- Insert some sample data
 INSERT INTO users (fid, username, display_name, pfp, follower_count, following_count) VALUES
   (12345, 'alice.noun', 'Alice Noun', 'https://picsum.photos/32/32?random=1', 42, 38),
-  (23456, 'bob.noun', 'Bob Noun', 'https://picsum.photos/32/32?random=5', 38, 42),
-  (34567, 'charlie.noun', 'Charlie Noun', 'https://picsum.photos/32/32?random=3', 25, 30),
-  (45678, 'diana.noun', 'Diana Noun', 'https://picsum.photos/32/32?random=4', 55, 45)
-ON CONFLICT (fid) DO NOTHING;
+  (67890, 'bob.noun', 'Bob Noun', 'https://picsum.photos/32/32?random=2', 15, 23),
+  (11111, 'charlie.noun', 'Charlie Noun', 'https://picsum.photos/32/32?random=3', 89, 67);
 
 INSERT INTO gallery_items (gif_url, creator_fid, creator_username, creator_pfp, title, noggle_color, eye_animation, upvotes, downvotes) VALUES
-  ('/api/generate-gif?demo=1', 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'gifnouns #1', 'blue', 'nouns', 42, 5),
-  ('/api/generate-gif?demo=2', 23456, 'bob.noun', 'https://picsum.photos/32/32?random=5', 'gifnouns #2', 'grass', 'viscos', 38, 2)
-ON CONFLICT DO NOTHING; 
+  ('https://ipfs.io/ipfs/bafkreidbasoljijtgo2pzbonlg2wh3zq3omhfnv2ggubfmncsd24y3245u', 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'gifnouns #1', 'blue', 'nouns', 5, 1),
+  ('https://ipfs.io/ipfs/bafkreidbasoljijtgo2pzbonlg2wh3zq3omhfnv2ggubfmncsd24y3245u', 67890, 'bob.noun', 'https://picsum.photos/32/32?random=2', 'gifnouns #2', 'purple', 'ojos-nouns', 3, 0),
+  ('https://ipfs.io/ipfs/bafkreidbasoljijtgo2pzbonlg2wh3zq3omhfnv2ggubfmncsd24y3245u', 11111, 'charlie.noun', 'https://picsum.photos/32/32?random=3', 'gifnouns #3', 'red', 'viscos', 7, 2);
+
+-- Insert some sample votes
+INSERT INTO votes (gallery_item_id, voter_fid, voter_username, voter_pfp, vote_type) VALUES
+  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #1' LIMIT 1), 67890, 'bob.noun', 'https://picsum.photos/32/32?random=2', 'upvote'),
+  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #1' LIMIT 1), 11111, 'charlie.noun', 'https://picsum.photos/32/32?random=3', 'upvote'),
+  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #2' LIMIT 1), 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'upvote'),
+  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #3' LIMIT 1), 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'downvote'); 

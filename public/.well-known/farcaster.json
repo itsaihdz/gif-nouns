@@ -7,9 +7,9 @@
   "miniapp": {
     "version": "1",
     "name": "Nouns Remix Studio",
-    "iconUrl": "https://gifnouns.freezerserve.com/icon.png",
-    "homeUrl": "https://gifnouns.freezerserve.com",
-    "splashImageUrl": "https://gifnouns.freezerserve.com/splash.png",
+    "iconUrl": "https://gifnouns.freezerverse.com/icon.png",
+    "homeUrl": "https://gifnouns.freezerverse.com",
+    "splashImageUrl": "https://gifnouns.freezerverse.com/splash.png",
     "splashBackgroundColor": "#8B5CF6",
     "subtitle": "Create animated Nouns",
     "description": "Upload your Noun PFP, customize with noggle colors and animated eyes, then export as GIF. Join the community gallery!",
@@ -21,11 +21,11 @@
       "pfp",
       "community"
     ],
-    "heroImageUrl": "https://gifnouns.freezerserve.com/hero.png",
+    "heroImageUrl": "https://gifnouns.freezerverse.com/hero.png",
     "tagline": "Animate your Nouns",
     "ogTitle": "Nouns Remix Studio",
     "ogDescription": "Create animated Nouns with custom noggles and eye animations",
-    "ogImageUrl": "https://gifnouns.freezerserve.com/hero.png",
+    "ogImageUrl": "https://gifnouns.freezerverse.com/hero.png",
     "requiredChains": [
       "eip155:8453"
     ],
