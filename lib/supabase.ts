@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+// Fix the Supabase URL - it should be the full project URL
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://fb409a1fdce1df8d42cbcba5d172a59c.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sbp_fb409a1fdce1df8d42cbcba5d172a59cef050ecf';
 

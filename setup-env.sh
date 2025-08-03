@@ -1,46 +1,54 @@
 #!/bin/bash
 
-echo "🚀 Setting up Supabase Environment Variables"
-echo "=============================================="
+echo "🚀 Setting up environment variables for Nouns Remix Studio"
+echo ""
 
 # Check if .env.local already exists
 if [ -f ".env.local" ]; then
-    echo "⚠️  .env.local already exists. Backing up to .env.local.backup"
-    cp .env.local .env.local.backup
+    echo "⚠️  .env.local already exists. Do you want to overwrite it? (y/N)"
+    read -r response
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+        echo "❌ Setup cancelled."
+        exit 1
+    fi
 fi
 
-echo ""
-echo "📝 Please enter your Supabase credentials:"
-echo ""
+echo "📝 Creating .env.local file..."
 
-# Get Supabase URL
-read -p "Enter your Supabase Project URL (e.g., https://xxx.supabase.co): " SUPABASE_URL
-
-# Get Supabase Anon Key
-read -p "Enter your Supabase Anon Key (starts with eyJ...): " SUPABASE_ANON_KEY
-
-# Get Supabase Service Role Key (optional)
-read -p "Enter your Supabase Service Role Key (optional, starts with eyJ...): " SUPABASE_SERVICE_ROLE_KEY
-
-echo ""
-echo "📄 Creating .env.local file..."
-
-# Create .env.local file
-cat > .env.local << EOF
+# Create .env.local with template
+cat > .env.local << 'EOF'
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
-NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+# Get these from your Supabase project dashboard
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
-# Other environment variables
-NEXT_PUBLIC_APP_URL=https://gif-nouns.vercel.app
+# Neynar API Key (for Farcaster integration)
+# Get from https://neynar.com/
+NEYNAR_API_KEY=your-neynar-api-key-here
+
+# OnchainKit API Key (for wallet connections)
+# Get from https://onchainkit.com/
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=your-onchainkit-api-key-here
+
+# Optional: WalletConnect Project ID
+# Get from https://cloud.walletconnect.com/
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
+
+# Optional: Analytics
+NEXT_PUBLIC_GA_ID=
+
+# Optional: Icon URL for Mini App
+NEXT_PUBLIC_ICON_URL=https://gif-nouns.vercel.app/icon.png
 EOF
 
-echo "✅ .env.local file created successfully!"
+echo "✅ .env.local created successfully!"
 echo ""
 echo "🔧 Next steps:"
-echo "1. Copy the content of supabase-schema.sql to your Supabase SQL Editor"
-echo "2. Run the SQL commands to create your database schema"
-echo "3. Restart your development server: npm run dev"
+echo "1. Update the values in .env.local with your actual API keys"
+echo "2. For Supabase: Go to https://supabase.com/dashboard and create a new project"
+echo "3. For Neynar: Go to https://neynar.com/ and get your API key"
+echo "4. For OnchainKit: Go to https://onchainkit.com/ and get your API key"
 echo ""
-echo "📚 For detailed instructions, see SUPABASE_SETUP.md" 
+echo "📚 For detailed setup instructions, see SUPABASE_SETUP.md"
+echo ""
+echo "🚀 Run 'npm run dev' to start the development server" 
