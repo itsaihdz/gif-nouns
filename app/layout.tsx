@@ -145,7 +145,7 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#8B5CF6" />
       </head>
-      <body className="bg-background antialiased">
+      <body className="bg-background antialiased font-montserrat">
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>

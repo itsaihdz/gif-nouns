@@ -36,7 +36,8 @@ export interface Database {
           title: string;
           noggle_color: string;
           eye_animation: string;
-          votes: number;
+          upvotes: number;
+          downvotes: number;
           created_at: string;
           updated_at: string;
         };
@@ -49,7 +50,8 @@ export interface Database {
           title: string;
           noggle_color: string;
           eye_animation: string;
-          votes?: number;
+          upvotes?: number;
+          downvotes?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -62,7 +64,8 @@ export interface Database {
           title?: string;
           noggle_color?: string;
           eye_animation?: string;
-          votes?: number;
+          upvotes?: number;
+          downvotes?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -74,6 +77,7 @@ export interface Database {
           voter_fid: number;
           voter_username: string;
           voter_pfp: string;
+          vote_type: 'upvote' | 'downvote';
           created_at: string;
         };
         Insert: {
@@ -82,6 +86,7 @@ export interface Database {
           voter_fid: number;
           voter_username: string;
           voter_pfp: string;
+          vote_type: 'upvote' | 'downvote';
           created_at?: string;
         };
         Update: {
@@ -90,6 +95,7 @@ export interface Database {
           voter_fid?: number;
           voter_username?: string;
           voter_pfp?: string;
+          vote_type?: 'upvote' | 'downvote';
           created_at?: string;
         };
       };

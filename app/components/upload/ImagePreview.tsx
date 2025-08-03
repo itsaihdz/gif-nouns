@@ -7,7 +7,7 @@ import { Icon } from "../icons";
 import { useGifGenerator } from "./GifGenerator";
 import { useUser } from "../../contexts/UserContext";
 import { useAccount } from "wagmi";
-import { ShareButton } from "../social/ShareButton";
+import { ShareDialog } from "../social/ShareDialog";
 
 
 interface NounTraits {
@@ -25,7 +25,17 @@ interface ImagePreviewProps {
   originalImageUrl: string;
   traits: NounTraits;
   onError: (error: string) => void;
-  onGifCreated?: (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => void;
+  onGifCreated?: (gifData: { 
+    gifUrl: string; 
+    title: string; 
+    noggleColor: string; 
+    eyeAnimation: string;
+    creator: {
+      fid: number;
+      username: string;
+      pfp: string;
+    };
+  }) => void;
   className?: string;
 }
 
@@ -93,6 +103,7 @@ export function ImagePreview({
   const [nextGifNumber, setNextGifNumber] = useState(1);
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
+  const [ipfsMetadataUrl, setIpfsMetadataUrl] = useState<string | null>(null);
 
   // Get the next sequential number when component mounts
   useEffect(() => {
@@ -157,10 +168,115 @@ export function ImagePreview({
     setIsExporting(true);
     setExportProgress(0);
     try {
+      // First generate the GIF
       await generateGif();
+      
+      // Then upload to IPFS if generation was successful
+      if (generatedGifUrl) {
+        setExportProgress(50);
+        
+        // Fetch the generated GIF as a blob
+        const response = await fetch(generatedGifUrl);
+        const gifBlob = await response.blob();
+
+        // Create a unique filename
+        const timestamp = Date.now();
+        const filename = `gifnouns_${timestamp}.gif`;
+
+        // Upload GIF to IPFS
+        const formData = new FormData();
+        formData.append('file', gifBlob, filename);
+        formData.append('type', 'gif');
+        formData.append('filename', filename);
+
+        setExportProgress(75);
+
+        const uploadResponse = await fetch('/api/ipfs/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload GIF to IPFS');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        const ipfsGifUrl = uploadResult.url;
+        const ipfsGifHash = uploadResult.hash;
+
+        // Create NFT metadata
+        const metadata = {
+          name: `gifnouns #${nextGifNumber}`,
+          description: `An animated Noun with ${selectedNoggleColor} noggle and ${selectedEyeAnimation} eyes. Created with gifnouns.`,
+          image: ipfsGifUrl,
+          animation_url: ipfsGifUrl,
+          external_url: "https://gifnouns.freezerserve.com",
+          attributes: [
+            {
+              trait_type: "Noggle Color",
+              value: selectedNoggleColor
+            },
+            {
+              trait_type: "Eye Animation",
+              value: selectedEyeAnimation
+            },
+            {
+              trait_type: "Creator",
+              value: address ? `user_${address.slice(2, 8)}` : "anonymous"
+            }
+          ],
+          properties: {
+            files: [
+              {
+                type: "image/gif",
+                uri: ipfsGifUrl
+              }
+            ],
+            category: "image"
+          }
+        };
+
+        // Upload metadata to IPFS
+        const metadataFormData = new FormData();
+        metadataFormData.append('type', 'metadata');
+        metadataFormData.append('filename', `metadata_${timestamp}.json`);
+        metadataFormData.append('metadata', JSON.stringify(metadata));
+
+        setExportProgress(90);
+
+        const metadataResponse = await fetch('/api/ipfs/upload', {
+          method: 'POST',
+          body: metadataFormData,
+        });
+
+        if (!metadataResponse.ok) {
+          throw new Error('Failed to upload metadata to IPFS');
+        }
+
+        const metadataResult = await metadataResponse.json();
+        const ipfsMetadataUrl = metadataResult.url;
+        const ipfsMetadataHash = metadataResult.hash;
+
+        // Store the IPFS URLs
+        setGeneratedGifUrl(ipfsGifUrl);
+        setIpfsMetadataUrl(ipfsMetadataUrl);
+
+        setExportProgress(100);
+
+        // Show success message
+        onError(`GIF uploaded to IPFS! Hash: ${ipfsGifHash}`);
+        
+        console.log('IPFS Upload Results:', {
+          gifUrl: ipfsGifUrl,
+          gifHash: ipfsGifHash,
+          metadataUrl: ipfsMetadataUrl,
+          metadataHash: ipfsMetadataHash
+        });
+      }
     } catch (error) {
-      console.error("Export error:", error);
-      onError("Failed to export GIF");
+      console.error('Export error:', error);
+      onError("Failed to export GIF to IPFS");
+    } finally {
       setIsExporting(false);
     }
   };
@@ -173,8 +289,20 @@ export function ImagePreview({
   };
 
   const handleMintNFT = async () => {
-    if (generatedGifUrl) {
-      await mintAsNFT(generatedGifUrl);
+    if (!ipfsMetadataUrl) {
+      onError("Please export the GIF to IPFS first");
+      return;
+    }
+
+    try {
+      // TODO: Implement actual NFT minting using the IPFS metadata URL
+      console.log('Minting NFT with metadata URL:', ipfsMetadataUrl);
+      
+      // For now, show a success message
+      onError(`NFT ready to mint! Metadata: ${ipfsMetadataUrl}`);
+    } catch (error) {
+      console.error('Minting error:', error);
+      onError("Failed to mint NFT");
     }
   };
 
@@ -191,13 +319,18 @@ export function ImagePreview({
   };
 
   const handleUploadToGallery = async () => {
-    if (!generatedGifUrl) {
-      onError("Please generate a GIF first");
-      return;
-    }
-
     try {
-      // Get user data - either from Farcaster context or fetch from Neynar
+      if (!generatedGifUrl) {
+        onError("Please generate a GIF first");
+        return;
+      }
+
+      // Use IPFS URL if available, otherwise use the generated URL
+      const gifUrlToUse = generatedGifUrl.startsWith('https://ipfs.io/') 
+        ? generatedGifUrl 
+        : generatedGifUrl;
+
+      // Get user data - either from Farcaster context or fetch from API
       let creatorData = null;
       
       if (isAuthenticated && user) {
@@ -208,27 +341,29 @@ export function ImagePreview({
           pfp: user.pfp,
         };
       } else if (address) {
-        // Try to fetch Farcaster user by wallet address
+        // Try to fetch user data by wallet address
         try {
           const response = await fetch(`/api/auth/farcaster?address=${address}`);
           if (response.ok) {
-            const userData = await response.json();
-            creatorData = {
-              fid: userData.fid,
-              username: userData.username,
-              pfp: userData.pfp,
-            };
+            const result = await response.json();
+            if (result.success && result.user) {
+              creatorData = {
+                fid: result.user.fid,
+                username: result.user.username,
+                pfp: result.user.pfp,
+              };
+            }
           }
         } catch (error) {
-          console.log("Could not fetch Farcaster user by wallet address");
+          console.log("Could not fetch user by wallet address:", error);
         }
       }
 
-      // If no Farcaster user found, use wallet address as fallback
+      // If no user data found, use wallet address as fallback
       if (!creatorData && address) {
         creatorData = {
           fid: 0, // Will be handled by backend
-          username: `user_${address.slice(2, 8)}`,
+          username: `user_${address.slice(2, 8)}.noun`,
           pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
         };
       }
@@ -251,7 +386,7 @@ export function ImagePreview({
       }
 
       const gifData = {
-        gifUrl: generatedGifUrl,
+        gifUrl: gifUrlToUse,
         title: `gifnouns #${nextNumber}`,
         noggleColor: selectedNoggleColor,
         eyeAnimation: selectedEyeAnimation,
@@ -322,6 +457,7 @@ export function ImagePreview({
 
           {/* Export Actions */}
           <div className="space-y-4">
+            {/* Generate GIF Button */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="gradient"
@@ -347,73 +483,71 @@ export function ImagePreview({
 
             {/* Generated GIF Actions */}
             {generatedGifUrl && (
-              <div className="space-y-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <div className="text-center">
-                  <h4 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
-                    🎉 Your Animated Noun is Ready!
-                  </h4>
-                  <p className="text-sm text-green-600 dark:text-green-300 mb-4">
-                    Share it with the Farcaster community or mint it as an NFT!
-                  </p>
-                </div>
-
-                {/* Preview of generated GIF */}
-                <div className="flex justify-center">
-                  <img 
-                    src={generatedGifUrl} 
-                    alt="Generated Animated Noun" 
-                    className="w-32 h-32 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
-                  />
-                </div>
-
-                {/* Social Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-4">
+                {/* Action Buttons */}
+                <div className="flex gap-2 mb-4">
                   <Button
                     variant="gradient"
-                    size="lg"
-                    onClick={handleShareToFarcaster}
-                    icon={<Icon name="share" size="md" />}
-                    className="w-full"
+                    onClick={handleExport}
+                    disabled={!generatedGifUrl || isExporting}
+                    icon={<Icon name="download" size="sm" />}
+                    className="flex-1"
                   >
-                    Share on Farcaster
+                    {isExporting ? "Uploading to IPFS..." : "Export to IPFS"}
                   </Button>
                   
                   <Button
                     variant="outline"
-                    size="lg"
-                    onClick={handleMintNFT}
-                    icon={<Icon name="nft" size="md" />}
-                    className="w-full"
+                    onClick={handleDownload}
+                    disabled={!generatedGifUrl}
+                    icon={<Icon name="download" size="sm" />}
                   >
-                    Mint as NFT
+                    Download
                   </Button>
                 </div>
+
+                {/* IPFS Status */}
+                {generatedGifUrl && generatedGifUrl.startsWith('https://ipfs.io/') && (
+                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Icon name="check" className="text-green-600" size="sm" />
+                      <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                        Stored on IPFS
+                      </span>
+                    </div>
+                    <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+                      Hash: {generatedGifUrl.split('/').pop()}
+                    </div>
+                  </div>
+                )}
+
+                {/* NFT Minting */}
+                {ipfsMetadataUrl && (
+                  <div className="mb-4">
+                    <Button
+                      variant="gradient"
+                      onClick={handleMintNFT}
+                      icon={<Icon name="sparkles" size="sm" />}
+                      className="w-full"
+                    >
+                      Mint as NFT
+                    </Button>
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Metadata: {ipfsMetadataUrl.split('/').pop()}
+                    </div>
+                  </div>
+                )}
 
                 {/* Gallery Upload */}
-                <div className="text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleUploadToGallery}
-                    icon={<Icon name="gallery" size="sm" />}
-                    className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300"
-                  >
-                    Add to Community Gallery
-                  </Button>
-                </div>
-
-                {/* Download option */}
-                <div className="text-center pt-2 border-t border-green-200 dark:border-green-800">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDownload}
-                    icon={<Icon name="download" size="sm" />}
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                  >
-                    Download GIF
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleUploadToGallery}
+                  disabled={!generatedGifUrl}
+                  icon={<Icon name="gallery" size="sm" />}
+                  className="w-full mb-4"
+                >
+                  Add to Community Gallery
+                </Button>
               </div>
             )}
           </div>
@@ -421,32 +555,14 @@ export function ImagePreview({
       </Card>
 
       {/* Share Dialog */}
-      {showShareDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Share your creation
-                </h3>
-                <button
-                  onClick={handleCloseShare}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <Icon name="x" size="sm" />
-                </button>
-              </div>
-              <ShareButton
-                gifUrl={generatedGifUrl}
-                title={`gifnouns #${nextGifNumber}`}
-                noggleColor={selectedNoggleColor}
-                eyeAnimation={selectedEyeAnimation}
-                className="w-full"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <ShareDialog
+        gifUrl={generatedGifUrl}
+        title={`gifnouns #${nextGifNumber}`}
+        noggleColor={selectedNoggleColor}
+        eyeAnimation={selectedEyeAnimation}
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+      />
 
       {/* Noggle Color Selector */}
       <Card variant="outlined">
@@ -544,6 +660,16 @@ export function ImagePreview({
           </div>
         </div>
       </Card>
+
+      {/* Share Dialog */}
+      <ShareDialog
+        gifUrl={generatedGifUrl}
+        title={`gifnouns #${nextGifNumber}`}
+        noggleColor={selectedNoggleColor}
+        eyeAnimation={selectedEyeAnimation}
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+      />
     </div>
   );
 } 

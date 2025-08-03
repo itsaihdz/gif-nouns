@@ -23,14 +23,15 @@ interface GalleryItem {
   title: string;
   noggleColor: string;
   eyeAnimation: string;
-  votes: number;
+  upvotes: number;
+  downvotes: number;
   voters: Array<{
     fid: number;
     username: string;
     pfp: string;
   }>;
   createdAt: string;
-  isVoted?: boolean;
+  userVote?: 'upvote' | 'downvote' | null;
 }
 
 type AppView = "create" | "gallery";
@@ -99,7 +100,7 @@ export default function HomePage() {
         const itemWithVoters = {
           ...newItem,
           voters: [],
-          isVoted: false,
+          userVote: null,
         };
         setGalleryItems(prev => [itemWithVoters, ...prev]);
         setCurrentView("gallery"); // Auto-switch to gallery
@@ -241,7 +242,7 @@ export default function HomePage() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + item.votes, 0)}
+                {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + item.upvotes - item.downvotes, 0)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
             </div>

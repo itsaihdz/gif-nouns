@@ -47,7 +47,8 @@ export const galleryService = {
           title: item.title,
           noggle_color: item.noggleColor,
           eye_animation: item.eyeAnimation,
-          votes: 0,
+          upvotes: 0,
+          downvotes: 0,
         })
         .select()
         .single();
@@ -64,20 +65,20 @@ export const galleryService = {
     }
   },
 
-  // Update vote count for a gallery item
-  async updateVoteCount(itemId: string, voteCount: number): Promise<void> {
+  // Update vote counts for a gallery item
+  async updateVoteCounts(itemId: string, upvotes: number, downvotes: number): Promise<void> {
     try {
       const { error } = await supabase
         .from('gallery_items')
-        .update({ votes: voteCount })
+        .update({ upvotes, downvotes })
         .eq('id', itemId);
 
       if (error) {
-        console.error('Error updating vote count:', error);
+        console.error('Error updating vote counts:', error);
         throw error;
       }
     } catch (error) {
-      console.error('Failed to update vote count:', error);
+      console.error('Failed to update vote counts:', error);
       throw error;
     }
   },
@@ -101,37 +102,42 @@ export const voteService = {
     return data || [];
   },
 
-  // Check if user has voted for an item
-  async hasUserVoted(itemId: string, userFid: number): Promise<boolean> {
+  // Check if user has voted on an item
+  async hasUserVoted(itemId: string, userFid: number): Promise<{ hasVoted: boolean; voteType?: 'upvote' | 'downvote' }> {
     const { data, error } = await supabase
       .from('votes')
-      .select('id')
+      .select('vote_type')
       .eq('gallery_item_id', itemId)
       .eq('voter_fid', userFid)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
       console.error('Error checking user vote:', error);
       throw error;
     }
 
-    return !!data;
+    return {
+      hasVoted: !!data,
+      voteType: data?.vote_type
+    };
   },
 
-  // Add a vote
+  // Add a vote (upvote or downvote)
   async addVote(vote: {
     galleryItemId: string;
     voterFid: number;
     voterUsername: string;
     voterPfp: string;
+    voteType: 'upvote' | 'downvote';
   }): Promise<Vote> {
     const { data, error } = await supabase
       .from('votes')
-      .insert({
+      .upsert({
         gallery_item_id: vote.galleryItemId,
         voter_fid: vote.voterFid,
         voter_username: vote.voterUsername,
         voter_pfp: vote.voterPfp,
+        vote_type: vote.voteType,
       })
       .select()
       .single();
@@ -154,6 +160,20 @@ export const voteService = {
 
     if (error) {
       console.error('Error removing vote:', error);
+      throw error;
+    }
+  },
+
+  // Change vote type (upvote to downvote or vice versa)
+  async changeVote(itemId: string, userFid: number, newVoteType: 'upvote' | 'downvote'): Promise<void> {
+    const { error } = await supabase
+      .from('votes')
+      .update({ vote_type: newVoteType })
+      .eq('gallery_item_id', itemId)
+      .eq('voter_fid', userFid);
+
+    if (error) {
+      console.error('Error changing vote:', error);
       throw error;
     }
   },
@@ -186,6 +206,7 @@ export const userService = {
     return data;
   },
 
+  // Get user by FID
   async getUserByFid(fid: number) {
     const { data, error } = await supabase
       .from('users')
@@ -193,8 +214,21 @@ export const userService = {
       .eq('fid', fid)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching user by FID:', error);
+      throw error;
+    }
+
     return data;
+  },
+
+  // Get user by wallet address (if we had a verified_addresses column)
+  async getUserByAddress(address: string) {
+    // For now, we don't have a verified_addresses column in our users table
+    // This would require extending the schema to include verified addresses
+    // For now, return null to indicate user not found
+    console.log('getUserByAddress not implemented - would need schema extension');
+    return null;
   },
 };
 

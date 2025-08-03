@@ -1,60 +1,34 @@
 #!/bin/bash
 
-echo "🚀 Supabase Setup for GIF Nouns"
-echo "================================"
-echo ""
+echo "🚀 Setting up environment variables for gifnouns..."
 
-# Check if .env.local exists
-if [ ! -f .env.local ]; then
-    echo "📝 Creating .env.local file..."
-    touch .env.local
-fi
-
-echo "🔑 Please provide your Supabase credentials:"
-echo ""
-
-# Get Supabase URL
-read -p "Enter your Supabase URL (https://zidivolizgoabfdkuybi.supabase.co): " supabase_url
-supabase_url=${supabase_url:-"https://zidivolizgoabfdkuybi.supabase.co"}
-
-# Get Supabase Key
-read -p "Enter your Supabase anon key: " supabase_key
-
-if [ -z "$supabase_key" ]; then
-    echo "❌ Supabase key is required!"
-    exit 1
-fi
-
-echo ""
-echo "📝 Updating .env.local file..."
-
-# Update .env.local with Supabase credentials
+# Create .env.local file
 cat > .env.local << EOF
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=$supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=$supabase_key
-SUPABASE_KEY=$supabase_key
+SUPABASE_URL=https://zidivolizgoabfdkuybi.supabase.co
+SUPABASE_KEY=sbp_fb409a1fdce1df8d42cbcba5d172a59cef050ecf
 
-# Neynar API
+# Neynar API (for Farcaster integration)
 NEYNAR_API_KEY=D12CCE20-5A93-415F-A164-9F9A2598E952
 
-# Other configurations
+# IPFS Configuration (Optional - for permanent GIF storage)
+# Get this from https://www.lighthouse.storage/ (create a new API key)
+# Free tier: 5GB storage, 5GB bandwidth
+# Lite tier: 200GB storage, 100GB bandwidth for $10/month
+LIGHTHOUSE_API_KEY=a7ed4f0a.5df477d33a9a4ef9af5228feedfd4d26
+
+# Farcaster Mini App Configuration
 NEXT_PUBLIC_APP_URL=https://gifnouns.freezerserve.com
 EOF
 
-echo "✅ Environment variables updated!"
+echo "✅ Environment variables created in .env.local"
 echo ""
-
-echo "🔗 Testing Supabase connection..."
-node test-supabase.js
-
+echo "📝 Next steps:"
+echo "1. Update PINATA_API_KEY if you want IPFS storage"
+echo "2. Run: node test-supabase.js"
+echo "3. Copy the SQL schema to your Supabase dashboard"
 echo ""
-echo "📋 Next steps:"
-echo "1. Go to your Supabase dashboard: https://supabase.com/dashboard"
-echo "2. Navigate to your project: $supabase_url"
-echo "3. Go to SQL Editor"
-echo "4. Copy and paste the contents of supabase-schema.sql"
-echo "5. Run the SQL to create the database tables"
-echo "6. Test the connection again with: node test-supabase.js"
-echo ""
-echo "🎉 Once the database is set up, your app will save user creations permanently!" 
+echo "🔗 Get IPFS credentials from: https://app.pinata.cloud/"
+echo "   - Create a new API key"
+echo "   - Copy the API key"
+echo "" 

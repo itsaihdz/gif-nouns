@@ -17,14 +17,15 @@ interface GalleryItem {
   title: string;
   noggleColor: string;
   eyeAnimation: string;
-  votes: number;
+  upvotes: number;
+  downvotes: number;
   voters: Array<{
     fid: number;
     username: string;
     pfp: string;
   }>;
   createdAt: string;
-  isVoted?: boolean;
+  userVote?: 'upvote' | 'downvote' | null;
 }
 
 interface GalleryProps {
@@ -38,20 +39,42 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
   const [filterBy, setFilterBy] = useState<string>("all");
   const [showShareDialog, setShowShareDialog] = useState<string | null>(null);
 
-  const handleVote = async (itemId: string) => {
-    setItems(prev => prev.map(item =>
-      item.id === itemId
-        ? {
-            ...item,
-            votes: item.isVoted ? item.votes - 1 : item.votes + 1,
-            isVoted: !item.isVoted,
-            voters: item.isVoted
-              ? item.voters.filter(v => v.fid !== 12345)
-              : [...item.voters, { fid: 12345, username: "you.noun", pfp: "https://picsum.photos/32/32?random=8" }]
-          }
-        : item
-    ));
-    // TODO: Call API to actually vote
+  const handleVote = async (itemId: string, voteType: 'upvote' | 'downvote') => {
+    try {
+      const response = await fetch('/api/gallery/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId,
+          userFid: 12345, // Mock user ID
+          username: "you.noun",
+          pfp: "https://picsum.photos/32/32?random=8",
+          voteType,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update the item in the list
+        setItems(prevItems => 
+          prevItems.map(item => 
+            item.id === itemId 
+              ? {
+                  ...item,
+                  upvotes: result.upvotes,
+                  downvotes: result.downvotes,
+                  userVote: result.userVote,
+                }
+              : item
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error voting:', error);
+    }
   };
 
   const handleShare = (itemId: string) => {
@@ -69,7 +92,7 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
     })
     .sort((a, b) => {
       if (sortBy === "votes") {
-        return b.votes - a.votes;
+        return b.upvotes - b.downvotes - (a.upvotes - a.downvotes);
       } else {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
@@ -164,9 +187,12 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
               {/* Vote Count and Voters */}
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Icon name="heart" size="sm" className={item.isVoted ? "text-red-500" : "text-gray-400"} />
+                  <Icon name="heart" size="sm" className={item.userVote === 'upvote' ? "text-red-500" : "text-gray-400"} />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {item.votes} votes
+                    {item.upvotes - item.downvotes} votes
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    ({item.upvotes} up, {item.downvotes} down)
                   </span>
                 </div>
                 
@@ -194,20 +220,33 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
               {/* Action Buttons */}
               <div className="flex gap-2">
                 <Button
-                  variant={item.isVoted ? "gradient" : "outline"}
+                  variant={item.userVote === 'upvote' ? "gradient" : "outline"}
                   size="sm"
-                  onClick={() => handleVote(item.id)}
-                  icon={<Icon name="heart" size="sm" />}
+                  onClick={() => handleVote(item.id, 'upvote')}
+                  icon={<Icon name="arrow-up" size="sm" />}
                   className="flex-1"
                 >
-                  {item.isVoted ? "Voted" : "Vote"}
+                  {item.userVote === 'upvote' ? "Upvoted" : "Upvote"}
                 </Button>
                 
+                <Button
+                  variant={item.userVote === 'downvote' ? "gradient" : "outline"}
+                  size="sm"
+                  onClick={() => handleVote(item.id, 'downvote')}
+                  icon={<Icon name="arrow-down" size="sm" />}
+                  className="flex-1"
+                >
+                  {item.userVote === 'downvote' ? "Downvoted" : "Downvote"}
+                </Button>
+              </div>
+
+              <div className="mt-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleShare(item.id)}
                   icon={<Icon name="share" size="sm" />}
+                  className="w-full"
                 >
                   Share
                 </Button>
