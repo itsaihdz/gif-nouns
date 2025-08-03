@@ -9,7 +9,7 @@ import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
-import { useFarcaster } from "./components/providers/FarcasterProvider";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
 
 interface GalleryItem {
   id: string;
@@ -40,7 +40,14 @@ export default function HomePage() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
-  const { isReady, error } = useFarcaster();
+  const { setFrameReady, isFrameReady } = useMiniKit();
+
+  // Initialize MiniKit frame readiness
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady();
+    }
+  }, [setFrameReady, isFrameReady]);
 
   // Fetch gallery items from Supabase
   useEffect(() => {
@@ -111,63 +118,6 @@ export default function HomePage() {
       console.error('Error creating gallery item:', error);
     }
   };
-
-  // Show loading screen while Farcaster SDK initializes
-  if (!isReady) {
-    return (
-      <UserProvider>
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 flex flex-col items-center justify-center p-4">
-          <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Icon name="sparkles" className="text-white" size="xl" />
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-              Nouns Remix Studio
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-              Loading Mini App...
-            </p>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="flex space-x-1">
-                <div className="bg-purple-600 dark:bg-purple-400 rounded-full animate-pulse w-2 h-2" style={{animationDelay: '0s', animationDuration: '1s'}}></div>
-                <div className="bg-purple-600 dark:bg-purple-400 rounded-full animate-pulse w-2 h-2" style={{animationDelay: '0.2s', animationDuration: '1s'}}></div>
-                <div className="bg-purple-600 dark:bg-purple-400 rounded-full animate-pulse w-2 h-2" style={{animationDelay: '0.4s', animationDuration: '1s'}}></div>
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">Initializing...</span>
-            </div>
-          </div>
-        </div>
-      </UserProvider>
-    );
-  }
-
-  // Show error screen if Farcaster SDK failed to initialize
-  if (error) {
-    return (
-      <UserProvider>
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 flex flex-col items-center justify-center p-4">
-          <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Icon name="alert-triangle" className="text-white" size="xl" />
-            </div>
-            <h1 className="text-4xl font-bold text-red-600 mb-4">
-              Mini App Error
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
-              {error}
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => window.location.reload()}
-              icon={<Icon name="refresh" size="sm" />}
-            >
-              Retry
-            </Button>
-          </div>
-        </div>
-      </UserProvider>
-    );
-  }
 
   // Show wallet connection screen if not connected
   if (!isConnected) {

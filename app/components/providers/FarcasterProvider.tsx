@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { sdk } from '@farcaster/miniapp-sdk';
 
 interface FarcasterContextType {
   isReady: boolean;
@@ -26,28 +25,15 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeFarcaster = async () => {
-      try {
-        console.log('🔄 Initializing Farcaster Mini App...');
-        
-        // Call sdk.actions.ready() to hide splash screen and display content
-        // This is required by the Farcaster Mini Apps documentation
-        await sdk.actions.ready();
-        
-        console.log('✅ Farcaster Mini App ready!');
-        setIsReady(true);
-      } catch (err) {
-        console.error('❌ Failed to initialize Farcaster Mini App:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize Farcaster Mini App');
-        // Still set ready to true to prevent infinite loading
-        setIsReady(true);
-      }
-    };
-
-    // Initialize after a short delay to ensure the app is fully loaded
-    const timer = setTimeout(initializeFarcaster, 100);
+    // Skip Farcaster SDK initialization for now to prevent loading issues
+    console.log('🔄 Skipping Farcaster SDK initialization to prevent loading issues...');
     
-    return () => clearTimeout(timer);
+    // Set ready immediately to allow the app to load
+    setTimeout(() => {
+      setIsReady(true);
+      setError('Farcaster integration temporarily disabled');
+      console.log('✅ App ready (Farcaster integration disabled)');
+    }, 100);
   }, []);
 
   return (
