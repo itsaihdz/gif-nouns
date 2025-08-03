@@ -3,7 +3,6 @@ import type { Database } from './supabase';
 
 type GalleryItem = Database['public']['Tables']['gallery_items']['Row'];
 type Vote = Database['public']['Tables']['votes']['Row'];
-type User = Database['public']['Tables']['users']['Row'];
 
 // Gallery Items
 export const galleryService = {

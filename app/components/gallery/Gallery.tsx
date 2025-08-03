@@ -238,8 +238,6 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
                 title={items.find(item => item.id === showShareDialog)?.title || ""}
                 noggleColor={items.find(item => item.id === showShareDialog)?.noggleColor || ""}
                 eyeAnimation={items.find(item => item.id === showShareDialog)?.eyeAnimation || ""}
-                votes={items.find(item => item.id === showShareDialog)?.votes || 0}
-                creator={items.find(item => item.id === showShareDialog)?.creator || { fid: 0, username: "", pfp: "" }}
                 className="w-full"
               />
             </div>

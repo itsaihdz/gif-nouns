@@ -70,46 +70,24 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
     try {
       setIsSharing(true);
       
-      // Generate share image
-      const shareImage = await generateShareImage();
+      // Generate share image (stored for potential future use)
+      await generateShareImage();
       
       // Create share text
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun on Nouns Remix Studio\n\n#Nouns #AnimatedNouns #Farcaster`;
       
-      // Try to use Farcaster SDK if available
-      if (typeof window !== 'undefined' && (window as any).farcaster) {
-        try {
-          const { sdk } = await import('@farcaster/miniapp-sdk');
-          await sdk.actions.compose({
-            text: shareText,
-            embeds: [{
-              url: 'https://gif-nouns.vercel.app',
-              castId: undefined
-            }]
-          });
-          
-          // Track share event
-          if (typeof gtag !== 'undefined') {
-            gtag('event', 'share', {
-              method: 'farcaster',
-              content_type: 'animated_noun',
-              item_id: title
-            });
-          }
-          
-          setShareUrl('https://warpcast.com');
-        } catch (error) {
-          console.log('Farcaster SDK not available, falling back to URL');
-          // Fallback to URL
-          const encodedText = encodeURIComponent(shareText);
-          const url = `https://warpcast.com/~/compose?text=${encodedText}`;
-          setShareUrl(url);
-        }
-      } else {
-        // Fallback to URL
-        const encodedText = encodeURIComponent(shareText);
-        const url = `https://warpcast.com/~/compose?text=${encodedText}`;
-        setShareUrl(url);
+      // For now, use URL fallback since compose method may not be available
+      const encodedText = encodeURIComponent(shareText);
+      const url = `https://warpcast.com/~/compose?text=${encodedText}`;
+      setShareUrl(url);
+      
+      // Track share event
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'share', {
+          method: 'farcaster',
+          content_type: 'animated_noun',
+          item_id: title
+        });
       }
       
     } catch (error) {
