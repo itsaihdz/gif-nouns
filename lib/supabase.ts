@@ -1,13 +1,13 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Fix the Supabase URL - it should be the full project URL
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://fb409a1fdce1df8d42cbcba5d172a59c.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sbp_fb409a1fdce1df8d42cbcba5d172a59cef050ecf';
+// Updated Supabase configuration with new credentials
+const supabaseUrl = 'https://zidivolizgoabfdkuybi.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Add better error handling for Supabase client creation
 let supabase: SupabaseClient;
 try {
-  supabase = createClient(supabaseUrl, supabaseKey, {
+  supabase = createClient(supabaseUrl, supabaseKey!, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
@@ -17,7 +17,7 @@ try {
 } catch (error) {
   console.error('Failed to create Supabase client:', error);
   // Create a fallback client with minimal config
-  supabase = createClient(supabaseUrl, supabaseKey);
+  supabase = createClient(supabaseUrl, supabaseKey!);
 }
 
 export { supabase };

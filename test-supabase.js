@@ -6,79 +6,138 @@ const { createClient } = require('@supabase/supabase-js');
 // Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Updated Supabase configuration
+const supabaseUrl = 'https://zidivolizgoabfdkuybi.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-console.log('🔍 Testing Supabase Connection...');
-console.log('================================');
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Missing environment variables!');
-  console.log('Please run: ./setup-env.sh');
+if (!supabaseKey) {
+  console.error('❌ SUPABASE_KEY environment variable is not set');
+  console.log('Please set your Supabase key:');
+  console.log('export SUPABASE_KEY=your_supabase_anon_key_here');
   process.exit(1);
 }
 
-console.log('✅ Environment variables found');
-console.log(`URL: ${supabaseUrl}`);
-console.log(`Key: ${supabaseKey.substring(0, 20)}...`);
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function testConnection() {
+async function testSupabaseConnection() {
+  console.log('🔗 Testing Supabase connection...');
+  console.log('URL:', supabaseUrl);
+  console.log('Key:', supabaseKey ? `${supabaseKey.substring(0, 10)}...` : 'NOT SET');
+
   try {
-    console.log('\n🔌 Testing database connection...');
-    
     // Test basic connection
     const { data, error } = await supabase
       .from('gallery_items')
       .select('count')
       .limit(1);
-    
+
     if (error) {
-      console.error('❌ Database connection failed:', error.message);
+      console.error('❌ Supabase connection failed:', error.message);
       
       if (error.message.includes('relation "gallery_items" does not exist')) {
-        console.log('\n💡 The database schema hasn\'t been set up yet.');
-        console.log('Please run the SQL commands from supabase-schema.sql in your Supabase dashboard.');
+        console.log('\n📋 Database tables need to be created. Please run the schema setup.');
+        console.log('You can run the SQL from supabase-schema.sql in your Supabase dashboard.');
       }
       
-      return;
+      return false;
     }
+
+    console.log('✅ Supabase connection successful!');
+    console.log('✅ Database is accessible');
     
-    console.log('✅ Database connection successful!');
-    
-    // Test gallery items
+    // Test gallery items table
     const { data: items, error: itemsError } = await supabase
       .from('gallery_items')
       .select('*')
       .limit(5);
-    
+
     if (itemsError) {
       console.error('❌ Error fetching gallery items:', itemsError.message);
-      return;
+    } else {
+      console.log(`✅ Gallery items table accessible (${items?.length || 0} items found)`);
     }
-    
-    console.log(`✅ Found ${items.length} gallery items`);
-    
-    // Test users
+
+    // Test users table
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
       .limit(5);
-    
+
     if (usersError) {
       console.error('❌ Error fetching users:', usersError.message);
-      return;
+    } else {
+      console.log(`✅ Users table accessible (${users?.length || 0} users found)`);
     }
-    
-    console.log(`✅ Found ${users.length} users`);
-    
-    console.log('\n🎉 Supabase is working perfectly!');
-    console.log('Your app is ready to use real data.');
-    
-  } catch (err) {
-    console.error('❌ Unexpected error:', err.message);
+
+    return true;
+  } catch (error) {
+    console.error('❌ Unexpected error:', error.message);
+    return false;
   }
 }
 
-testConnection(); 
+async function createSampleData() {
+  console.log('\n📝 Creating sample data...');
+  
+  try {
+    // Create a sample user
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .upsert({
+        fid: 99999,
+        username: 'test.noun',
+        display_name: 'Test User',
+        pfp: 'https://picsum.photos/32/32?random=999',
+        follower_count: 10,
+        following_count: 15
+      })
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('❌ Error creating test user:', userError.message);
+    } else {
+      console.log('✅ Test user created:', user.username);
+    }
+
+    // Create a sample gallery item
+    const { data: item, error: itemError } = await supabase
+      .from('gallery_items')
+      .insert({
+        gif_url: '/api/generate-gif?demo=test',
+        creator_fid: 99999,
+        creator_username: 'test.noun',
+        creator_pfp: 'https://picsum.photos/32/32?random=999',
+        title: 'Test Creation',
+        noggle_color: 'blue',
+        eye_animation: 'nouns',
+        votes: 0
+      })
+      .select()
+      .single();
+
+    if (itemError) {
+      console.error('❌ Error creating test gallery item:', itemError.message);
+    } else {
+      console.log('✅ Test gallery item created:', item.title);
+    }
+
+  } catch (error) {
+    console.error('❌ Error creating sample data:', error.message);
+  }
+}
+
+async function main() {
+  console.log('🚀 Supabase Connection Test\n');
+  
+  const isConnected = await testSupabaseConnection();
+  
+  if (isConnected) {
+    await createSampleData();
+    console.log('\n🎉 Supabase is ready to use!');
+  } else {
+    console.log('\n❌ Please fix the connection issues before proceeding.');
+  }
+}
+
+main().catch(console.error); 
