@@ -37,7 +37,7 @@ export function Providers(props: { children: ReactNode }) {
               mode: "auto",
               theme: "mini-app-theme",
               name: "Nouns Remix Studio",
-              logo: process.env.NEXT_PUBLIC_ICON_URL || "/icon.png",
+              logo: "/icon.png",
             },
           }}
         >

@@ -8,17 +8,22 @@ type Vote = Database['public']['Tables']['votes']['Row'];
 export const galleryService = {
   // Get all gallery items with votes
   async getAllItems(): Promise<GalleryItem[]> {
-    const { data, error } = await supabase
-      .from('gallery_items')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('gallery_items')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching gallery items:', error);
+      if (error) {
+        console.error('Error fetching gallery items:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch gallery items:', error);
       throw error;
     }
-
-    return data || [];
   },
 
   // Create a new gallery item
@@ -31,38 +36,48 @@ export const galleryService = {
     noggleColor: string;
     eyeAnimation: string;
   }): Promise<GalleryItem> {
-    const { data, error } = await supabase
-      .from('gallery_items')
-      .insert({
-        gif_url: item.gifUrl,
-        creator_fid: item.creatorFid,
-        creator_username: item.creatorUsername,
-        creator_pfp: item.creatorPfp,
-        title: item.title,
-        noggle_color: item.noggleColor,
-        eye_animation: item.eyeAnimation,
-        votes: 0,
-      })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('gallery_items')
+        .insert({
+          gif_url: item.gifUrl,
+          creator_fid: item.creatorFid,
+          creator_username: item.creatorUsername,
+          creator_pfp: item.creatorPfp,
+          title: item.title,
+          noggle_color: item.noggleColor,
+          eye_animation: item.eyeAnimation,
+          votes: 0,
+        })
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error creating gallery item:', error);
+      if (error) {
+        console.error('Error creating gallery item:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Failed to create gallery item:', error);
       throw error;
     }
-
-    return data;
   },
 
   // Update vote count for a gallery item
   async updateVoteCount(itemId: string, voteCount: number): Promise<void> {
-    const { error } = await supabase
-      .from('gallery_items')
-      .update({ votes: voteCount })
-      .eq('id', itemId);
+    try {
+      const { error } = await supabase
+        .from('gallery_items')
+        .update({ votes: voteCount })
+        .eq('id', itemId);
 
-    if (error) {
-      console.error('Error updating vote count:', error);
+      if (error) {
+        console.error('Error updating vote count:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to update vote count:', error);
       throw error;
     }
   },
