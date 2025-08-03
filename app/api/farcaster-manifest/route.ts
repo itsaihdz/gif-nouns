@@ -10,9 +10,9 @@ export async function GET() {
     "miniapp": {
       "version": "1",
       "name": "Nouns Remix Studio",
-      "iconUrl": "https://gif-nouns.vercel.app/icon.png",
-      "homeUrl": "https://gif-nouns.vercel.app",
-      "splashImageUrl": "https://gif-nouns.vercel.app/splash.png",
+      "iconUrl": "https://gifnouns.freezerserve.com/icon.png",
+      "homeUrl": "https://gifnouns.freezerserve.com",
+      "splashImageUrl": "https://gifnouns.freezerserve.com/splash.png",
       "splashBackgroundColor": "#8B5CF6",
       "subtitle": "Create animated Nouns",
       "description": "Upload your Noun PFP, customize with noggle colors and animated eyes, then export as GIF. Join the community gallery!",
@@ -24,11 +24,11 @@ export async function GET() {
         "pfp",
         "community"
       ],
-      "heroImageUrl": "https://gif-nouns.vercel.app/hero.png",
+      "heroImageUrl": "https://gifnouns.freezerserve.com/hero.png",
       "tagline": "Animate your Nouns",
       "ogTitle": "Nouns Remix Studio",
       "ogDescription": "Create animated Nouns with custom noggles and eye animations",
-      "ogImageUrl": "https://gif-nouns.vercel.app/hero.png",
+      "ogImageUrl": "https://gifnouns.freezerserve.com/hero.png",
       "requiredChains": [
         "eip155:8453"
       ],
