@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Icon } from '../icons';
-import { ShareImageGenerator } from './ShareImageGenerator';
 import { useUser } from '../../contexts/UserContext';
 
 declare global {
@@ -21,13 +20,12 @@ interface ShareButtonProps {
 export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, className = "" }: ShareButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
-  const { user } = useUser();
 
   const shareToFarcaster = async () => {
     try {
       setIsSharing(true);
       
-      // Create share text with GIF URL and dynamic image
+      // Create share text with GIF URL
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       
       // For now, use URL fallback since compose method may not be available
@@ -57,7 +55,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       const encodedText = encodeURIComponent(shareText);
-      const url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodeURIComponent('https://gif-nouns.vercel.app')}`;
+      const url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodeURIComponent('https://gifnouns.freezerserve.com')}`;
       
       setShareUrl(url);
       
@@ -100,15 +98,14 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       <div className={`flex gap-2 ${className}`}>
         <Button
           variant="outline"
-          size="sm"
           onClick={() => window.open(shareUrl, '_blank')}
           icon={<Icon name="external-link" size="sm" />}
+          className="flex-1"
         >
-          Open Share
+          Open Share Link
         </Button>
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
           onClick={() => setShareUrl('')}
           icon={<Icon name="x" size="sm" />}
         >
@@ -120,39 +117,28 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      {/* Hidden ShareImageGenerator for dynamic image creation */}
-      <ShareImageGenerator
-        gifUrl={gifUrl}
-        title={title}
-        creator={user?.username || 'anonymous'}
-        noggleColor={noggleColor}
-        eyeAnimation={eyeAnimation}
-        onImageGenerated={() => {}} // No longer needed
-      />
-      
       <Button
         variant="outline"
-        size="sm"
         onClick={shareToFarcaster}
         disabled={isSharing}
         icon={<Icon name="farcaster" size="sm" />}
+        className="flex-1"
       >
         {isSharing ? 'Sharing...' : 'Share to Farcaster'}
       </Button>
       
       <Button
         variant="outline"
-        size="sm"
         onClick={shareToTwitter}
         disabled={isSharing}
         icon={<Icon name="twitter" size="sm" />}
+        className="flex-1"
       >
         {isSharing ? 'Sharing...' : 'Share to Twitter'}
       </Button>
       
       <Button
         variant="outline"
-        size="sm"
         onClick={copyLink}
         icon={<Icon name="link" size="sm" />}
       >

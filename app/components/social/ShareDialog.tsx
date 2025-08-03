@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Icon } from '../icons';
-import { ShareImageGenerator } from './ShareImageGenerator';
 import { useUser } from '../../contexts/UserContext';
 
 declare global {
@@ -27,7 +26,6 @@ export function ShareDialog({
   isOpen, 
   onClose 
 }: ShareDialogProps) {
-  const [shareImageUrl, setShareImageUrl] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const { user } = useUser();
 
@@ -85,25 +83,6 @@ export function ShareDialog({
     }
   };
 
-  const downloadShareImage = () => {
-    if (!shareImageUrl) return;
-    
-    const link = document.createElement('a');
-    link.href = shareImageUrl;
-    link.download = `${title}-share-image.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Track download event
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'download', {
-        content_type: 'share_image',
-        item_id: title
-      });
-    }
-  };
-
   const copyGifLink = async () => {
     try {
       await navigator.clipboard.writeText(gifUrl);
@@ -139,32 +118,16 @@ export function ShareDialog({
             </Button>
           </div>
 
-          {/* Share Image Preview */}
+          {/* GIF Preview */}
           <div className="mb-6">
             <div className="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-              {shareImageUrl ? (
-                <img 
-                  src={shareImageUrl} 
-                  alt="Share preview" 
-                  className="w-full h-auto"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-64">
-                  <div className="text-gray-500">Generating share image...</div>
-                </div>
-              )}
+              <img 
+                src={gifUrl} 
+                alt="Your animated Noun" 
+                className="w-full h-auto max-h-96 object-contain"
+              />
             </div>
           </div>
-
-          {/* Hidden ShareImageGenerator */}
-          <ShareImageGenerator
-            gifUrl={gifUrl}
-            title={title}
-            creator={user?.username || 'anonymous'}
-            noggleColor={noggleColor}
-            eyeAnimation={eyeAnimation}
-            onImageGenerated={setShareImageUrl}
-          />
 
           {/* Share Options */}
           <div className="space-y-3">
@@ -190,26 +153,14 @@ export function ShareDialog({
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={downloadShareImage}
-                disabled={!shareImageUrl}
-                icon={<Icon name="download" size="sm" />}
-                className="w-full"
-              >
-                Download Image
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={copyGifLink}
-                icon={<Icon name="link" size="sm" />}
-                className="w-full"
-              >
-                Copy GIF Link
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              onClick={copyGifLink}
+              icon={<Icon name="link" size="sm" />}
+              className="w-full"
+            >
+              Copy GIF Link
+            </Button>
           </div>
 
           {/* Creation Details */}
