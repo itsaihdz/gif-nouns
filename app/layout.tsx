@@ -88,8 +88,8 @@ export async function generateMetadata(): Promise<Metadata> {
       "farcaster:app": "nouns-remix-studio",
       "farcaster:app:name": "Nouns Remix Studio",
       "farcaster:app:description": "Create animated Nouns and discover community creations",
-      "farcaster:app:icon": "https://gif-nouns.vercel.app/icon.png",
-      "farcaster:app:url": "https://gif-nouns.vercel.app",
+      "farcaster:app:icon": "https://gifnouns.freezerverse.com/icon.png",
+      "farcaster:app:url": "https://gifnouns.freezerverse.com",
       "farcaster:app:category": "creative",
       "farcaster:app:permissions": "farcaster,ethereum",
       "farcaster:app:version": "1.0.0",
@@ -102,14 +102,14 @@ export async function generateMetadata(): Promise<Metadata> {
       // Farcaster Mini App configuration
       "fc:miniapp": JSON.stringify({
         version: "1",
-        imageUrl: "https://gif-nouns.vercel.app/hero.png",
+        imageUrl: "https://gifnouns.freezerverse.com/hero.png",
         button: {
           title: "Open Nouns Remix Studio",
           action: {
             type: "launch_frame",
             name: "Nouns Remix Studio",
-            url: "https://gif-nouns.vercel.app",
-            splashImageUrl: "https://gif-nouns.vercel.app/splash.png",
+            url: "https://gifnouns.freezerverse.com",
+            splashImageUrl: "https://gifnouns.freezerverse.com/splash.png",
             splashBackgroundColor: "#8B5CF6"
           }
         }
