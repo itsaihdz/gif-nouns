@@ -22,7 +22,17 @@ interface NounTraits {
 
 interface UploadStudioProps {
   className?: string;
-  onGifCreated?: (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => void;
+  onGifCreated?: (gifData: { 
+    gifUrl: string; 
+    title: string; 
+    noggleColor: string; 
+    eyeAnimation: string;
+    creator: {
+      fid: number;
+      username: string;
+      pfp: string;
+    };
+  }) => void;
 }
 
 type UploadStep = "upload" | "detecting" | "preview";
@@ -63,7 +73,17 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     setError(errorMessage);
   };
 
-  const handleGifCreated = (gifData: { gifUrl: string; title: string; noggleColor: string; eyeAnimation: string }) => {
+  const handleGifCreated = (gifData: { 
+    gifUrl: string; 
+    title: string; 
+    noggleColor: string; 
+    eyeAnimation: string;
+    creator: {
+      fid: number;
+      username: string;
+      pfp: string;
+    };
+  }) => {
     onGifCreated?.(gifData);
   };
 

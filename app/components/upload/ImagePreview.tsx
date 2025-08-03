@@ -5,6 +5,8 @@ import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 import { useGifGenerator } from "./GifGenerator";
+import { useUser } from "../../contexts/UserContext";
+import { useAccount } from "wagmi";
 
 
 interface NounTraits {
@@ -86,6 +88,8 @@ export function ImagePreview({
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
   const [exportProgress, setExportProgress] = useState(0);
+  const { user, isAuthenticated } = useUser();
+  const { address } = useAccount();
 
   // Initialize GIF generator
   const { generateGif, downloadGif, mintAsNFT } = useGifGenerator({
@@ -98,16 +102,13 @@ export function ImagePreview({
     frames: 16,
     duration: 2.0,
     onProgress: setExportProgress,
-    onComplete: (gifUrl: string) => {
+    onComplete: (gifUrl) => {
       setGeneratedGifUrl(gifUrl);
       setIsExporting(false);
-      setExportProgress(0);
-      onGifCreated?.({ gifUrl, title: "Animated Noun", noggleColor: selectedNoggleColor, eyeAnimation: selectedEyeAnimation });
     },
-    onError: (error: string) => {
-      setIsExporting(false);
-      setExportProgress(0);
+    onError: (error) => {
       onError(error);
+      setIsExporting(false);
     }
   });
 
@@ -165,11 +166,66 @@ export function ImagePreview({
     }
   };
 
-  const handleUploadToGallery = () => {
-    if (generatedGifUrl) {
-      // This would typically involve a library or API to upload to a gallery
-      // For now, we'll just show a placeholder message
-      alert("Upload to Community Gallery functionality coming soon!");
+  const handleUploadToGallery = async () => {
+    if (!generatedGifUrl) {
+      onError("Please generate a GIF first");
+      return;
+    }
+
+    try {
+      // Get user data - either from Farcaster context or fetch from Neynar
+      let creatorData = null;
+      
+      if (isAuthenticated && user) {
+        // Use authenticated Farcaster user
+        creatorData = {
+          fid: user.fid,
+          username: user.username,
+          pfp: user.pfp,
+        };
+      } else if (address) {
+        // Try to fetch Farcaster user by wallet address
+        try {
+          const response = await fetch(`/api/auth/farcaster?address=${address}`);
+          if (response.ok) {
+            const userData = await response.json();
+            creatorData = {
+              fid: userData.fid,
+              username: userData.username,
+              pfp: userData.pfp,
+            };
+          }
+        } catch (error) {
+          console.log("Could not fetch Farcaster user by wallet address");
+        }
+      }
+
+      // If no Farcaster user found, use wallet address as fallback
+      if (!creatorData && address) {
+        creatorData = {
+          fid: 0, // Will be handled by backend
+          username: `user_${address.slice(2, 8)}`,
+          pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
+        };
+      }
+
+      if (!creatorData) {
+        onError("Unable to identify user. Please connect your wallet or Farcaster account.");
+        return;
+      }
+
+      const gifData = {
+        gifUrl: generatedGifUrl,
+        title: `Animated Noun - ${selectedNoggleColor} noggle, ${selectedEyeAnimation} eyes`,
+        noggleColor: selectedNoggleColor,
+        eyeAnimation: selectedEyeAnimation,
+        creator: creatorData,
+      };
+
+      onGifCreated?.(gifData);
+    } catch (error) {
+      onError("Failed to upload to gallery");
+      console.error("Gallery upload error:", error);
     }
   };
 
