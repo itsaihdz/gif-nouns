@@ -26,6 +26,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 # Get from https://neynar.com/
 NEYNAR_API_KEY=your-neynar-api-key-here
 
+# Dune API Key (for analytics - optional)
+# Get from https://dune.com/docs/api/
+DUNE_API_KEY=your-dune-api-key-here
+
 # OnchainKit API Key (for wallet connections)
 # Get from https://onchainkit.com/
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=your-onchainkit-api-key-here
@@ -38,7 +42,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 NEXT_PUBLIC_GA_ID=
 
 # Optional: Icon URL for Mini App
-NEXT_PUBLIC_ICON_URL=https://gif-nouns.vercel.app/icon.png
+NEXT_PUBLIC_ICON_URL=https://gifnouns.freezerserve.com/icon.png
 EOF
 
 echo "✅ .env.local created successfully!"
@@ -47,7 +51,8 @@ echo "🔧 Next steps:"
 echo "1. Update the values in .env.local with your actual API keys"
 echo "2. For Supabase: Go to https://supabase.com/dashboard and create a new project"
 echo "3. For Neynar: Go to https://neynar.com/ and get your API key"
-echo "4. For OnchainKit: Go to https://onchainkit.com/ and get your API key"
+echo "4. For Dune: Go to https://dune.com/docs/api/ and get your API key (optional)"
+echo "5. For OnchainKit: Go to https://onchainkit.com/ and get your API key"
 echo ""
 echo "📚 For detailed setup instructions, see SUPABASE_SETUP.md"
 echo ""
