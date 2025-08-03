@@ -7,8 +7,6 @@ import { Gallery } from "./components/gallery/Gallery";
 import { Button } from "./components/ui/Button";
 import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
-import { FarcasterAuth } from "./components/auth/FarcasterAuth";
-import { FarcasterReady } from "./components/FarcasterReady";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
 
@@ -116,7 +114,6 @@ export default function HomePage() {
   if (!isConnected) {
     return (
       <UserProvider>
-        <FarcasterReady />
         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <Header />
           <main className="container mx-auto px-4 py-8">
@@ -195,7 +192,6 @@ export default function HomePage() {
   // Show full app when wallet is connected
   return (
     <UserProvider>
-      <FarcasterReady />
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
         <Header />
         <main className="container mx-auto px-4 py-8">
@@ -207,11 +203,6 @@ export default function HomePage() {
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
               Create animated Nouns and discover community creations
             </p>
-          </div>
-
-          {/* Farcaster Auth */}
-          <div className="max-w-md mx-auto mb-8">
-            <FarcasterAuth />
           </div>
 
           {/* View Toggle */}

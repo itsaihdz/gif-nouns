@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Icon } from '../icons';
-import { useUser } from '../../contexts/UserContext';
 
 declare global {
   function gtag(...args: any[]): void;

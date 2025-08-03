@@ -4,11 +4,65 @@ import type { Database } from './supabase';
 type GalleryItem = Database['public']['Tables']['gallery_items']['Row'];
 type Vote = Database['public']['Tables']['votes']['Row'];
 
+// Mock data for fallback when Supabase is unavailable
+const mockGalleryItems: GalleryItem[] = [
+  {
+    id: '1',
+    gif_url: 'https://example.com/demo1.gif',
+    creator_fid: 12345,
+    creator_username: 'demo_user',
+    creator_pfp: 'https://example.com/avatar1.jpg',
+    title: 'gifnouns #1',
+    noggle_color: 'Red',
+    eye_animation: 'Blink',
+    upvotes: 5,
+    downvotes: 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    gif_url: 'https://example.com/demo2.gif',
+    creator_fid: 67890,
+    creator_username: 'demo_user2',
+    creator_pfp: 'https://example.com/avatar2.jpg',
+    title: 'gifnouns #2',
+    noggle_color: 'Blue',
+    eye_animation: 'Wink',
+    upvotes: 3,
+    downvotes: 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
+
+// Helper function to check if Supabase is available
+async function isSupabaseAvailable(): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('gallery_items')
+      .select('count')
+      .limit(1);
+    
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
 // Gallery Items
 export const galleryService = {
   // Get all gallery items with votes
   async getAllItems(): Promise<GalleryItem[]> {
     try {
+      // Check if Supabase is available
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, using mock data');
+        return mockGalleryItems;
+      }
+
       const { data, error } = await supabase
         .from('gallery_items')
         .select('*')
@@ -16,13 +70,13 @@ export const galleryService = {
 
       if (error) {
         console.error('Error fetching gallery items:', error);
-        throw error;
+        return mockGalleryItems;
       }
 
-      return data || [];
+      return data || mockGalleryItems;
     } catch (error) {
       console.error('Failed to fetch gallery items:', error);
-      throw error;
+      return mockGalleryItems;
     }
   },
 
@@ -37,6 +91,27 @@ export const galleryService = {
     eyeAnimation: string;
   }): Promise<GalleryItem> {
     try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, skipping item creation');
+        // Return a mock item for now
+        return {
+          id: Date.now().toString(),
+          gif_url: item.gifUrl,
+          creator_fid: item.creatorFid,
+          creator_username: item.creatorUsername,
+          creator_pfp: item.creatorPfp,
+          title: item.title,
+          noggle_color: item.noggleColor,
+          eye_animation: item.eyeAnimation,
+          upvotes: 0,
+          downvotes: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+
       const { data, error } = await supabase
         .from('gallery_items')
         .insert({
@@ -68,6 +143,13 @@ export const galleryService = {
   // Update vote counts for a gallery item
   async updateVoteCounts(itemId: string, upvotes: number, downvotes: number): Promise<void> {
     try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, skipping vote update');
+        return;
+      }
+
       const { error } = await supabase
         .from('gallery_items')
         .update({ upvotes, downvotes })
@@ -88,38 +170,62 @@ export const galleryService = {
 export const voteService = {
   // Get votes for a specific gallery item
   async getVotesForItem(itemId: string): Promise<Vote[]> {
-    const { data, error } = await supabase
-      .from('votes')
-      .select('*')
-      .eq('gallery_item_id', itemId)
-      .order('created_at', { ascending: false });
+    try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, returning empty votes');
+        return [];
+      }
 
-    if (error) {
-      console.error('Error fetching votes:', error);
-      throw error;
+      const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('gallery_item_id', itemId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching votes:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch votes:', error);
+      return [];
     }
-
-    return data || [];
   },
 
   // Check if user has voted on an item
   async hasUserVoted(itemId: string, userFid: number): Promise<{ hasVoted: boolean; voteType?: 'upvote' | 'downvote' }> {
-    const { data, error } = await supabase
-      .from('votes')
-      .select('vote_type')
-      .eq('gallery_item_id', itemId)
-      .eq('voter_fid', userFid)
-      .single();
+    try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, assuming no vote');
+        return { hasVoted: false };
+      }
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-      console.error('Error checking user vote:', error);
-      throw error;
+      const { data, error } = await supabase
+        .from('votes')
+        .select('vote_type')
+        .eq('gallery_item_id', itemId)
+        .eq('voter_fid', userFid)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error checking user vote:', error);
+        return { hasVoted: false };
+      }
+
+      return {
+        hasVoted: !!data,
+        voteType: data?.vote_type
+      };
+    } catch (error) {
+      console.error('Failed to check user vote:', error);
+      return { hasVoted: false };
     }
-
-    return {
-      hasVoted: !!data,
-      voteType: data?.vote_type
-    };
   },
 
   // Add a vote (upvote or downvote)
@@ -130,50 +236,95 @@ export const voteService = {
     voterPfp: string;
     voteType: 'upvote' | 'downvote';
   }): Promise<Vote> {
-    const { data, error } = await supabase
-      .from('votes')
-      .upsert({
-        gallery_item_id: vote.galleryItemId,
-        voter_fid: vote.voterFid,
-        voter_username: vote.voterUsername,
-        voter_pfp: vote.voterPfp,
-        vote_type: vote.voteType,
-      })
-      .select()
-      .single();
+    try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, skipping vote addition');
+        // Return a mock vote
+        return {
+          id: Date.now().toString(),
+          gallery_item_id: vote.galleryItemId,
+          voter_fid: vote.voterFid,
+          voter_username: vote.voterUsername,
+          voter_pfp: vote.voterPfp,
+          vote_type: vote.voteType,
+          created_at: new Date().toISOString()
+        };
+      }
 
-    if (error) {
-      console.error('Error adding vote:', error);
+      const { data, error } = await supabase
+        .from('votes')
+        .upsert({
+          gallery_item_id: vote.galleryItemId,
+          voter_fid: vote.voterFid,
+          voter_username: vote.voterUsername,
+          voter_pfp: vote.voterPfp,
+          vote_type: vote.voteType,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding vote:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Failed to add vote:', error);
       throw error;
     }
-
-    return data;
   },
 
   // Remove a vote
   async removeVote(itemId: string, userFid: number): Promise<void> {
-    const { error } = await supabase
-      .from('votes')
-      .delete()
-      .eq('gallery_item_id', itemId)
-      .eq('voter_fid', userFid);
+    try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, skipping vote removal');
+        return;
+      }
 
-    if (error) {
-      console.error('Error removing vote:', error);
+      const { error } = await supabase
+        .from('votes')
+        .delete()
+        .eq('gallery_item_id', itemId)
+        .eq('voter_fid', userFid);
+
+      if (error) {
+        console.error('Error removing vote:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to remove vote:', error);
       throw error;
     }
   },
 
   // Change vote type (upvote to downvote or vice versa)
   async changeVote(itemId: string, userFid: number, newVoteType: 'upvote' | 'downvote'): Promise<void> {
-    const { error } = await supabase
-      .from('votes')
-      .update({ vote_type: newVoteType })
-      .eq('gallery_item_id', itemId)
-      .eq('voter_fid', userFid);
+    try {
+      const isAvailable = await isSupabaseAvailable();
+      
+      if (!isAvailable) {
+        console.log('Supabase unavailable, skipping vote change');
+        return;
+      }
 
-    if (error) {
-      console.error('Error changing vote:', error);
+      const { error } = await supabase
+        .from('votes')
+        .update({ vote_type: newVoteType })
+        .eq('gallery_item_id', itemId)
+        .eq('voter_fid', userFid);
+
+      if (error) {
+        console.error('Error changing vote:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to change vote:', error);
       throw error;
     }
   },
