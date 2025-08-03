@@ -7,6 +7,7 @@ import { Icon } from "../icons";
 import { useGifGenerator } from "./GifGenerator";
 import { useUser } from "../../contexts/UserContext";
 import { useAccount } from "wagmi";
+import { ShareButton } from "../social/ShareButton";
 
 
 interface NounTraits {
@@ -88,6 +89,7 @@ export function ImagePreview({
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
   const [exportProgress, setExportProgress] = useState(0);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
 
@@ -160,10 +162,14 @@ export function ImagePreview({
 
   const handleShareToFarcaster = () => {
     if (generatedGifUrl) {
-      // This would typically involve a library or API to share to Farcaster
-      // For now, we'll just show a placeholder message
-      alert("Share on Farcaster functionality coming soon!");
+      setShowShareDialog(true);
+    } else {
+      onError("Please generate a GIF first");
     }
+  };
+
+  const handleCloseShare = () => {
+    setShowShareDialog(false);
   };
 
   const handleUploadToGallery = async () => {
@@ -383,6 +389,34 @@ export function ImagePreview({
           </div>
         </div>
       </Card>
+
+      {/* Share Dialog */}
+      {showShareDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Share your creation
+                </h3>
+                <button
+                  onClick={handleCloseShare}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <Icon name="x" size="sm" />
+                </button>
+              </div>
+              <ShareButton
+                gifUrl={generatedGifUrl}
+                title={`Animated Noun - ${selectedNoggleColor} noggle, ${selectedEyeAnimation} eyes`}
+                noggleColor={selectedNoggleColor}
+                eyeAnimation={selectedEyeAnimation}
+                className="w-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Noggle Color Selector */}
       <Card variant="outlined">
