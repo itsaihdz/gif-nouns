@@ -10,21 +10,39 @@ export interface IPFSUploadResult {
   size: number;
 }
 
+// Convert blob to base64 for API upload
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove data URL prefix
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export async function uploadGifToIPFS(gifBlob: Blob, filename: string): Promise<IPFSUploadResult> {
   try {
     console.log('Uploading GIF to IPFS via Lighthouse Storage:', filename);
+
+    // Convert blob to base64
+    const base64Data = await blobToBase64(gifBlob);
     
-    // Prepare form data for upload
-    const formData = new FormData();
-    formData.append('file', new Blob([gifBlob]), filename);
-    
-    // Upload to Lighthouse Storage
+    // Upload to Lighthouse Storage using base64
     const response = await fetch(`${LIGHTHOUSE_BASE_URL}/add`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LIGHTHOUSE_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      body: formData
+      body: JSON.stringify({
+        file: base64Data,
+        filename: filename
+      })
     });
 
     if (!response.ok) {
@@ -56,20 +74,21 @@ export async function uploadMetadataToIPFS(metadata: any, filename: string): Pro
   try {
     console.log('Uploading metadata to IPFS via Lighthouse Storage:', filename);
 
-    // Create metadata blob
+    // Create metadata blob and convert to base64
     const metadataBlob = new Blob([JSON.stringify(metadata, null, 2)], { type: 'application/json' });
+    const base64Data = await blobToBase64(metadataBlob);
     
-    // Prepare form data for upload
-    const formData = new FormData();
-    formData.append('file', metadataBlob, filename);
-    
-    // Upload to Lighthouse Storage
+    // Upload to Lighthouse Storage using base64
     const response = await fetch(`${LIGHTHOUSE_BASE_URL}/add`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LIGHTHOUSE_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      body: formData
+      body: JSON.stringify({
+        file: base64Data,
+        filename: filename
+      })
     });
 
     if (!response.ok) {
@@ -104,16 +123,18 @@ export async function testIPFSConnection(): Promise<{ success: boolean; message:
     // Test with a simple text file
     const testContent = 'Hello IPFS!';
     const testBlob = new Blob([testContent], { type: 'text/plain' });
-    
-    const formData = new FormData();
-    formData.append('file', testBlob, 'test.txt');
+    const base64Data = await blobToBase64(testBlob);
     
     const response = await fetch(`${LIGHTHOUSE_BASE_URL}/add`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LIGHTHOUSE_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      body: formData
+      body: JSON.stringify({
+        file: base64Data,
+        filename: 'test.txt'
+      })
     });
 
     if (!response.ok) {
