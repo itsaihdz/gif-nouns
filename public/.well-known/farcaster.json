@@ -4,14 +4,34 @@
     "payload": "",
     "signature": ""
   },
-  "frame": {
+  "miniapp": {
     "version": "1",
     "name": "Nouns Remix Studio",
     "iconUrl": "https://gif-nouns.vercel.app/icon.png",
     "homeUrl": "https://gif-nouns.vercel.app",
-    "imageUrl": "https://gif-nouns.vercel.app/hero.png",
-    "buttonTitle": "Create Animated Noun",
     "splashImageUrl": "https://gif-nouns.vercel.app/splash.png",
-    "splashBackgroundColor": "#8B5CF6"
+    "splashBackgroundColor": "#8B5CF6",
+    "subtitle": "Create animated Nouns",
+    "description": "Upload your Noun PFP, customize with noggle colors and animated eyes, then export as GIF. Join the community gallery!",
+    "primaryCategory": "art-creativity",
+    "tags": [
+      "nouns",
+      "gif",
+      "animation",
+      "pfp",
+      "community"
+    ],
+    "heroImageUrl": "https://gif-nouns.vercel.app/hero.png",
+    "tagline": "Animate your Nouns",
+    "ogTitle": "Nouns Remix Studio",
+    "ogDescription": "Create animated Nouns with custom noggles and eye animations",
+    "ogImageUrl": "https://gif-nouns.vercel.app/hero.png",
+    "requiredChains": [
+      "eip155:8453"
+    ],
+    "requiredCapabilities": [
+      "actions.signIn",
+      "wallet.getEthereumProvider"
+    ]
   }
 } 
