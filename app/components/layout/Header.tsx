@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export function Header({ className = "" }: HeaderProps) {
-  const { user, isAuthenticated, logout } = useUser();
+  const { user, isAuthenticated } = useUser();
   const { isConnected } = useAccount();
 
   return (
@@ -34,14 +34,8 @@ export function Header({ className = "" }: HeaderProps) {
           {/* User Info / Wallet Connect */}
           <div className="flex items-center space-x-4">
             {isAuthenticated && user ? (
-              // Show Farcaster user info
+              // Show Farcaster user info alongside wallet
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                    Connected
-                  </span>
-                </div>
                 <div className="flex items-center space-x-2">
                   {/* PFP */}
                   <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-purple-200 dark:border-purple-800">
@@ -60,29 +54,11 @@ export function Header({ className = "" }: HeaderProps) {
                     {user.displayName || user.username}
                   </span>
                 </div>
-                <button
-                  onClick={logout}
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                  title="Disconnect"
-                >
-                  <Icon name="close" size="sm" />
-                </button>
-              </div>
-            ) : isConnected ? (
-              // Show wallet info if connected but no Farcaster user
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                    Wallet Connected
-                  </span>
-                </div>
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  Connect Farcaster to continue
-                </span>
+                {/* MiniKit Wallet Connect */}
+                <WalletConnect variant="button" size="md" />
               </div>
             ) : (
-              // Show wallet connect button
+              // Show only MiniKit wallet connect
               <WalletConnect variant="button" size="md" />
             )}
           </div>

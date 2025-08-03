@@ -7,6 +7,7 @@ import { Gallery } from "./components/gallery/Gallery";
 import { Button } from "./components/ui/Button";
 import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
+import { FarcasterAuth } from "./components/auth/FarcasterAuth";
 import { FarcasterReady } from "./components/FarcasterReady";
 
 interface GalleryItem {
@@ -124,6 +125,11 @@ export default function HomePage() {
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
               Create animated Nouns and discover community creations
             </p>
+          </div>
+
+          {/* Farcaster Auth */}
+          <div className="max-w-md mx-auto mb-8">
+            <FarcasterAuth />
           </div>
 
           {/* View Toggle */}
