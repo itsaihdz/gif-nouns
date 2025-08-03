@@ -7,6 +7,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http } from "wagmi";
 import { coinbaseWallet, injected } from "wagmi/connectors";
+import { FarcasterProvider } from "./components/providers/FarcasterProvider";
 
 // Create a query client
 const queryClient = new QueryClient();
@@ -39,7 +40,9 @@ export function Providers(props: { children: ReactNode }) {
             },
           }}
         >
-          {props.children}
+          <FarcasterProvider>
+            {props.children}
+          </FarcasterProvider>
         </MiniKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
