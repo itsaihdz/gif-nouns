@@ -104,12 +104,16 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 
-  // PWA support
+  // PWA support and manifest rewrite
   async rewrites() {
     return [
       {
         source: '/sitemap.xml',
         destination: '/api/sitemap',
+      },
+      {
+        source: '/.well-known/farcaster.json',
+        destination: '/api/farcaster-manifest',
       },
     ];
   },
