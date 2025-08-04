@@ -93,7 +93,9 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       pfp: string;
     };
   }) => {
+    console.log('🔄 UploadStudio handleGifCreated called with:', gifData);
     onGifCreated?.(gifData);
+    console.log('🔄 UploadStudio onGifCreated callback executed');
   };
 
   const renderStep = () => {

@@ -256,7 +256,9 @@ export function ImagePreview({
         setExportProgress(90);
 
         // Automatically add to gallery
+        console.log('🔄 About to call handleUploadToGallery...');
         await handleUploadToGallery();
+        console.log('🔄 handleUploadToGallery completed');
 
         setExportProgress(100);
 
