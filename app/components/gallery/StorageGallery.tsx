@@ -11,6 +11,16 @@ interface StorageGif {
   size: number;
   contentType: string;
   created_at: string;
+  creator?: {
+    username: string;
+    pfp: string;
+  };
+  title?: string;
+  noggleColor?: string;
+  eyeAnimation?: string;
+  upvotes?: number;
+  downvotes?: number;
+  hasCreatorInfo?: boolean;
 }
 
 interface StorageGalleryProps {
@@ -21,6 +31,44 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [gifs, setGifs] = useState<StorageGif[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
+    try {
+      // Find the GIF in the database and vote on it
+      const response = await fetch('/api/gallery/vote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gifUrl, // We'll need to modify the vote API to accept gifUrl
+          userFid: 12345, // Mock user ID
+          username: "you.noun",
+          pfp: "https://picsum.photos/32/32?random=8",
+          voteType,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update the GIF in the list
+        setGifs(prevGifs => 
+          prevGifs.map(gif => 
+            gif.url === gifUrl 
+              ? {
+                  ...gif,
+                  upvotes: result.upvotes,
+                  downvotes: result.downvotes,
+                }
+              : gif
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error voting:', error);
+    }
+  };
 
   const fetchGifsFromStorage = async () => {
     try {
@@ -38,7 +86,26 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       
       if (result.success) {
         console.log(`✅ Fetched ${result.count} GIFs from storage`);
-        setGifs(result.data);
+        
+        // Fetch creator info for each GIF
+        const gifsWithCreatorInfo = await Promise.all(
+          result.data.map(async (gif: StorageGif) => {
+            try {
+              const creatorResponse = await fetch(`/api/gallery/storage/creator?gifUrl=${encodeURIComponent(gif.url)}`);
+              if (creatorResponse.ok) {
+                const creatorResult = await creatorResponse.json();
+                if (creatorResult.success) {
+                  return { ...gif, ...creatorResult.data };
+                }
+              }
+            } catch (error) {
+              console.error('Error fetching creator info for:', gif.url, error);
+            }
+            return gif;
+          })
+        );
+        
+        setGifs(gifsWithCreatorInfo);
       } else {
         throw new Error(result.error || 'Failed to fetch GIFs');
       }
@@ -138,6 +205,20 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                 }}
               />
               
+              {/* Creator info overlay */}
+              {gif.creator && (
+                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs p-1 rounded">
+                  <div className="flex items-center gap-1">
+                    <img
+                      src={gif.creator.pfp}
+                      alt={gif.creator.username}
+                      className="w-4 h-4 rounded-full"
+                    />
+                    <span className="truncate">@{gif.creator.username}</span>
+                  </div>
+                </div>
+              )}
+
               {/* File info overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1">
                 <div className="truncate">{gif.path}</div>
@@ -150,10 +231,42 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             {/* GIF Details */}
             <div className="p-2">
               <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                {gif.path}
+                {gif.title || gif.path}
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-500">
-                {new Date(gif.created_at).toLocaleDateString()}
+              
+              {/* Creator Info */}
+              {gif.creator && (
+                <div className="flex items-center gap-1 mb-1">
+                  <img
+                    src={gif.creator.pfp}
+                    alt={gif.creator.username}
+                    className="w-4 h-4 rounded-full"
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-500">
+                    @{gif.creator.username}
+                  </span>
+                </div>
+              )}
+
+              {/* Voting */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleVote(gif.url, 'upvote')}
+                    className="text-xs text-gray-500 hover:text-green-600 dark:hover:text-green-400"
+                  >
+                    👍 {gif.upvotes || 0}
+                  </button>
+                  <button
+                    onClick={() => handleVote(gif.url, 'downvote')}
+                    className="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400"
+                  >
+                    👎 {gif.downvotes || 0}
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-500">
+                  {new Date(gif.created_at).toLocaleDateString()}
+                </div>
               </div>
             </div>
           </Card>

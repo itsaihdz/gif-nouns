@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileUpload } from "./FileUpload";
 import { NounDetector } from "./NounDetector";
 import { ImagePreview } from "./ImagePreview";
+import { DownloadSharePage } from "./DownloadSharePage";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
@@ -35,7 +36,7 @@ interface UploadStudioProps {
   }) => void;
 }
 
-type UploadStep = "upload" | "detecting" | "preview";
+type UploadStep = "upload" | "detecting" | "preview" | "download";
 
 export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps) {
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
@@ -43,6 +44,17 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
   const [traits, setTraits] = useState<NounTraits | null>(null);
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [createdGifData, setCreatedGifData] = useState<{
+    gifUrl: string;
+    title: string;
+    noggleColor: string;
+    eyeAnimation: string;
+    creator: {
+      fid: number;
+      username: string;
+      pfp: string;
+    };
+  } | null>(null);
   const tracking = useTracking();
 
   const handleFileUpload = (file: File) => {
@@ -94,9 +106,27 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     };
   }) => {
     console.log('🔄 UploadStudio handleGifCreated called with:', gifData);
+    setCreatedGifData(gifData);
+    setCurrentStep("download");
     onGifCreated?.(gifData);
     console.log('🔄 UploadStudio onGifCreated callback executed');
   };
+
+  const handleBackToCreate = () => {
+    setCurrentStep("upload");
+    setImageUrl("");
+    setTraits(null);
+    setCreatedGifData(null);
+    setError("");
+    setSuccessMessage("");
+  };
+
+  const handleViewInGallery = () => {
+    // This will be handled by the parent component
+    onGifCreated?.(createdGifData!);
+  };
+
+
 
   const renderStep = () => {
     switch (currentStep) {
@@ -131,6 +161,20 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
           />
         ) : null;
 
+      case "download":
+        return createdGifData ? (
+          <DownloadSharePage
+            gifUrl={createdGifData.gifUrl}
+            title={createdGifData.title}
+            noggleColor={createdGifData.noggleColor}
+            eyeAnimation={createdGifData.eyeAnimation}
+            creator={createdGifData.creator}
+            onBackToCreate={handleBackToCreate}
+            onViewInGallery={handleViewInGallery}
+            className="max-w-6xl mx-auto"
+          />
+        ) : null;
+
       default:
         return null;
     }
@@ -156,13 +200,13 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
               { step: "upload", label: "Upload", icon: "upload" },
               { step: "detecting", label: "Detect", icon: "eye" },
               { step: "preview", label: "Customize", icon: "palette" },
-              { step: "exported", label: "Export", icon: "download" },
+              { step: "download", label: "Download", icon: "download" },
             ].map((stepInfo, index) => {
               const isActive = currentStep === stepInfo.step;
               const isCompleted = [
-                "detecting", "preview", "exported"
+                "detecting", "preview", "download"
               ].includes(currentStep) && index < [
-                "detecting", "preview", "exported"
+                "detecting", "preview", "download"
               ].indexOf(currentStep) + 1;
 
               return (
