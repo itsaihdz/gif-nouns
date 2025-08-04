@@ -349,6 +349,9 @@ export function ImagePreview({
           // Don't throw here, just log the error
         }
         
+        // Debug: Check if onGifCreated is available
+        console.log('🔄 onGifCreated callback available:', !!onGifCreated);
+        
         console.log('✅ Export process completed successfully');
         
         console.log('Supabase Storage Upload Results:', {
@@ -482,7 +485,13 @@ export function ImagePreview({
       }
 
       console.log('✅ Calling onGifCreated with data:', gifData);
-      onGifCreated?.(gifData);
+      console.log('✅ onGifCreated function exists:', !!onGifCreated);
+      if (onGifCreated) {
+        onGifCreated(gifData);
+        console.log('✅ onGifCreated called successfully');
+      } else {
+        console.error('❌ onGifCreated is not available!');
+      }
       console.log('✅ Gallery upload completed successfully');
     } catch (error) {
       console.error("❌ Gallery upload error:", error);
