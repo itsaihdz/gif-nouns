@@ -12,6 +12,8 @@ export const galleryService = {
       const { data, error } = await supabase
         .from('gallery_items')
         .select('*')
+        .not('gif_url', 'like', '/api/generate-gif?demo=%') // Filter out demo URLs
+        .not('gif_url', 'like', 'https://ipfs.io/ipfs/test%') // Filter out test IPFS URLs
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -19,6 +21,7 @@ export const galleryService = {
         throw error;
       }
 
+      console.log('✅ Fetched gallery items:', data?.length || 0, 'items');
       return data || [];
     } catch (error) {
       console.error('Failed to fetch gallery items:', error);
@@ -37,11 +40,37 @@ export const galleryService = {
     eyeAnimation: string;
   }): Promise<GalleryItem> {
     try {
+      // If creatorFid is 0, create a user record first
+      let actualCreatorFid = item.creatorFid;
+      if (item.creatorFid === 0) {
+        // Generate a unique FID for this user
+        actualCreatorFid = Math.floor(Math.random() * 1000000) + 100000; // 6-digit number
+        
+        // Create user record
+        const { error: userError } = await supabase
+          .from('users')
+          .upsert({
+            fid: actualCreatorFid,
+            username: item.creatorUsername,
+            display_name: item.creatorUsername,
+            pfp: item.creatorPfp,
+            follower_count: 0,
+            following_count: 0,
+          });
+
+        if (userError) {
+          console.error('Error creating user record:', userError);
+          throw userError;
+        }
+        
+        console.log('✅ Created user record with FID:', actualCreatorFid);
+      }
+
       const { data, error } = await supabase
         .from('gallery_items')
         .insert({
           gif_url: item.gifUrl,
-          creator_fid: item.creatorFid,
+          creator_fid: actualCreatorFid,
           creator_username: item.creatorUsername,
           creator_pfp: item.creatorPfp,
           title: item.title,
