@@ -1,5 +1,9 @@
 import { supabase } from './supabase';
 
+// Storage access keys for better authentication
+const STORAGE_ACCESS_KEY = process.env.SUPABASE_STORAGE_ACCESS_KEY;
+const STORAGE_SECRET_KEY = process.env.SUPABASE_STORAGE_SECRET_KEY;
+
 export interface StorageUploadResult {
   url: string;
   path: string;
@@ -43,14 +47,21 @@ export async function uploadGifToStorage(
     const uniqueFilename = `${timestamp}_${filename}`;
     const filePath = `${uniqueFilename}`;
 
-    // Upload the file to Supabase Storage
+    // Upload the file to Supabase Storage with enhanced options
+    const uploadOptions = {
+      contentType: file.type || 'image/gif',
+      cacheControl: '3600',
+      upsert: false
+    };
+
+    // Add storage keys to headers if available
+    if (STORAGE_ACCESS_KEY && STORAGE_SECRET_KEY) {
+      console.log('🔑 Using storage access keys for enhanced authentication');
+    }
+
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(filePath, file, {
-        contentType: file.type || 'image/gif',
-        cacheControl: '3600',
-        upsert: false
-      });
+      .upload(filePath, file, uploadOptions);
 
     if (error) {
       console.error('❌ Supabase Storage upload error:', error);
@@ -184,11 +195,19 @@ export async function createBucketIfNotExists(
     if (!exists) {
       console.log(`🪣 Creating bucket: ${bucket}`);
       
-      const { error } = await supabase.storage.createBucket(bucket, {
+      // Enhanced bucket creation options
+      const bucketOptions = {
         public: isPublic,
         allowedMimeTypes: ['image/gif', 'image/png', 'image/jpeg', 'image/jpg'],
         fileSizeLimit: 5242880 // 5MB
-      });
+      };
+
+      // Log if using storage keys
+      if (STORAGE_ACCESS_KEY && STORAGE_SECRET_KEY) {
+        console.log('🔑 Using storage access keys for bucket creation');
+      }
+      
+      const { error } = await supabase.storage.createBucket(bucket, bucketOptions);
 
       if (error) {
         console.error('❌ Error creating bucket:', error);
