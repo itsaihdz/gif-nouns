@@ -113,8 +113,35 @@ export function ImagePreview({
   className = "" 
 }: ImagePreviewProps) {
   console.log('🔄 ImagePreview component rendered with:', { originalImageUrl, traits });
-  const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
-  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
+  
+  // Derive noggle color and eye animation from traits
+  const getNoggleColorFromTraits = () => {
+    if (traits?.noggles) {
+      const noggleColor = traits.noggles.toLowerCase();
+      return NOGGLE_COLORS.find(color => color.value.toLowerCase() === noggleColor)?.value || NOGGLE_COLORS[0]?.value || "";
+    }
+    return NOGGLE_COLORS[0]?.value || "";
+  };
+
+  const getEyeAnimationFromTraits = () => {
+    if (traits?.eyes) {
+      const eyeType = traits.eyes.toLowerCase();
+      return EYE_ANIMATIONS.find(animation => animation.value.toLowerCase() === eyeType)?.value || EYE_ANIMATIONS[0]?.value || "";
+    }
+    return EYE_ANIMATIONS[0]?.value || "";
+  };
+
+  const [selectedNoggleColor, setSelectedNoggleColor] = useState(getNoggleColorFromTraits());
+  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(getEyeAnimationFromTraits());
+  
+  // Debug: Log the derived values
+  console.log('🔄 Derived trait values:', {
+    traits,
+    selectedNoggleColor,
+    selectedEyeAnimation,
+    noggleFromTraits: getNoggleColorFromTraits(),
+    eyeFromTraits: getEyeAnimationFromTraits()
+  });
   const [isExporting, setIsExporting] = useState(false);
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
@@ -266,25 +293,8 @@ export function ImagePreview({
         // Automatically add to gallery first
         console.log('🔄 About to call handleUploadToGallery...');
         try {
-          await handleUploadToGallery();
+          await handleUploadToGallery(storageGifUrl);
           console.log('🔄 handleUploadToGallery completed successfully');
-          
-          // Call onGifCreated to trigger download page after successful gallery upload
-          if (onGifCreated) {
-            const gifData = {
-              gifUrl: storageGifUrl,
-              title: `gifnouns #${nextGifNumber}`,
-              noggleColor: selectedNoggleColor,
-              eyeAnimation: selectedEyeAnimation,
-              creator: {
-                fid: 0,
-                username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown',
-                pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
-              },
-            };
-            console.log('🔄 Calling onGifCreated with data:', gifData);
-            onGifCreated(gifData);
-          }
         } catch (error) {
           console.error('❌ handleUploadToGallery failed:', error);
           // Don't throw here, just log the error
@@ -344,20 +354,18 @@ export function ImagePreview({
     setShowShareDialog(false);
   };
 
-  const handleUploadToGallery = async () => {
+  const handleUploadToGallery = async (storageGifUrl?: string) => {
     try {
       console.log('🔄 Starting gallery upload process...');
-      console.log('🔄 Generated GIF URL:', generatedGifUrl);
       
-      if (!generatedGifUrl) {
+      // Use provided storageGifUrl or fallback to generatedGifUrl
+      const gifUrlToUse = storageGifUrl || generatedGifUrl;
+      console.log('🔄 Using GIF URL:', gifUrlToUse);
+      
+      if (!gifUrlToUse) {
         onError("Please generate a GIF first");
         return;
       }
-
-      // Use IPFS URL if available, otherwise use the generated URL
-      const gifUrlToUse = generatedGifUrl.startsWith('https://ipfs.io/') 
-        ? generatedGifUrl 
-        : generatedGifUrl;
 
       // Get user data - simplified approach
       let creatorData = null;
@@ -397,6 +405,21 @@ export function ImagePreview({
         eyeAnimation: selectedEyeAnimation,
         creator: creatorData,
       };
+
+      // Save to database via API
+      const saveResponse = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(gifData),
+      });
+
+      if (!saveResponse.ok) {
+        console.error('Failed to save to database:', await saveResponse.text());
+      } else {
+        console.log('✅ Saved to database successfully');
+      }
 
       console.log('✅ Calling onGifCreated with data:', gifData);
       onGifCreated?.(gifData);
