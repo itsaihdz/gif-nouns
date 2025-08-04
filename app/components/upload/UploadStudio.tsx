@@ -162,7 +162,21 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
         ) : null;
 
       case "download":
-        return createdGifData ? (
+        console.log('🔄 Rendering download step with createdGifData:', createdGifData);
+        if (!createdGifData) {
+          console.error('❌ createdGifData is null in download step');
+          return (
+            <div className="text-center p-8">
+              <p className="text-red-600 dark:text-red-400 mb-4">
+                Error: GIF data not found. Please try creating the GIF again.
+              </p>
+              <Button onClick={handleBackToCreate} variant="outline">
+                Back to Create
+              </Button>
+            </div>
+          );
+        }
+        return (
           <DownloadSharePage
             gifUrl={createdGifData.gifUrl}
             title={createdGifData.title}
@@ -173,7 +187,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
             onViewInGallery={handleViewInGallery}
             className="max-w-6xl mx-auto"
           />
-        ) : null;
+        );
 
       default:
         return null;

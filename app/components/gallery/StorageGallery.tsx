@@ -29,8 +29,11 @@ interface StorageGalleryProps {
 
 export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [gifs, setGifs] = useState<StorageGif[]>([]);
+  const [filteredGifs, setFilteredGifs] = useState<StorageGif[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedNoggleColor, setSelectedNoggleColor] = useState<string>('all');
+  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
 
   const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
     try {
@@ -125,6 +128,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         );
         
         setGifs(gifsWithCreatorInfo);
+        setFilteredGifs(gifsWithCreatorInfo);
       } else {
         throw new Error(result.error || 'Failed to fetch GIFs');
       }
@@ -143,6 +147,33 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const handleRefresh = () => {
     fetchGifsFromStorage();
   };
+
+  // Filter GIFs based on selected traits
+  const filterGifs = () => {
+    let filtered = gifs;
+    
+    if (selectedNoggleColor !== 'all') {
+      filtered = filtered.filter(gif => gif.noggleColor === selectedNoggleColor);
+    }
+    
+    if (selectedEyeAnimation !== 'all') {
+      filtered = filtered.filter(gif => gif.eyeAnimation === selectedEyeAnimation);
+    }
+    
+    setFilteredGifs(filtered);
+  };
+
+  // Get unique trait values for filter options
+  const getUniqueTraits = () => {
+    const noggleColors = [...new Set(gifs.map(gif => gif.noggleColor).filter(color => color && color !== 'unknown'))];
+    const eyeAnimations = [...new Set(gifs.map(gif => gif.eyeAnimation).filter(animation => animation && animation !== 'unknown'))];
+    
+    return { noggleColors, eyeAnimations };
+  };
+
+  useEffect(() => {
+    filterGifs();
+  }, [selectedNoggleColor, selectedEyeAnimation, gifs]);
 
   if (loading) {
     return (
@@ -191,8 +222,42 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           Community Gallery
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-          All GIFs from Supabase Storage ({gifs.length} total) - Each GIF in storage appears here
+          All GIFs from Supabase Storage ({filteredGifs.length} of {gifs.length} total)
         </p>
+
+        {/* Filter Controls */}
+        <div className="flex flex-wrap gap-2 mb-4 justify-center">
+          <select
+            value={selectedNoggleColor}
+            onChange={(e) => setSelectedNoggleColor(e.target.value)}
+            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="all">All Noggle Colors</option>
+            {getUniqueTraits().noggleColors.map(color => (
+              <option key={color} value={color}>{color}</option>
+            ))}
+          </select>
+          
+          <select
+            value={selectedEyeAnimation}
+            onChange={(e) => setSelectedEyeAnimation(e.target.value)}
+            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="all">All Eye Animations</option>
+            {getUniqueTraits().eyeAnimations.map(animation => (
+              <option key={animation} value={animation}>{animation}</option>
+            ))}
+          </select>
+          
+          <Button
+            onClick={handleRefresh}
+            variant="outline"
+            size="sm"
+            icon={<Icon name="refresh" size="sm" />}
+          >
+            Refresh
+          </Button>
+        </div>
 
         {/* Refresh Button */}
         <div className="flex justify-end mb-2">
@@ -209,7 +274,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
       {/* Gallery Grid - 1:1 ratio, no cropping */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-        {gifs.map((gif, index) => (
+        {filteredGifs.map((gif, index) => (
           <Card key={gif.path} variant="outlined" className="overflow-hidden">
             {/* GIF Container - 1:1 aspect ratio */}
             <div className="relative w-full" style={{ aspectRatio: '1/1' }}>
@@ -238,21 +303,11 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                 </div>
               )}
 
-              {/* File info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1">
-                <div className="truncate">{gif.path}</div>
-                <div className="text-gray-300">
-                  {(gif.size / 1024).toFixed(1)} KB
-                </div>
-              </div>
+
             </div>
 
             {/* GIF Details */}
             <div className="p-2">
-              <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                {gif.path}
-              </div>
-              
               {/* Creator Info */}
               {gif.creator && (
                 <div className="flex items-center gap-1 mb-1">
@@ -262,10 +317,26 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                     className="w-4 h-4 rounded-full"
                   />
                   <span className="text-xs text-gray-500 dark:text-gray-500">
-                    @{gif.creator.username}
+                    {gif.creator.username}
                   </span>
                 </div>
               )}
+
+              {/* Traits Info */}
+              <div className="flex gap-1 mb-1">
+                {gif.noggleColor && gif.noggleColor !== 'unknown' && (
+                  <span className="text-xs px-1 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                    {gif.noggleColor}
+                  </span>
+                )}
+                {gif.eyeAnimation && gif.eyeAnimation !== 'unknown' && (
+                  <span className="text-xs px-1 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
+                    {gif.eyeAnimation}
+                  </span>
+                )}
+              </div>
+              
+
 
               {/* Voting */}
               <div className="flex items-center gap-2">
@@ -289,7 +360,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
       {/* Summary */}
       <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        Showing {gifs.length} GIFs from Supabase Storage - Every GIF in storage is displayed here
+        Showing {filteredGifs.length} of {gifs.length} GIFs from Supabase Storage
       </div>
     </div>
   );
