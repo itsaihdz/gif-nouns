@@ -118,24 +118,73 @@ export function ImagePreview({
   const getNoggleColorFromTraits = () => {
     if (traits?.noggles) {
       const noggleColor = traits.noggles.toLowerCase();
-      return NOGGLE_COLORS.find(color => color.value.toLowerCase() === noggleColor)?.value || NOGGLE_COLORS[0]?.value || "";
+      console.log('🔄 Looking for noggle color:', noggleColor, 'in available colors:', NOGGLE_COLORS.map(c => c.value));
+      
+      // Try exact match first
+      let found = NOGGLE_COLORS.find(color => color.value.toLowerCase() === noggleColor);
+      
+      // If not found, try partial match
+      if (!found) {
+        found = NOGGLE_COLORS.find(color => 
+          color.value.toLowerCase().includes(noggleColor) || 
+          noggleColor.includes(color.value.toLowerCase())
+        );
+      }
+      
+      if (found) {
+        console.log('✅ Found noggle color:', found.value);
+        return found.value;
+      }
     }
+    console.log('⚠️ Using default noggle color');
     return NOGGLE_COLORS[0]?.value || "";
   };
 
   const getEyeAnimationFromTraits = () => {
     if (traits?.eyes) {
       const eyeType = traits.eyes.toLowerCase();
-      return EYE_ANIMATIONS.find(animation => animation.value.toLowerCase() === eyeType)?.value || EYE_ANIMATIONS[0]?.value || "";
+      console.log('🔄 Looking for eye animation:', eyeType, 'in available animations:', EYE_ANIMATIONS.map(e => e.value));
+      
+      // Try exact match first
+      let found = EYE_ANIMATIONS.find(animation => animation.value.toLowerCase() === eyeType);
+      
+      // If not found, try partial match
+      if (!found) {
+        found = EYE_ANIMATIONS.find(animation => 
+          animation.value.toLowerCase().includes(eyeType) || 
+          eyeType.includes(animation.value.toLowerCase())
+        );
+      }
+      
+      if (found) {
+        console.log('✅ Found eye animation:', found.value);
+        return found.value;
+      }
     }
+    console.log('⚠️ Using default eye animation');
     return EYE_ANIMATIONS[0]?.value || "";
   };
 
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(getNoggleColorFromTraits());
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(getEyeAnimationFromTraits());
   
+  // Update selected values when traits change
+  useEffect(() => {
+    const newNoggleColor = getNoggleColorFromTraits();
+    const newEyeAnimation = getEyeAnimationFromTraits();
+    
+    setSelectedNoggleColor(newNoggleColor);
+    setSelectedEyeAnimation(newEyeAnimation);
+    
+    console.log('🔄 Updated trait values:', {
+      traits,
+      newNoggleColor,
+      newEyeAnimation
+    });
+  }, [traits]);
+  
   // Debug: Log the derived values
-  console.log('🔄 Derived trait values:', {
+  console.log('🔄 Current trait values:', {
     traits,
     selectedNoggleColor,
     selectedEyeAnimation,
@@ -379,6 +428,13 @@ export function ImagePreview({
           pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
         };
         console.log('🔄 Created creator data:', creatorData);
+      } else {
+        console.log('⚠️ No wallet address found, using fallback creator data');
+        creatorData = {
+          fid: 0,
+          username: 'Unknown Creator',
+          pfp: 'https://picsum.photos/32/32?random=unknown',
+        };
       }
 
       if (!creatorData) {
@@ -405,6 +461,10 @@ export function ImagePreview({
         eyeAnimation: selectedEyeAnimation,
         creator: creatorData,
       };
+
+      console.log('🔄 Final GIF data being saved:', gifData);
+      console.log('🔄 Traits used:', { selectedNoggleColor, selectedEyeAnimation });
+      console.log('🔄 Original traits:', traits);
 
       // Save to database via API
       const saveResponse = await fetch('/api/gallery', {
