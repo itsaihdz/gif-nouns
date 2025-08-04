@@ -1,7 +1,7 @@
 -- Update Supabase Database Schema
--- Run this in your Supabase SQL Editor to fix the vote_type column issue
+-- This script ensures all required columns and tables exist
 
--- First, drop existing tables if they exist (this will clear all data)
+-- Drop existing tables if they exist (for clean recreation)
 DROP TABLE IF EXISTS votes CASCADE;
 DROP TABLE IF EXISTS gallery_items CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS gallery_items (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create votes table with vote_type
+-- Create votes table with vote_type column
 CREATE TABLE IF NOT EXISTS votes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   gallery_item_id UUID NOT NULL REFERENCES gallery_items(id) ON DELETE CASCADE,
@@ -57,6 +57,17 @@ CREATE INDEX IF NOT EXISTS idx_votes_vote_type ON votes(vote_type);
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users are viewable by everyone" ON users;
+DROP POLICY IF EXISTS "Gallery items are viewable by everyone" ON gallery_items;
+DROP POLICY IF EXISTS "Votes are viewable by everyone" ON votes;
+DROP POLICY IF EXISTS "Users can insert their own data" ON users;
+DROP POLICY IF EXISTS "Users can update their own data" ON users;
+DROP POLICY IF EXISTS "Authenticated users can create gallery items" ON gallery_items;
+DROP POLICY IF EXISTS "Authenticated users can update gallery items" ON gallery_items;
+DROP POLICY IF EXISTS "Authenticated users can vote" ON votes;
+DROP POLICY IF EXISTS "Users can remove their own votes" ON votes;
 
 -- Create policies for public read access
 CREATE POLICY "Users are viewable by everyone" ON users
@@ -97,26 +108,25 @@ END;
 $$ language 'plpgsql';
 
 -- Create triggers to automatically update updated_at
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+DROP TRIGGER IF EXISTS update_gallery_items_updated_at ON gallery_items;
+
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_gallery_items_updated_at BEFORE UPDATE ON gallery_items
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert some sample data
+-- Insert sample data
 INSERT INTO users (fid, username, display_name, pfp, follower_count, following_count) VALUES
   (12345, 'alice.noun', 'Alice Noun', 'https://picsum.photos/32/32?random=1', 42, 38),
-  (67890, 'bob.noun', 'Bob Noun', 'https://picsum.photos/32/32?random=2', 15, 23),
-  (11111, 'charlie.noun', 'Charlie Noun', 'https://picsum.photos/32/32?random=3', 89, 67);
+  (23456, 'bob.noun', 'Bob Noun', 'https://picsum.photos/32/32?random=5', 38, 42),
+  (34567, 'charlie.noun', 'Charlie Noun', 'https://picsum.photos/32/32?random=3', 25, 30),
+  (45678, 'diana.noun', 'Diana Noun', 'https://picsum.photos/32/32?random=4', 55, 45)
+ON CONFLICT (fid) DO NOTHING;
 
 INSERT INTO gallery_items (gif_url, creator_fid, creator_username, creator_pfp, title, noggle_color, eye_animation, upvotes, downvotes) VALUES
-  ('https://ipfs.io/ipfs/bafkreidbasoljijtgo2pzbonlg2wh3zq3omhfnv2ggubfmncsd24y3245u', 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'gifnouns #1', 'blue', 'nouns', 5, 1),
-  ('https://ipfs.io/ipfs/bafkreidbasoljijtgo2pzbonlg2wh3zq3omhfnv2ggubfmncsd24y3245u', 67890, 'bob.noun', 'https://picsum.photos/32/32?random=2', 'gifnouns #2', 'purple', 'ojos-nouns', 3, 0),
-  ('https://ipfs.io/ipfs/bafkreidbasoljijtgo2pzbonlg2wh3zq3omhfnv2ggubfmncsd24y3245u', 11111, 'charlie.noun', 'https://picsum.photos/32/32?random=3', 'gifnouns #3', 'red', 'viscos', 7, 2);
-
--- Insert some sample votes
-INSERT INTO votes (gallery_item_id, voter_fid, voter_username, voter_pfp, vote_type) VALUES
-  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #1' LIMIT 1), 67890, 'bob.noun', 'https://picsum.photos/32/32?random=2', 'upvote'),
-  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #1' LIMIT 1), 11111, 'charlie.noun', 'https://picsum.photos/32/32?random=3', 'upvote'),
-  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #2' LIMIT 1), 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'upvote'),
-  ((SELECT id FROM gallery_items WHERE title = 'gifnouns #3' LIMIT 1), 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'downvote'); 
+  ('/api/generate-gif?demo=1', 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'gifnouns #1', 'blue', 'nouns', 42, 5),
+  ('/api/generate-gif?demo=2', 23456, 'bob.noun', 'https://picsum.photos/32/32?random=5', 'gifnouns #2', 'grass', 'viscos', 38, 2),
+  ('/api/generate-gif?demo=test', 34567, 'charlie.noun', 'https://picsum.photos/32/32?random=3', 'gifnouns #3', 'red', 'nouns', 25, 3)
+ON CONFLICT DO NOTHING; 

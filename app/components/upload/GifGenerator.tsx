@@ -167,6 +167,117 @@ export function useGifGenerator({
     }
   }, [originalImageUrl, noggleColor, eyeAnimation, width, height, fps, onProgress, onComplete, onError]);
 
+  // Promise-based version of generateGif
+  const generateGifAsync = useCallback(async (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      // Create temporary handlers for this specific call
+      const tempOnComplete = (gifUrl: string) => {
+        resolve(gifUrl);
+      };
+      
+      const tempOnError = (error: string) => {
+        reject(new Error(error));
+      };
+
+      // Create a temporary GIF instance for this call
+      const tempGifGenerator = async () => {
+        try {
+          // Get the correct file name for the eye animation
+          const eyeAnimationFile = EYE_ANIMATION_FILES[eyeAnimation || ""];
+          if (!eyeAnimationFile) {
+            throw new Error(`Unknown eye animation: ${eyeAnimation}`);
+          }
+
+          // Load binary data of eye animation GIF
+          const response = await fetch(`/assets/eyes/${eyeAnimationFile}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const gif = parseGIF(arrayBuffer);
+          const framesData = decompressFrames(gif, true);
+
+          // Load original image and noggle overlay
+          const originalImg = await loadImage(originalImageUrl);
+          let noggleImg = null;
+          if (noggleColor && noggleColor !== "original") {
+            const noggleFile = NOGGLE_COLOR_FILES[noggleColor];
+            if (noggleFile) {
+              noggleImg = await loadImage(`/assets/noggles/${noggleFile}`);
+            }
+          }
+
+          // Create GIF with the same frame count as the original eye animation
+          const gifRef = new GIF({
+            workers: 2,
+            quality: 10,
+            width,
+            height,
+            workerScript: '/gif.worker.js'
+          });
+
+          // Calculate delay for 8fps (125ms per frame)
+          const frameDelay = 1000 / fps; // Convert fps to milliseconds
+
+          // Use the exact frame count from the original eye animation but with 8fps timing
+          for (let i = 0; i < framesData.length; i++) {
+            const frame = framesData[i];
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            if (!ctx) throw new Error('Canvas context error');
+
+            // Clear canvas with transparent background
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw base image
+            ctx.drawImage(originalImg, 0, 0, width, height);
+
+            // Optional noggle overlay
+            if (noggleImg) {
+              ctx.drawImage(noggleImg, 0, 0, width, height);
+            }
+
+            // Create a temporary canvas for the eye frame to handle transparency properly
+            const eyeCanvas = document.createElement('canvas');
+            eyeCanvas.width = width;
+            eyeCanvas.height = height;
+            const eyeCtx = eyeCanvas.getContext('2d');
+
+            if (!eyeCtx) throw new Error('Eye canvas context error');
+
+            // Clear eye canvas
+            eyeCtx.clearRect(0, 0, width, height);
+
+            // Draw the eye frame with proper positioning
+            const imageData = eyeCtx.createImageData(frame.dims.width, frame.dims.height);
+            imageData.data.set(frame.patch);
+            eyeCtx.putImageData(imageData, frame.dims.left, frame.dims.top);
+
+            // Composite the eye frame onto the main canvas
+            ctx.drawImage(eyeCanvas, 0, 0);
+
+            // Add frame with 8fps timing (125ms delay)
+            gifRef.addFrame(canvas, { delay: frameDelay });
+
+            onProgress?.(((i + 1) / framesData.length) * 100);
+          }
+
+          gifRef.on('finished', (blob: Blob) => {
+            const gifUrl = URL.createObjectURL(blob);
+            tempOnComplete(gifUrl);
+          });
+
+          gifRef.render();
+        } catch (err) {
+          console.error('Error:', err);
+          tempOnError(err instanceof Error ? err.message : 'GIF generation failed');
+        }
+      };
+
+      tempGifGenerator();
+    });
+  }, [originalImageUrl, noggleColor, eyeAnimation, width, height, fps, onProgress]);
+
   const loadImage = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -222,6 +333,7 @@ export function useGifGenerator({
 
   return {
     generateGif,
+    generateGifAsync,
     downloadGif,
     mintAsNFT
   };

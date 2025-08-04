@@ -104,22 +104,22 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
   return (
     <div className={className}>
       {/* Gallery Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="mb-2">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Community Gallery
         </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
           Discover and vote for the best animated Nouns created by the community
         </p>
 
         {/* Filters and Sorting */}
-        <div className="flex flex-wrap gap-4 mb-6">
+        <div className="flex flex-wrap gap-2 mb-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as "votes" | "recent")}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
             >
               <option value="votes">Most Voted</option>
               <option value="recent">Most Recent</option>
@@ -131,7 +131,7 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
             <select
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value)}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm"
             >
               <option value="all">All</option>
               {uniqueNoggleColors.map(color => (
@@ -146,7 +146,7 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
       </div>
 
       {/* Gallery Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
         {filteredAndSortedItems.map((item) => (
           <Card key={item.id} variant="outlined" className="overflow-hidden">
             {/* GIF Preview */}
@@ -167,13 +167,13 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
             </div>
 
             {/* Item Details */}
-            <div className="p-4">
+            <div className="p-2">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                 {item.title}
               </h3>
               
               {/* Creator Info */}
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                 <img
                   src={item.creator.pfp}
                   alt={item.creator.username}
@@ -185,7 +185,7 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
               </div>
 
               {/* Vote Count and Voters */}
-              <div className="mb-4">
+              <div className="mb-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Icon name="heart" size="sm" className={item.userVote === 'upvote' ? "text-red-500" : "text-gray-400"} />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -259,8 +259,8 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
       {/* Share Dialog */}
       {showShareDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex flex-col gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-2 max-w-md w-full mx-2">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Share this creation
@@ -286,8 +286,8 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
 
       {/* Empty State */}
       {filteredAndSortedItems.length === 0 && (
-        <div className="text-center py-12">
-          <Icon name="gallery" size="xl" className="text-gray-400 mx-auto mb-4" />
+        <div className="text-center py-2">
+          <Icon name="gallery" size="xl" className="text-gray-400 mx-auto mb-2" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             No GIFs found
           </h3>

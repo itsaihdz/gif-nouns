@@ -126,10 +126,10 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 ${className}`}>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 py-2">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
             Nouns Remix Studio
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
@@ -138,8 +138,8 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
         </div>
 
         {/* Progress Steps */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex items-center justify-center space-x-4">
+        <div className="max-w-4xl mx-auto mb-2">
+          <div className="flex items-center justify-center space-x-2">
             {[
               { step: "upload", label: "Upload", icon: "upload" },
               { step: "detecting", label: "Detect", icon: "eye" },
@@ -174,7 +174,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
                     {stepInfo.label}
                   </span>
                   {index < 3 && (
-                    <div className={`w-8 h-0.5 mx-4 ${
+                    <div className={`w-8 h-0.5 mx-2 ${
                       isCompleted ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"
                     }`} />
                   )}
@@ -186,9 +186,9 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
 
         {/* Error Display */}
         {error && (
-          <div className="max-w-2xl mx-auto mb-6">
+          <div className="max-w-2xl mx-auto mb-2">
             <Card variant="default" className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-              <div className="p-4 flex items-center space-x-3">
+              <div className="p-2 flex items-center space-x-2">
                 <Icon name="close" className="text-red-500" size="md" />
                 <div>
                   <p className="text-red-700 dark:text-red-300 font-medium">Error</p>
@@ -213,11 +213,11 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-2">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Built with ❤️ for the Nouns community
           </p>
-          <div className="flex items-center justify-center space-x-4 mt-2">
+          <div className="flex items-center justify-center space-x-2 mt-2">
             <span className="text-xs text-gray-400 dark:text-gray-500">Base L2</span>
             <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
             <span className="text-xs text-gray-400 dark:text-gray-500">Farcaster Native</span>

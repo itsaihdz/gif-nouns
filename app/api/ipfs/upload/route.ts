@@ -24,11 +24,33 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const result = await uploadGifToIPFS(file, filename);
-      return NextResponse.json({
-        success: true,
-        ...result
+      console.log('IPFS upload - File details:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
       });
+
+      if (file.size === 0) {
+        return NextResponse.json(
+          { error: 'File is empty (0 bytes)' },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const result = await uploadGifToIPFS(file, filename);
+        console.log('IPFS upload successful:', result);
+        return NextResponse.json({
+          success: true,
+          ...result
+        });
+      } catch (uploadError) {
+        console.error('IPFS upload error:', uploadError);
+        return NextResponse.json(
+          { error: `IPFS upload failed: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}` },
+          { status: 500 }
+        );
+      }
     } else if (type === 'metadata') {
       if (!metadata) {
         return NextResponse.json(

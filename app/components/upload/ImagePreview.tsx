@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
@@ -8,6 +8,22 @@ import { useGifGenerator } from "./GifGenerator";
 import { useUser } from "../../contexts/UserContext";
 import { useAccount } from "wagmi";
 import { ShareDialog } from "../social/ShareDialog";
+import { HighlightInfo } from "../ui/HighlightInfo";
+import {
+  Transaction,
+  TransactionButton,
+  TransactionToast,
+  TransactionToastAction,
+  TransactionToastIcon,
+  TransactionToastLabel,
+  TransactionError,
+  TransactionResponse,
+  TransactionStatusAction,
+  TransactionStatusLabel,
+  TransactionStatus,
+} from "@coinbase/onchainkit/transaction";
+import { useNotification } from "@coinbase/onchainkit/minikit";
+import { encodeFunctionData, parseEther } from "viem";
 
 
 interface NounTraits {
@@ -103,7 +119,7 @@ export function ImagePreview({
   const [nextGifNumber, setNextGifNumber] = useState(1);
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
-  const [ipfsMetadataUrl, setIpfsMetadataUrl] = useState<string | null>(null);
+  const sendNotification = useNotification();
 
   // Get the next sequential number when component mounts
   useEffect(() => {
@@ -123,7 +139,7 @@ export function ImagePreview({
   }, []);
 
   // Initialize GIF generator
-  const { generateGif, downloadGif, mintAsNFT } = useGifGenerator({
+  const { generateGif, generateGifAsync, downloadGif, mintAsNFT } = useGifGenerator({
     originalImageUrl,
     noggleColor: selectedNoggleColor,
     eyeAnimation: selectedEyeAnimation,
@@ -168,101 +184,67 @@ export function ImagePreview({
     setIsExporting(true);
     setExportProgress(0);
     try {
-      // First generate the GIF
-      await generateGif();
+      // First generate the GIF and wait for it to complete
+      console.log('Starting GIF generation...');
+      const gifUrl = await generateGifAsync();
+      console.log('GIF generation completed:', gifUrl);
+      
       setExportProgress(25);
       
-      // Then upload to IPFS if generation was successful
-      if (generatedGifUrl) {
+      // Then upload to Supabase Storage if generation was successful
+      if (gifUrl) {
         setExportProgress(50);
         
+        console.log('Starting Supabase Storage upload process...');
+        console.log('Generated GIF URL:', gifUrl);
+        
         // Fetch the generated GIF as a blob
-        const response = await fetch(generatedGifUrl);
+        const response = await fetch(gifUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch GIF: ${response.status} ${response.statusText}`);
+        }
+        
         const gifBlob = await response.blob();
+        console.log('GIF blob size:', gifBlob.size, 'bytes');
+        console.log('GIF blob type:', gifBlob.type);
+        
+        if (gifBlob.size === 0) {
+          throw new Error('Generated GIF is empty (0 bytes)');
+        }
 
         // Create a unique filename
         const timestamp = Date.now();
-        const filename = `gifnouns_${timestamp}.gif`;
+        const filename = `gifnouns_${nextGifNumber}_${timestamp}.gif`;
 
-        // Upload GIF to IPFS
+        // Upload GIF to Supabase Storage
         const formData = new FormData();
         formData.append('file', gifBlob, filename);
-        formData.append('type', 'gif');
         formData.append('filename', filename);
 
         setExportProgress(75);
 
-        const uploadResponse = await fetch('/api/ipfs/upload', {
+        console.log('Uploading to Supabase Storage...');
+        const uploadResponse = await fetch('/api/storage/upload', {
           method: 'POST',
           body: formData,
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('Failed to upload GIF to IPFS');
+          const errorText = await uploadResponse.text();
+          console.error('Supabase Storage upload failed:', uploadResponse.status, errorText);
+          throw new Error(`Failed to upload GIF to Supabase Storage: ${uploadResponse.status} ${errorText}`);
         }
 
         const uploadResult = await uploadResponse.json();
-        const ipfsGifUrl = uploadResult.url;
-        const ipfsGifHash = uploadResult.hash;
+        const storageGifUrl = uploadResult.url;
+        const storagePath = uploadResult.path;
 
-        // Create NFT metadata
-        const metadata = {
-          name: `gifnouns #${nextGifNumber}`,
-          description: `An animated Noun with ${selectedNoggleColor} noggle and ${selectedEyeAnimation} eyes. Created with gifnouns.`,
-          image: ipfsGifUrl,
-          animation_url: ipfsGifUrl,
-          external_url: "https://gifnouns.freezerverse.com",
-          attributes: [
-            {
-              trait_type: "Noggle Color",
-              value: selectedNoggleColor
-            },
-            {
-              trait_type: "Eye Animation",
-              value: selectedEyeAnimation
-            },
-            {
-              trait_type: "Creator",
-              value: address ? `user_${address.slice(2, 8)}` : "anonymous"
-            }
-          ],
-          properties: {
-            files: [
-              {
-                type: "image/gif",
-                uri: ipfsGifUrl
-              }
-            ],
-            category: "image"
-          }
-        };
+        console.log('✅ Supabase Storage upload successful:', uploadResult);
 
-        // Upload metadata to IPFS
-        const metadataFormData = new FormData();
-        metadataFormData.append('type', 'metadata');
-        metadataFormData.append('filename', `metadata_${timestamp}.json`);
-        metadataFormData.append('metadata', JSON.stringify(metadata));
+        // Store the Supabase Storage URL
+        setGeneratedGifUrl(storageGifUrl);
 
         setExportProgress(90);
-
-        const metadataResponse = await fetch('/api/ipfs/upload', {
-          method: 'POST',
-          body: metadataFormData,
-        });
-
-        if (!metadataResponse.ok) {
-          throw new Error('Failed to upload metadata to IPFS');
-        }
-
-        const metadataResult = await metadataResponse.json();
-        const ipfsMetadataUrl = metadataResult.url;
-        const ipfsMetadataHash = metadataResult.hash;
-
-        // Store the IPFS URLs
-        setGeneratedGifUrl(ipfsGifUrl);
-        setIpfsMetadataUrl(ipfsMetadataUrl);
-
-        setExportProgress(95);
 
         // Automatically add to gallery
         await handleUploadToGallery();
@@ -270,18 +252,18 @@ export function ImagePreview({
         setExportProgress(100);
 
         // Show success message
-        onError(`GIF created successfully! Uploaded to IPFS and added to gallery.`);
+        onError(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
         
-        console.log('IPFS Upload Results:', {
-          gifUrl: ipfsGifUrl,
-          gifHash: ipfsGifHash,
-          metadataUrl: ipfsMetadataUrl,
-          metadataHash: ipfsMetadataHash
+        console.log('Supabase Storage Upload Results:', {
+          gifUrl: storageGifUrl,
+          path: storagePath,
+          size: uploadResult.size
         });
       }
     } catch (error) {
       console.error('Export error:', error);
-      onError("Failed to export GIF to IPFS");
+      const errorMessage = error instanceof Error ? error.message : 'Failed to export GIF to Supabase Storage';
+      onError(errorMessage);
     } finally {
       setIsExporting(false);
     }
@@ -294,23 +276,23 @@ export function ImagePreview({
     }
   };
 
-  const handleMintNFT = async () => {
-    if (!ipfsMetadataUrl) {
-      onError("Please export the GIF to IPFS first");
-      return;
-    }
+  const handleMintSuccess = useCallback(async (response: TransactionResponse) => {
+    const transactionHash = response.transactionReceipts[0].transactionHash;
+    
+    console.log(`NFT minted successfully: ${transactionHash}`);
 
-    try {
-      // TODO: Implement actual NFT minting using the IPFS metadata URL
-      console.log('Minting NFT with metadata URL:', ipfsMetadataUrl);
-      
-      // For now, show a success message
-      onError(`NFT ready to mint! Metadata: ${ipfsMetadataUrl}`);
-    } catch (error) {
-      console.error('Minting error:', error);
-      onError("Failed to mint NFT");
-    }
-  };
+    await sendNotification({
+      title: "🎉 NFT Minted Successfully!",
+      body: `Your animated Noun #${nextGifNumber} is now live on Base!`,
+    });
+
+    onError(`🎉 NFT minted successfully! Transaction: ${transactionHash.slice(0, 10)}...`);
+  }, [sendNotification, nextGifNumber, onError]);
+
+  const handleMintError = useCallback((error: TransactionError) => {
+    console.error("NFT minting failed:", error);
+    onError("Failed to mint NFT. Please check your wallet and try again.");
+  }, [onError]);
 
   const handleShareToFarcaster = () => {
     if (generatedGifUrl) {
@@ -406,17 +388,61 @@ export function ImagePreview({
     }
   };
 
+  // NFT minting transaction calls
+  const mintCalls = useMemo(() => {
+    if (!address) return [];
+
+    const contractAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS as `0x${string}`;
+    if (!contractAddress || contractAddress === "0x0000000000000000000000000000000000000000") {
+      console.warn("NFT contract address not configured");
+      return [];
+    }
+
+    // Encode the mintAnimatedNoun function call
+    const mintData = encodeFunctionData({
+      abi: [
+        {
+          name: "mintAnimatedNoun",
+          type: "function",
+          stateMutability: "payable",
+          inputs: [
+            { name: "gifUrl", type: "string" },
+            { name: "noggleColor", type: "string" },
+            { name: "eyeAnimation", type: "string" },
+            { name: "title", type: "string" }
+          ],
+          outputs: [],
+        },
+      ],
+      functionName: "mintAnimatedNoun",
+      args: [
+        generatedGifUrl,
+        selectedNoggleColor,
+        selectedEyeAnimation,
+        `gifnouns #${nextGifNumber}`
+      ],
+    });
+
+    return [
+      {
+        to: contractAddress,
+        data: mintData,
+        value: parseEther("0.01"), // 0.01 ETH mint price
+      },
+    ];
+  }, [address, generatedGifUrl, selectedNoggleColor, selectedEyeAnimation, nextGifNumber]);
+
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Preview Section */}
+    <div className={`space-y-2 ${className}`}>
+      {/* Main Preview Card */}
       <Card variant="outlined">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Animated Preview
+        <div className="p-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Preview & Export
           </h3>
           
-          {/* Animated Preview */}
-          <div className="relative">
+          {/* Image Preview */}
+          <div className="relative mb-2">
             {animatedPreviewUrl ? (
               <div className="relative">
                 {/* Base image with noggle (static) */}
@@ -462,9 +488,9 @@ export function ImagePreview({
           </div>
 
           {/* Export Actions */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             {/* Generate GIF Button */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant="gradient"
                 size="lg"
@@ -489,44 +515,62 @@ export function ImagePreview({
 
             {/* Generated GIF Actions */}
             {generatedGifUrl && (
-              <div className="space-y-4">
-                {/* IPFS Status */}
-                {generatedGifUrl && generatedGifUrl.startsWith('https://ipfs.io/') && (
-                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="space-y-2">
+                {/* Storage Status */}
+                {generatedGifUrl && generatedGifUrl.includes('supabase.co') && (
+                  <div className="mb-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                     <div className="flex items-center gap-2">
                       <Icon name="check" className="text-green-600" size="sm" />
                       <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                        Stored on IPFS & Added to Gallery
+                        Stored on Supabase Storage & Added to Gallery
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-green-600 dark:text-green-400">
-                      Hash: {generatedGifUrl.split('/').pop()}
+                      File: {generatedGifUrl.split('/').pop()}
                     </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-2">
                   <Button
-                    variant="outline"
+                    variant="gradient"
                     onClick={handleDownload}
-                    disabled={!generatedGifUrl}
                     icon={<Icon name="download" size="sm" />}
                     className="w-full"
                   >
                     Download GIF
                   </Button>
-                  
-                  <Button
-                    variant="gradient"
-                    onClick={handleMintNFT}
-                    disabled={!ipfsMetadataUrl}
-                    icon={<Icon name="sparkles" size="sm" />}
-                    className="w-full"
-                  >
-                    Mint NFT
-                  </Button>
-                  
+
+                  {/* NFT Minting with OnchainKit */}
+                  {mintCalls.length > 0 ? (
+                    <Transaction
+                      calls={mintCalls}
+                      onSuccess={handleMintSuccess}
+                      onError={handleMintError}
+                    >
+                      <TransactionButton />
+                      <TransactionStatus>
+                        <TransactionStatusAction />
+                        <TransactionStatusLabel />
+                      </TransactionStatus>
+                      <TransactionToast className="mb-2">
+                        <TransactionToastIcon />
+                        <TransactionToastLabel />
+                        <TransactionToastAction />
+                      </TransactionToast>
+                    </Transaction>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      disabled
+                      icon={<Icon name="sparkles" size="sm" />}
+                      className="w-full"
+                    >
+                      {!address ? "Connect Wallet to Mint" : "Preparing NFT..."}
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     onClick={handleShareToFarcaster}
@@ -538,40 +582,59 @@ export function ImagePreview({
                   </Button>
                 </div>
 
-                {/* NFT Metadata Info */}
-                {ipfsMetadataUrl && (
-                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-                    NFT Metadata: {ipfsMetadataUrl.split('/').pop()}
+                {/* NFT Info */}
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2">
+                  <div className="flex items-start gap-2">
+                    <Icon name="sparkles" className="text-blue-600 mt-0.5" size="sm" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+                        Mint in GIF Nouns Collective
+                      </h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                        Your GIF will be minted as a unique NFT in the GIF Nouns Collective on Base L2!
+                      </p>
+                      <div className="space-y-1 text-xs text-blue-600 dark:text-blue-400">
+                        <div className="flex items-center gap-2">
+                          <Icon name="check" size="sm" />
+                          <span>Part of the GIF Nouns Collective</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="check" size="sm" />
+                          <span>Stored permanently on Supabase Storage</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="check" size="sm" />
+                          <span>Gas fees covered by OnchainKit</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Icon name="check" size="sm" />
+                          <span>Tradeable on Base marketplaces</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
+
+                {/* Highlight Integration Info */}
+                <HighlightInfo className="mt-2" />
               </div>
             )}
           </div>
         </div>
       </Card>
 
-      {/* Share Dialog */}
-      <ShareDialog
-        gifUrl={generatedGifUrl}
-        title={`gifnouns #${nextGifNumber}`}
-        noggleColor={selectedNoggleColor}
-        eyeAnimation={selectedEyeAnimation}
-        isOpen={showShareDialog}
-        onClose={() => setShowShareDialog(false)}
-      />
-
       {/* Noggle Color Selector */}
       <Card variant="outlined">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="p-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Choose Noggle Color
           </h3>
-          <div className="grid grid-cols-6 gap-3">
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
             {NOGGLE_COLORS.map((color) => (
               <button
                 key={color.value}
                 onClick={() => setSelectedNoggleColor(color.value)}
-                className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                className={`p-2 rounded-lg border-2 transition-all duration-200 ${
                   selectedNoggleColor === color.value
                     ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
                     : "border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700"
@@ -582,14 +645,14 @@ export function ImagePreview({
                   <img
                     src={`/assets/noggles/${color.file}`}
                     alt={color.name}
-                    className={`w-full h-8 object-contain mb-2 rounded ${
+                    className={`w-full h-10 object-contain mb-1 rounded ${
                       selectedNoggleColor === color.value 
                         ? "ring-2 ring-purple-500" 
                         : ""
                     }`}
                   />
                 ) : (
-                  <div className={`w-full h-8 rounded ${color.class} mb-2`} />
+                  <div className={`w-full h-10 rounded ${color.class} mb-1`} />
                 )}
                 <p className={`text-xs font-medium ${
                   selectedNoggleColor === color.value 
@@ -606,16 +669,16 @@ export function ImagePreview({
 
       {/* Eye Animation Selector */}
       <Card variant="outlined">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="p-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Choose Eye Animation
           </h3>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {EYE_ANIMATIONS.map((animation) => (
               <button
                 key={animation.value}
                 onClick={() => setSelectedEyeAnimation(animation.value)}
-                className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                className={`p-2 rounded-lg border-2 transition-all duration-200 ${
                   selectedEyeAnimation === animation.value
                     ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
                     : "border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700"
@@ -626,7 +689,7 @@ export function ImagePreview({
                     <img
                       src={`/assets/eyes/${animation.file}`}
                       alt={animation.name}
-                      className={`mx-auto mb-2 w-12 h-12 object-contain rounded ${
+                      className={`mx-auto mb-1 w-10 h-10 object-contain rounded ${
                         selectedEyeAnimation === animation.value 
                           ? "ring-2 ring-purple-500" 
                           : ""
@@ -635,7 +698,7 @@ export function ImagePreview({
                   ) : (
                     <Icon 
                       name={animation.icon} 
-                      className={`mx-auto mb-2 ${
+                      className={`mx-auto mb-1 ${
                         selectedEyeAnimation === animation.value 
                           ? "text-purple-600 dark:text-purple-400" 
                           : "text-gray-400 dark:text-gray-500"
@@ -643,7 +706,7 @@ export function ImagePreview({
                       size="lg" 
                     />
                   )}
-                  <p className={`text-sm font-medium ${
+                  <p className={`text-xs font-medium ${
                     selectedEyeAnimation === animation.value 
                       ? "text-purple-600 dark:text-purple-400" 
                       : "text-gray-600 dark:text-gray-400"
