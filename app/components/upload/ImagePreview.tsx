@@ -189,13 +189,14 @@ export function ImagePreview({
   }, [generatedGifUrl]);
 
   const handleExport = async () => {
+    console.log('🔄 handleExport started');
     setIsExporting(true);
     setExportProgress(0);
     try {
       // First generate the GIF and wait for it to complete
-      console.log('Starting GIF generation...');
+      console.log('🔄 Starting GIF generation...');
       const gifUrl = await generateGifAsync();
-      console.log('GIF generation completed:', gifUrl);
+      console.log('🔄 GIF generation completed:', gifUrl);
       
       setExportProgress(25);
       
@@ -339,44 +340,18 @@ export function ImagePreview({
         ? generatedGifUrl 
         : generatedGifUrl;
 
-      // Get user data - either from Farcaster context or fetch from API
+      // Get user data - simplified approach
       let creatorData = null;
       
-      if (isAuthenticated && user) {
-        // Use authenticated Farcaster user
-        creatorData = {
-          fid: user.fid,
-          username: user.username,
-          pfp: user.pfp,
-        };
-      } else if (address) {
-        // Try to fetch user data by wallet address
-        try {
-          const response = await fetch(`/api/auth/farcaster?address=${address}`);
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.user) {
-              creatorData = {
-                fid: result.user.fid,
-                username: result.user.username,
-                pfp: result.user.pfp,
-              };
-            }
-          }
-        } catch (error) {
-          console.log("Could not fetch user by wallet address:", error);
-        }
-      }
-
-      // If no user data found, use wallet address as fallback
-      if (!creatorData && address) {
-        console.log('🔄 Using wallet address fallback for user data');
+      if (address) {
+        // Always use wallet address for now (simplified)
+        console.log('🔄 Using wallet address for creator data:', address);
         creatorData = {
           fid: 0, // Will be handled by backend
-          username: `user_${address.slice(2, 8)}.noun`,
+          username: `${address.slice(0, 6)}...${address.slice(-4)}`,
           pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
         };
-        console.log('🔄 Created fallback creator data:', creatorData);
+        console.log('🔄 Created creator data:', creatorData);
       }
 
       if (!creatorData) {
@@ -519,7 +494,10 @@ export function ImagePreview({
               <Button
                 variant="gradient"
                 size="lg"
-                onClick={handleExport}
+                onClick={() => {
+                  console.log('🔄 Create & Upload GIF button clicked');
+                  handleExport();
+                }}
                 disabled={isExporting}
                 icon={<Icon name="sparkles" size="md" />}
                 className="flex-1"
