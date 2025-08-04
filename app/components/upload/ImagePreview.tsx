@@ -41,6 +41,7 @@ interface ImagePreviewProps {
   originalImageUrl: string;
   traits: NounTraits;
   onError: (error: string) => void;
+  onSuccess?: (message: string) => void;
   onGifCreated?: (gifData: { 
     gifUrl: string; 
     title: string; 
@@ -107,6 +108,7 @@ export function ImagePreview({
   originalImageUrl, 
   traits,
   onError,
+  onSuccess,
   onGifCreated,
   className = "" 
 }: ImagePreviewProps) {
@@ -253,7 +255,7 @@ export function ImagePreview({
         setExportProgress(100);
 
         // Show success message
-        onError(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
+        onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
         
         console.log('Supabase Storage Upload Results:', {
           gifUrl: storageGifUrl,

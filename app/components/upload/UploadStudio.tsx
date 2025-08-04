@@ -42,6 +42,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
   const [imageUrl, setImageUrl] = useState<string>("");
   const [traits, setTraits] = useState<NounTraits | null>(null);
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const tracking = useTracking();
 
   const handleFileUpload = (file: File) => {
@@ -71,6 +72,14 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
+  };
+
+  const handleSuccess = (message: string) => {
+    // Clear any existing errors and show success
+    setError("");
+    setSuccessMessage(message);
+    // Auto-clear success message after 5 seconds
+    setTimeout(() => setSuccessMessage(""), 5000);
   };
 
   const handleGifCreated = (gifData: { 
@@ -114,6 +123,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
             originalImageUrl={imageUrl}
             traits={traits}
             onError={handleError}
+            onSuccess={handleSuccess}
             onGifCreated={handleGifCreated}
             className="max-w-6xl mx-auto"
           />
@@ -198,6 +208,29 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
                   variant="ghost"
                   size="sm"
                   onClick={() => setError("")}
+                  className="ml-auto"
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Success Display */}
+        {successMessage && (
+          <div className="max-w-2xl mx-auto mb-2">
+            <Card variant="default" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+              <div className="p-2 flex items-center space-x-2">
+                <Icon name="check" className="text-green-500" size="md" />
+                <div>
+                  <p className="text-green-700 dark:text-green-300 font-medium">Success!</p>
+                  <p className="text-green-600 dark:text-green-400 text-sm">{successMessage}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSuccessMessage("")}
                   className="ml-auto"
                 >
                   Dismiss
