@@ -51,18 +51,25 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       if (response.ok) {
         const result = await response.json();
         
-        // Update the GIF in the list
-        setGifs(prevGifs => 
-          prevGifs.map(gif => 
-            gif.url === gifUrl 
-              ? {
-                  ...gif,
-                  upvotes: result.upvotes,
-                  downvotes: result.downvotes,
-                }
-              : gif
-          )
-        );
+        if (result.success) {
+          // Update the GIF in the list
+          setGifs(prevGifs => 
+            prevGifs.map(gif => 
+              gif.url === gifUrl 
+                ? {
+                    ...gif,
+                    upvotes: result.upvotes,
+                    downvotes: result.downvotes,
+                  }
+                : gif
+            )
+          );
+          
+          // Refresh creator info after a short delay since a new gallery item might have been created
+          setTimeout(() => {
+            fetchGifsFromStorage();
+          }, 1000);
+        }
       }
     } catch (error) {
       console.error('Error voting:', error);

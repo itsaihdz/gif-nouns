@@ -14,22 +14,51 @@ export async function POST(request: NextRequest) {
 
     console.log('🔄 Processing vote for storage GIF:', { gifUrl, userFid, username, voteType });
 
-    // First, find the gallery item by gifUrl
-    const { data: item, error: itemError } = await supabase
+    // First, try to find the gallery item by gifUrl
+    let { data: item, error: itemError } = await supabase
       .from('gallery_items')
       .select('id, upvotes, downvotes')
       .eq('gif_url', gifUrl)
       .single();
 
+    // If no gallery item exists, create one automatically
     if (itemError) {
-      console.log('❌ No gallery item found for GIF URL:', gifUrl);
-      return NextResponse.json(
-        { success: false, error: 'GIF not found in gallery' },
-        { status: 404 }
-      );
-    }
+      console.log('🔄 No gallery item found for GIF URL, creating one:', gifUrl);
+      
+      // Extract filename from URL for title
+      const urlParts = gifUrl.split('/');
+      const filename = urlParts[urlParts.length - 1];
+      
+      // Create a new gallery item
+      const { data: newItem, error: createError } = await supabase
+        .from('gallery_items')
+        .insert({
+          gif_url: gifUrl,
+          creator_fid: userFid, // Use voter as creator for now
+          creator_username: username,
+          creator_pfp: pfp,
+          title: filename,
+          noggle_color: 'unknown',
+          eye_animation: 'unknown',
+          upvotes: 0,
+          downvotes: 0,
+        })
+        .select('id, upvotes, downvotes')
+        .single();
 
-    console.log('✅ Found gallery item:', item);
+      if (createError) {
+        console.error('❌ Error creating gallery item:', createError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to create gallery item' },
+          { status: 500 }
+        );
+      }
+
+      item = newItem;
+      console.log('✅ Created new gallery item:', item);
+    } else {
+      console.log('✅ Found existing gallery item:', item);
+    }
 
     // Check if user has already voted
     const { data: existingVote, error: voteCheckError } = await supabase
