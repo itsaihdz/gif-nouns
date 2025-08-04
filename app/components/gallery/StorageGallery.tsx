@@ -86,7 +86,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       if (result.success) {
         console.log(`✅ Fetched ${result.count} GIFs from storage`);
         
-        // Fetch creator info for each GIF
+        // Fetch creator info for each GIF (but don't block on it)
         const gifsWithCreatorInfo = await Promise.all(
           result.data.map(async (gif: StorageGif) => {
             try {
@@ -100,7 +100,20 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             } catch (error) {
               console.error('Error fetching creator info for:', gif.url, error);
             }
-            return gif;
+            // Always return the GIF, even without creator info
+            return {
+              ...gif,
+              creator: {
+                username: 'Unknown Creator',
+                pfp: 'https://picsum.photos/32/32?random=unknown',
+              },
+              title: gif.path,
+              noggleColor: 'unknown',
+              eyeAnimation: 'unknown',
+              upvotes: 0,
+              downvotes: 0,
+              hasCreatorInfo: false
+            };
           })
         );
         
@@ -171,7 +184,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           Community Gallery
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-          All GIFs from Supabase Storage ({gifs.length} total)
+          All GIFs from Supabase Storage ({gifs.length} total) - Each GIF in storage appears here
         </p>
 
         {/* Refresh Button */}
@@ -230,7 +243,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             {/* GIF Details */}
             <div className="p-2">
               <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                {gif.title || gif.path}
+                {gif.path}
               </div>
               
               {/* Creator Info */}
@@ -248,24 +261,19 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
               )}
 
               {/* Voting */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleVote(gif.url, 'upvote')}
-                    className="text-xs text-gray-500 hover:text-green-600 dark:hover:text-green-400"
-                  >
-                    👍 {gif.upvotes || 0}
-                  </button>
-                  <button
-                    onClick={() => handleVote(gif.url, 'downvote')}
-                    className="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400"
-                  >
-                    👎 {gif.downvotes || 0}
-                  </button>
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-500">
-                  {new Date(gif.created_at).toLocaleDateString()}
-                </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleVote(gif.url, 'upvote')}
+                  className="text-xs px-2 py-1 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 rounded"
+                >
+                  upvote {gif.upvotes || 0}
+                </button>
+                <button
+                  onClick={() => handleVote(gif.url, 'downvote')}
+                  className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 rounded"
+                >
+                  downvote {gif.downvotes || 0}
+                </button>
               </div>
             </div>
           </Card>
@@ -274,7 +282,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
       {/* Summary */}
       <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        Showing {gifs.length} GIFs from Supabase Storage
+        Showing {gifs.length} GIFs from Supabase Storage - Every GIF in storage is displayed here
       </div>
     </div>
   );
