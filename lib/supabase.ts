@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // Supabase configuration from environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
@@ -13,6 +14,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 // Add better error handling for Supabase client creation
 let supabase: SupabaseClient;
+let supabaseService: SupabaseClient;
 
 try {
   if (supabaseUrl && supabaseKey) {
@@ -24,18 +26,34 @@ try {
       }
     });
     console.log('✅ Supabase client created successfully');
+    
+    // Create service role client for admin operations
+    if (supabaseServiceKey) {
+      supabaseService = createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      });
+      console.log('✅ Supabase service role client created successfully');
+    } else {
+      console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY not configured - some operations may fail');
+    }
   } else {
     // Create a dummy client for development
     supabase = createClient('https://dummy.supabase.co', 'dummy-key');
+    supabaseService = createClient('https://dummy.supabase.co', 'dummy-key');
     console.log('⚠️ Using dummy Supabase client (mock data will be used)');
   }
 } catch (error) {
   console.error('Failed to create Supabase client:', error);
   // Create a fallback client with minimal config
   supabase = createClient('https://dummy.supabase.co', 'dummy-key');
+  supabaseService = createClient('https://dummy.supabase.co', 'dummy-key');
 }
 
-export { supabase };
+export { supabase, supabaseService };
 
 // Database types for TypeScript
 export interface Database {

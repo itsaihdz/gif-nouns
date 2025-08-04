@@ -1,8 +1,27 @@
-import { supabase } from './supabase';
+import { supabase, supabaseService } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 
 // Storage access keys for better authentication
 const STORAGE_ACCESS_KEY = process.env.SUPABASE_STORAGE_ACCESS_KEY;
 const STORAGE_SECRET_KEY = process.env.SUPABASE_STORAGE_SECRET_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+// Create a custom client with storage access keys if available
+let storageClient = supabase;
+if (STORAGE_ACCESS_KEY && STORAGE_SECRET_KEY && SUPABASE_URL) {
+  try {
+    storageClient = createClient(SUPABASE_URL, STORAGE_SECRET_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: false
+      }
+    });
+    console.log('🔑 Created custom storage client with access keys');
+  } catch (error) {
+    console.warn('⚠️ Failed to create custom storage client, using default');
+    storageClient = supabase;
+  }
+}
 
 export interface StorageUploadResult {
   url: string;
@@ -59,13 +78,46 @@ export async function uploadGifToStorage(
       console.log('🔑 Using storage access keys for enhanced authentication');
     }
 
-    const { data, error } = await supabase.storage
+    // Try using the custom storage client first, then fallback to regular client
+    let uploadError = null;
+
+    // First attempt with custom storage client
+    const { data, error } = await storageClient.storage
       .from(bucket)
       .upload(filePath, file, uploadOptions);
 
     if (error) {
-      console.error('❌ Supabase Storage upload error:', error);
-      throw new Error(`Storage upload failed: ${error.message}`);
+      console.log('⚠️ Custom storage client upload failed, trying regular client...');
+      uploadError = error;
+      
+      // Fallback to regular client
+      const { data: regularData, error: regularError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, uploadOptions);
+        
+      if (regularError) {
+        console.error('❌ Regular client upload also failed:', regularError);
+        throw new Error(`Storage upload failed: ${regularError.message}`);
+      }
+      
+      if (!regularData) {
+        throw new Error('No data returned from regular storage upload');
+      }
+      
+      // Get the public URL for the uploaded file
+      const { data: urlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+
+      const result: StorageUploadResult = {
+        url: urlData.publicUrl,
+        path: filePath,
+        size: file.size,
+        contentType: file.type || 'image/gif'
+      };
+
+      console.log('✅ GIF uploaded to Supabase Storage via regular client:', result);
+      return result;
     }
 
     if (!data) {
@@ -206,8 +258,12 @@ export async function createBucketIfNotExists(
       if (STORAGE_ACCESS_KEY && STORAGE_SECRET_KEY) {
         console.log('🔑 Using storage access keys for bucket creation');
       }
+
+      // Use service role client for bucket creation to bypass RLS policies
+      const clientToUse = supabaseService || supabase;
+      console.log('🔐 Using service role client for bucket creation to bypass RLS policies');
       
-      const { error } = await supabase.storage.createBucket(bucket, bucketOptions);
+      const { error } = await clientToUse.storage.createBucket(bucket, bucketOptions);
 
       if (error) {
         console.error('❌ Error creating bucket:', error);
