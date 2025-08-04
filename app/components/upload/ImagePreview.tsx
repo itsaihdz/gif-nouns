@@ -257,8 +257,13 @@ export function ImagePreview({
 
         // Automatically add to gallery
         console.log('🔄 About to call handleUploadToGallery...');
-        await handleUploadToGallery();
-        console.log('🔄 handleUploadToGallery completed');
+        try {
+          await handleUploadToGallery();
+          console.log('🔄 handleUploadToGallery completed successfully');
+        } catch (error) {
+          console.error('❌ handleUploadToGallery failed:', error);
+          // Don't throw here, just log the error
+        }
 
         setExportProgress(100);
 
@@ -365,11 +370,13 @@ export function ImagePreview({
 
       // If no user data found, use wallet address as fallback
       if (!creatorData && address) {
+        console.log('🔄 Using wallet address fallback for user data');
         creatorData = {
           fid: 0, // Will be handled by backend
           username: `user_${address.slice(2, 8)}.noun`,
           pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
         };
+        console.log('🔄 Created fallback creator data:', creatorData);
       }
 
       if (!creatorData) {
@@ -401,8 +408,8 @@ export function ImagePreview({
       onGifCreated?.(gifData);
       console.log('✅ Gallery upload completed successfully');
     } catch (error) {
+      console.error("❌ Gallery upload error:", error);
       onError("Failed to upload to gallery");
-      console.error("Gallery upload error:", error);
     }
   };
 
