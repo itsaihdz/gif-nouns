@@ -23,8 +23,20 @@ export async function uploadGifToStorage(
   try {
     console.log('📤 Uploading GIF to Supabase Storage:', { filename, size: file.size, type: file.type });
 
-    // Ensure the bucket exists (this will be handled by Supabase admin)
-    // For now, we'll assume the bucket is already created
+    // First check if the bucket exists
+    const { data: bucketData, error: bucketError } = await supabase.storage.listBuckets();
+    
+    if (bucketError) {
+      console.error('❌ Error checking buckets:', bucketError);
+      throw new Error(`Storage access failed: ${bucketError.message}`);
+    }
+    
+    const bucketExists = bucketData?.some(b => b.name === bucket);
+    
+    if (!bucketExists) {
+      console.error(`❌ Bucket '${bucket}' does not exist`);
+      throw new Error(`Storage bucket '${bucket}' does not exist. Please create it in the Supabase dashboard.`);
+    }
 
     // Generate a unique path for the file
     const timestamp = Date.now();

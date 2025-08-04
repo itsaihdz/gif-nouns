@@ -15,7 +15,7 @@ This guide will help you set up Supabase Storage to store generated GIFs, provid
 
 ## 🪣 **Step 1: Create Storage Bucket**
 
-### **Via Supabase Dashboard (Recommended)**
+### **Via Supabase Dashboard (Required)**
 
 1. **Login to Supabase Dashboard**
    - Go to [https://supabase.com/dashboard](https://supabase.com/dashboard)
@@ -26,172 +26,101 @@ This guide will help you set up Supabase Storage to store generated GIFs, provid
    - Click **"Create a new bucket"**
 
 3. **Configure the Bucket**
-   - **Name**: `gifs`
-   - **Public bucket**: ✅ **Enable** (This allows public access to GIFs)
-   - **File size limit**: `5 MB`
-   - **Allowed MIME types**: 
-     - `image/gif`
-     - `image/png` 
-     - `image/jpeg`
-     - `image/jpg`
-
-4. **Create Bucket**
+   - **Name**: `gifs` (exactly this name)
+   - **Public bucket**: ✅ **Check this box** (important for sharing)
+   - **File size limit**: `5 MB` (or higher if needed)
+   - **Allowed MIME types**: `image/gif` (or leave empty for all types)
    - Click **"Create bucket"**
 
-### **Bucket Configuration Details**
+4. **Verify Bucket Creation**
+   - You should see the `gifs` bucket in your storage list
+   - The bucket should show as "Public"
 
-```json
-{
-  "name": "gifs",
-  "public": true,
-  "file_size_limit": 5242880,
-  "allowed_mime_types": [
-    "image/gif",
-    "image/png", 
-    "image/jpeg",
-    "image/jpg"
-  ]
-}
+## 🔐 **Step 2: Configure Storage Policies (Optional but Recommended)**
+
+### **For Public Read Access**
+```sql
+-- Allow public read access to all files in the gifs bucket
+CREATE POLICY "Public Access" ON storage.objects
+FOR SELECT USING (bucket_id = 'gifs');
 ```
 
-## 🔐 **Step 2: Configure Storage Policies**
+### **For Authenticated Uploads**
+```sql
+-- Allow authenticated users to upload to the gifs bucket
+CREATE POLICY "Authenticated users can upload" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'gifs' AND auth.role() = 'authenticated');
+```
 
-### **Public Read Policy (Required)**
-
-1. **Go to Storage Policies**
-   - In Storage section, click on the `gifs` bucket
-   - Click **"Policies"** tab
-
-2. **Create Public Read Policy**
-   - Click **"New Policy"**
-   - **Policy Name**: `Public Read Access`
-   - **Allowed Operations**: `SELECT`
-   - **Policy Definition**:
-   ```sql
-   CREATE POLICY "Public Read Access" ON storage.objects
-   FOR SELECT USING (bucket_id = 'gifs');
-   ```
-
-### **Authenticated Upload Policy (Optional but Recommended)**
-
-1. **Create Upload Policy**
-   - Click **"New Policy"**
-   - **Policy Name**: `Authenticated Upload`
-   - **Allowed Operations**: `INSERT`
-   - **Policy Definition**:
-   ```sql
-   CREATE POLICY "Authenticated Upload" ON storage.objects
-   FOR INSERT WITH CHECK (bucket_id = 'gifs');
-   ```
-
-### **Owner Delete Policy (Optional)**
-
-1. **Create Delete Policy**
-   - Click **"New Policy"**
-   - **Policy Name**: `Owner Delete`
-   - **Allowed Operations**: `DELETE`
-   - **Policy Definition**:
-   ```sql
-   CREATE POLICY "Owner Delete" ON storage.objects
-   FOR DELETE USING (bucket_id = 'gifs');
-   ```
+### **For Public Uploads (if you want anyone to upload)**
+```sql
+-- Allow public uploads to the gifs bucket
+CREATE POLICY "Public uploads" ON storage.objects
+FOR INSERT WITH CHECK (bucket_id = 'gifs');
+```
 
 ## 🧪 **Step 3: Test the Setup**
 
-### **Test Storage Connection**
-
-```bash
-# Test basic connection
-curl http://localhost:3000/api/storage/test
-
-# Test bucket existence
-curl http://localhost:3000/api/storage/test?test=bucket
-
-# List files (will be empty initially)
-curl http://localhost:3000/api/storage/test?test=list
-```
-
-### **Expected Response**
-
-```json
-{
-  "success": true,
-  "bucket": "gifs",
-  "exists": true,
-  "files": [],
-  "message": "Bucket test completed successfully"
-}
-```
-
-## 🚀 **Step 4: Upload Test**
-
-1. **Generate a GIF** in the app
-2. **Check the upload process** - it should now use Supabase Storage
-3. **Verify the URL** - should be a Supabase Storage URL like:
+1. **Start your development server**:
+   ```bash
+   npm run dev
    ```
-   https://your-project.supabase.co/storage/v1/object/public/gifs/1234567890_gifnouns_1.gif
+
+2. **Test the storage connection**:
+   ```bash
+   curl http://localhost:3000/api/storage/test-simple
    ```
+
+3. **Expected Response**:
+   ```json
+   {
+     "success": true,
+     "connection": "database_ok",
+     "storage": "accessible",
+     "files": 0
+   }
+   ```
+
+## 🚀 **Step 4: Test GIF Upload**
+
+1. **Generate a GIF** in your app
+2. **Click "Export Animated GIF"**
+3. **Check the console** for upload progress
+4. **Verify the file** appears in your Supabase Storage dashboard
 
 ## 🔧 **Troubleshooting**
 
-### **Common Issues**
+### **Error: "Storage bucket 'gifs' does not exist"**
+- **Solution**: Create the bucket in Supabase dashboard as described above
+- **Verify**: Check that the bucket name is exactly `gifs` (lowercase)
 
-1. **"Bucket creation failed"**
-   - ✅ **Solution**: Create bucket manually via Supabase Dashboard
-   - Bucket creation requires admin privileges
+### **Error: "fetch failed"**
+- **Solution**: Check your internet connection and Supabase URL
+- **Verify**: Ensure `NEXT_PUBLIC_SUPABASE_URL` is correct
 
-2. **"Policy violation"**
-   - ✅ **Solution**: Ensure storage policies are configured correctly
-   - Check that public read policy exists
+### **Error: "new row violates row-level security policy"**
+- **Solution**: Create the storage policies as described above
+- **Alternative**: Make the bucket public in the dashboard
 
-3. **"File upload failed"**
-   - ✅ **Solution**: Check file size (max 5MB) and MIME type
-   - Verify bucket exists and is public
-
-4. **"CORS error"**
-   - ✅ **Solution**: Add your domain to Supabase CORS settings
-   - Go to Settings > API > CORS origins
-
-### **CORS Configuration**
-
-If you encounter CORS issues, add these origins to your Supabase project:
-
-1. **Go to Settings > API**
-2. **Add CORS Origins**:
-   ```
-   http://localhost:3000
-   http://localhost:3001
-   https://your-production-domain.com
-   ```
+### **Files not showing in dashboard**
+- **Check**: Ensure the bucket is set to "Public"
+- **Verify**: Check the storage policies allow the operation
 
 ## 📊 **Benefits of Supabase Storage**
 
-### **vs Blob URLs**
-- ✅ **Permanent URLs** - No expiration
-- ✅ **Better Performance** - CDN delivery
-- ✅ **Easy Sharing** - Direct links work everywhere
-- ✅ **Scalable** - Handles large files efficiently
+- ✅ **Permanent URLs**: Files persist and are always accessible
+- ✅ **Fast CDN**: Global content delivery network
+- ✅ **Cost Effective**: Generous free tier
+- ✅ **Easy Sharing**: Direct links to GIFs
+- ✅ **Scalable**: Handles large files and high traffic
+- ✅ **Secure**: Built-in authentication and policies
 
-### **vs IPFS**
-- ✅ **Faster Access** - No gateway delays
-- ✅ **Reliable** - No network issues
-- ✅ **Cost Effective** - Included in Supabase plan
-- ✅ **Easy Management** - Dashboard interface
+## 🔗 **Useful Links**
 
-## 🔄 **Migration from IPFS**
+- [Supabase Storage Documentation](https://supabase.com/docs/guides/storage)
+- [Storage API Reference](https://supabase.com/docs/reference/javascript/storage-createbucket)
+- [Storage Policies Guide](https://supabase.com/docs/guides/storage/policies)
 
-If you were previously using IPFS:
+---
 
-1. **Existing GIFs**: Will continue to work (IPFS URLs remain valid)
-2. **New GIFs**: Will use Supabase Storage
-3. **Gallery**: Will show both IPFS and Supabase URLs
-4. **Sharing**: Supabase URLs will load faster
-
-## 📝 **Next Steps**
-
-1. ✅ **Create the bucket** in Supabase Dashboard
-2. ✅ **Configure policies** for public access
-3. ✅ **Test the upload** with a generated GIF
-4. ✅ **Verify sharing** works with new URLs
-
-Your GIFs will now be stored permanently on Supabase Storage with fast, reliable access for sharing! 🎉 
+**Need Help?** If you encounter any issues, check the browser console and server logs for detailed error messages. 

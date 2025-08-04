@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadGifToStorage, createBucketIfNotExists } from '../../../../lib/supabase-storage';
+import { uploadGifToStorage } from '../../../../lib/supabase-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,43 +36,49 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024;
+    const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: 'File size must be less than 5MB' },
+        { error: 'File size exceeds 5MB limit' },
         { status: 400 }
       );
     }
 
-    // Ensure the gifs bucket exists
-    try {
-      await createBucketIfNotExists('gifs', true);
-    } catch (error) {
-      console.warn('⚠️ Could not create bucket, continuing with upload:', error);
-    }
-
-    // Upload the file to Supabase Storage
-    const result = await uploadGifToStorage(file, filename, 'gifs');
-
-    console.log('✅ Storage upload successful:', result);
+    // Upload to Supabase Storage
+    const result = await uploadGifToStorage(file, filename);
 
     return NextResponse.json({
       success: true,
-      ...result
+      data: result
     });
 
   } catch (error) {
-    console.error('❌ Storage upload error:', error);
+    console.error('❌ Storage upload API error:', error);
     
-    const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        success: false 
-      },
-      { status: 500 }
-    );
+    // Check for specific error types
+    if (errorMessage.includes('bucket') && errorMessage.includes('does not exist')) {
+      return NextResponse.json({
+        success: false,
+        error: 'Storage bucket not configured. Please create the "gifs" bucket in your Supabase dashboard.',
+        details: errorMessage
+      }, { status: 500 });
+    }
+    
+    if (errorMessage.includes('fetch failed')) {
+      return NextResponse.json({
+        success: false,
+        error: 'Network error connecting to Supabase. Please check your internet connection and Supabase configuration.',
+        details: errorMessage
+      }, { status: 500 });
+    }
+    
+    return NextResponse.json({
+      success: false,
+      error: 'Storage upload failed',
+      details: errorMessage
+    }, { status: 500 });
   }
 }
 
