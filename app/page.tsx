@@ -34,7 +34,7 @@ interface GalleryItem {
   userVote?: 'upvote' | 'downvote' | null;
 }
 
-type AppView = "create" | "gallery" | "storage";
+type AppView = "create" | "gallery";
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<AppView>("create");
@@ -243,13 +243,7 @@ export default function HomePage() {
             >
               Gallery
             </Button>
-            <Button
-              variant={currentView === "storage" ? "gradient" : "outline"}
-              onClick={() => setCurrentView("storage")}
-              icon={<Icon name="storage" size="sm" />}
-            >
-              Storage
-            </Button>
+
           </div>
 
           {/* Quick Stats */}
@@ -271,13 +265,6 @@ export default function HomePage() {
           {/* Main Content */}
           {currentView === "create" ? (
             <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
-          ) : currentView === "gallery" ? (
-            <Gallery 
-              items={galleryItems} 
-              setItems={setGalleryItems} 
-              onRefresh={fetchGalleryItems}
-              className="max-w-7xl mx-auto" 
-            />
           ) : (
             <StorageGallery className="max-w-7xl mx-auto" />
           )}

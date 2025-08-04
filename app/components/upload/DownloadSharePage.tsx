@@ -44,7 +44,7 @@ export function DownloadSharePage({
   const handleShareToFarcaster = async () => {
     setIsSharing(true);
     try {
-      // Create share text
+      // Create share text with Supabase link
       const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${gifUrl}`;
       
       // Create Farcaster share URL
@@ -62,7 +62,7 @@ export function DownloadSharePage({
   const handleShareToTwitter = async () => {
     setIsSharing(true);
     try {
-      // Create share text
+      // Create share text with Supabase link
       const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${gifUrl}`;
       
       // Create Twitter share URL

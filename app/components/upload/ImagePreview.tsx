@@ -272,6 +272,23 @@ export function ImagePreview({
         // Show success message
         onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
         
+        // Call onGifCreated to trigger download page
+        if (onGifCreated) {
+          const gifData = {
+            gifUrl: storageGifUrl,
+            title: `gifnouns #${nextGifNumber}`,
+            noggleColor: selectedNoggleColor,
+            eyeAnimation: selectedEyeAnimation,
+            creator: {
+              fid: 0,
+              username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown',
+              pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
+            },
+          };
+          console.log('🔄 Calling onGifCreated with data:', gifData);
+          onGifCreated(gifData);
+        }
+        
         console.log('✅ Export process completed successfully');
         
         console.log('Supabase Storage Upload Results:', {

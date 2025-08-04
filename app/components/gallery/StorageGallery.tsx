@@ -34,14 +34,13 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
   const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
     try {
-      // Find the GIF in the database and vote on it
-      const response = await fetch('/api/gallery/vote', {
+      const response = await fetch('/api/gallery/vote-storage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          gifUrl, // We'll need to modify the vote API to accept gifUrl
+          gifUrl,
           userFid: 12345, // Mock user ID
           username: "you.noun",
           pfp: "https://picsum.photos/32/32?random=8",
@@ -169,7 +168,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       {/* Gallery Header */}
       <div className="mb-2">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Storage Gallery
+          Community Gallery
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
           All GIFs from Supabase Storage ({gifs.length} total)
