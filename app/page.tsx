@@ -125,25 +125,25 @@ export default function HomePage() {
       <UserProvider>
         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <Header />
-          <main className="container mx-auto px-4 py-8">
+          <main className="container mx-auto px-2 py-2">
             {/* Welcome Screen */}
             <div className="max-w-2xl mx-auto text-center">
-              <div className="mb-8">
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <div className="mb-2">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
                   <Icon name="sparkles" className="text-white" size="xl" />
                 </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
                   Nouns Remix Studio
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">
+                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
                   Create animated Nouns and discover community creations
                 </p>
               </div>
 
               {/* Wallet Connection */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
-                <div className="mb-6">
-                  <Icon name="wallet" className="text-purple-600 mx-auto mb-4" size="lg" />
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div className="mb-2">
+                  <Icon name="wallet" className="text-purple-600 mx-auto mb-2" size="lg" />
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                     Connect Your Wallet
                   </h2>
@@ -156,15 +156,15 @@ export default function HomePage() {
                   <WalletConnect variant="button" size="lg" />
                 </div>
 
-                <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   <p>By connecting, you agree to our terms of service</p>
                 </div>
               </div>
 
               {/* Features Preview */}
-              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
                     <Icon name="upload" className="text-purple-600" size="md" />
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Upload & Customize</h3>
@@ -173,7 +173,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
                     <Icon name="gallery" className="text-blue-600" size="md" />
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Community Gallery</h3>
@@ -182,7 +182,7 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
                     <Icon name="share" className="text-green-600" size="md" />
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Share & Mint</h3>
@@ -203,19 +203,19 @@ export default function HomePage() {
     <UserProvider>
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
         <Header />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-2 py-2">
           {/* Mini App Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+          <div className="text-center mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
               Nouns Remix Studio
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
               Create animated Nouns and discover community creations
             </p>
           </div>
 
           {/* View Toggle */}
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex justify-center gap-2 mb-2">
             <Button
               variant={currentView === "create" ? "gradient" : "outline"}
               onClick={() => setCurrentView("create")}
@@ -233,7 +233,7 @@ export default function HomePage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="flex justify-center gap-8 mb-8">
+          <div className="flex justify-center gap-2 mb-2">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
                 {isLoading ? "..." : galleryItems.length}

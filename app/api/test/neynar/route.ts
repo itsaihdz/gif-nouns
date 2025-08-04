@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { testNeynarConnection, getUserByFid, getUserByUsername } from '../../../../lib/neynar';
+import { testNeynarConnection, getUserByFid, getUserByUsername, getUserByWalletAddress } from '../../../../lib/neynar';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,15 +15,21 @@ export async function GET(request: NextRequest) {
     if (test === 'user') {
       const fid = searchParams.get('fid');
       const username = searchParams.get('username');
+      const address = searchParams.get('address');
       
       if (fid) {
         const user = await getUserByFid(parseInt(fid));
-        return NextResponse.json({ success: true, user });
+        return NextResponse.json({ success: true, user: user.user });
       }
       
       if (username) {
         const user = await getUserByUsername(username);
-        return NextResponse.json({ success: true, user });
+        return NextResponse.json({ success: true, user: user.user });
+      }
+      
+      if (address) {
+        const user = await getUserByWalletAddress(address);
+        return NextResponse.json({ success: true, user: user.user });
       }
     }
     
@@ -33,7 +39,8 @@ export async function GET(request: NextRequest) {
       availableTests: ['connection', 'user'],
       usage: {
         connection: '/api/test/neynar?test=connection',
-        user: '/api/test/neynar?test=user&fid=12345'
+        user: '/api/test/neynar?test=user&fid=12345',
+        userByAddress: '/api/test/neynar?test=user&address=0x...'
       }
     });
     

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useFarcasterData } from "../hooks/useFarcasterData";
 
 interface FarcasterUser {
   fid: number;
@@ -24,6 +25,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<FarcasterUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { farcasterUser, isLoading: farcasterLoading } = useFarcasterData();
 
   // Check for existing user session on mount
   useEffect(() => {
@@ -51,6 +53,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
+  // Update user when Farcaster data is fetched
+  useEffect(() => {
+    if (farcasterUser && !farcasterLoading) {
+      console.log('🔄 UserContext: Updating user with Farcaster data:', farcasterUser);
+      setUser(farcasterUser);
+      localStorage.setItem("farcaster_user", JSON.stringify(farcasterUser));
+    } else if (!farcasterUser && !farcasterLoading) {
+      console.log('🔄 UserContext: Clearing user data - no Farcaster user found');
+      setUser(null);
+      localStorage.removeItem("farcaster_user");
+    }
+  }, [farcasterUser, farcasterLoading]);
+
   const login = (userData: FarcasterUser) => {
     console.log('🔐 UserContext: Logging in user:', userData);
     setUser(userData);
@@ -65,13 +80,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const value: UserContextType = {
     user,
-    isLoading,
+    isLoading: isLoading || farcasterLoading,
     login,
     logout,
     isAuthenticated: !!user,
   };
 
-  console.log('🔄 UserContext: Current state:', { user, isLoading, isAuthenticated: !!user });
+  console.log('🔄 UserContext: Current state:', { user, isLoading: isLoading || farcasterLoading, isAuthenticated: !!user });
 
   return (
     <UserContext.Provider value={value}>

@@ -177,6 +177,59 @@ export async function publishCast(text: string, embeds?: string[]) {
   }
 }
 
+export async function getUserByWalletAddress(walletAddress: string): Promise<{ user: FarcasterUser | null }> {
+  try {
+    console.log('Fetching user by wallet address:', walletAddress);
+    
+    // Use Neynar API to search for users by verified address
+    // Note: This is a simplified approach - in production you might want to use
+    // the verified addresses from the user profile
+    const response = await neynar.searchUser({ q: walletAddress });
+    
+    if (response && response.result && response.result.users && response.result.users.length > 0) {
+      // Find the user with matching verified address
+      const user = response.result.users.find((u: any) => {
+        if (!u.verified_addresses) return false;
+        
+        // Handle different possible formats of verified addresses
+        const addresses = Array.isArray(u.verified_addresses) 
+          ? u.verified_addresses 
+          : Object.values(u.verified_addresses).flat();
+        
+        return addresses.some((addr: any) => 
+          addr.toLowerCase() === walletAddress.toLowerCase()
+        );
+      });
+      
+      if (user) {
+        return {
+          user: {
+            fid: user.fid,
+            username: user.username || `user${user.fid}.noun`,
+            displayName: user.display_name || user.username || `User ${user.fid}`,
+            pfp: user.pfp_url || `https://picsum.photos/32/32?random=${user.fid}`,
+            followerCount: user.follower_count || 0,
+            followingCount: user.following_count || 0,
+            bio: user.profile?.bio?.text,
+            verifiedAddresses: Array.isArray(user.verified_addresses) 
+              ? user.verified_addresses 
+              : Object.values(user.verified_addresses || {}).flat(),
+          }
+        };
+      }
+    }
+    
+    // If no user found, return null
+    console.log('No Farcaster user found for wallet address:', walletAddress);
+    return { user: null };
+  } catch (error) {
+    console.error('Error fetching user by wallet address:', error);
+    
+    // For now, return null on error - in production you might want to handle this differently
+    return { user: null };
+  }
+}
+
 // Test function to verify API connection
 export async function testNeynarConnection() {
   try {

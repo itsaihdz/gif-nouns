@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
  * @title AnimatedNounsNFT
- * @dev NFT contract for minting animated Nouns created with Nouns Remix Studio
- * @custom:security-contact security@nounsremixstudio.com
+ * @dev NFT contract for minting animated Nouns created with GIF Nouns Studio
+ * @custom:security-contact security@gifnouns.com
  */
 contract AnimatedNounsNFT is ERC721, ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
@@ -24,9 +24,6 @@ contract AnimatedNounsNFT is ERC721, ERC721URIStorage, Ownable {
     
     // Base URI for metadata
     string private _baseTokenURI;
-    
-    // Mapping to track if a user has already minted
-    mapping(address => bool) public hasMinted;
     
     // Events
     event AnimatedNounMinted(
@@ -63,7 +60,6 @@ contract AnimatedNounsNFT is ERC721, ERC721URIStorage, Ownable {
     ) external payable {
         require(msg.value >= mintPrice, "Insufficient payment");
         require(_tokenIds.current() < maxSupply, "Max supply reached");
-        require(!hasMinted[msg.sender], "Already minted");
         
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
@@ -79,9 +75,6 @@ contract AnimatedNounsNFT is ERC721, ERC721URIStorage, Ownable {
         // Mint the NFT
         _safeMint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, metadata);
-        
-        // Mark as minted
-        hasMinted[msg.sender] = true;
         
         emit AnimatedNounMinted(
             newTokenId,
@@ -105,14 +98,21 @@ contract AnimatedNounsNFT is ERC721, ERC721URIStorage, Ownable {
             'data:application/json;base64,',
             _base64Encode(bytes(string(abi.encodePacked(
                 '{"name":"', title, '",',
-                '"description":"An animated Noun created with Nouns Remix Studio",',
+                '"description":"An animated Noun created with GIF Nouns Studio",',
                 '"image":"', gifUrl, '",',
+                '"animation_url":"', gifUrl, '",',
+                '"external_url":"https://gifnouns.freezerverse.com",',
                 '"attributes":[',
                 '{"trait_type":"Noggle Color","value":"', noggleColor, '"},',
                 '{"trait_type":"Eye Animation","value":"', eyeAnimation, '"},',
-                '{"trait_type":"Collection","value":"Animated Nouns"},',
-                '{"trait_type":"Creator","value":"Nouns Remix Studio"}',
-                ']}'
+                '{"trait_type":"Collection","value":"GIF Nouns Collective"},',
+                '{"trait_type":"Creator","value":"GIF Nouns Studio"}',
+                '],',
+                '"properties":{',
+                '"files":[{"type":"image/gif","uri":"', gifUrl, '"}],',
+                '"category":"image"',
+                '}',
+                '}'
             ))))
         ));
     }
@@ -195,13 +195,6 @@ contract AnimatedNounsNFT is ERC721, ERC721URIStorage, Ownable {
      */
     function remainingSupply() external view returns (uint256) {
         return maxSupply - _tokenIds.current();
-    }
-
-    /**
-     * @dev Check if address has minted
-     */
-    function hasAddressMinted(address user) external view returns (bool) {
-        return hasMinted[user];
     }
 
     // Override required functions
