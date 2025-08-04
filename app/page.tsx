@@ -39,6 +39,7 @@ type AppView = "create" | "gallery";
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<AppView>("create");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [storageGifCount, setStorageGifCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
   const { setFrameReady, isFrameReady } = useMiniKit();
@@ -75,8 +76,25 @@ export default function HomePage() {
     }
   };
 
+  const fetchStorageGifCount = async () => {
+    try {
+      const response = await fetch('/api/gallery/storage');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setStorageGifCount(result.count);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching storage GIF count:', error);
+    }
+  };
+
+
+
   useEffect(() => {
     fetchGalleryItems();
+    fetchStorageGifCount();
   }, []);
 
   // Refresh gallery when switching to gallery view
@@ -250,7 +268,7 @@ export default function HomePage() {
           <div className="flex justify-center gap-2 mb-2">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {isLoading ? "..." : galleryItems.length}
+                {isLoading ? "..." : storageGifCount}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Creations</div>
             </div>

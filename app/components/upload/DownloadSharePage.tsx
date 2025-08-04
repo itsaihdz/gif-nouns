@@ -31,6 +31,7 @@ export function DownloadSharePage({
   onViewInGallery,
   className = "" 
 }: DownloadSharePageProps) {
+  console.log('🔄 DownloadSharePage received props:', { gifUrl, title, noggleColor, eyeAnimation, creator });
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 

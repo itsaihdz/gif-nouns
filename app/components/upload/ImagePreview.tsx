@@ -6,7 +6,7 @@ import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 import { useGifGenerator } from "./GifGenerator";
 import { useUser } from "../../contexts/UserContext";
-import { useAccount } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import { ShareDialog } from "../social/ShareDialog";
 import { HighlightInfo } from "../ui/HighlightInfo";
 import {
@@ -123,6 +123,7 @@ export function ImagePreview({
   const [nextGifNumber, setNextGifNumber] = useState(1);
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
   const sendNotification = useNotification();
 
   // Get the next sequential number when component mounts
@@ -257,36 +258,36 @@ export function ImagePreview({
 
         setExportProgress(90);
 
-        // Automatically add to gallery
-        console.log('🔄 About to call handleUploadToGallery...');
-        try {
-          await handleUploadToGallery();
-          console.log('🔄 handleUploadToGallery completed successfully');
-        } catch (error) {
-          console.error('❌ handleUploadToGallery failed:', error);
-          // Don't throw here, just log the error
-        }
-
         setExportProgress(100);
 
         // Show success message
         onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
         
-        // Call onGifCreated to trigger download page
-        if (onGifCreated) {
-          const gifData = {
-            gifUrl: storageGifUrl,
-            title: `gifnouns #${nextGifNumber}`,
-            noggleColor: selectedNoggleColor,
-            eyeAnimation: selectedEyeAnimation,
-            creator: {
-              fid: 0,
-              username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown',
-              pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
-            },
-          };
-          console.log('🔄 Calling onGifCreated with data:', gifData);
-          onGifCreated(gifData);
+        // Automatically add to gallery first
+        console.log('🔄 About to call handleUploadToGallery...');
+        try {
+          await handleUploadToGallery();
+          console.log('🔄 handleUploadToGallery completed successfully');
+          
+          // Call onGifCreated to trigger download page after successful gallery upload
+          if (onGifCreated) {
+            const gifData = {
+              gifUrl: storageGifUrl,
+              title: `gifnouns #${nextGifNumber}`,
+              noggleColor: selectedNoggleColor,
+              eyeAnimation: selectedEyeAnimation,
+              creator: {
+                fid: 0,
+                username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown',
+                pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
+              },
+            };
+            console.log('🔄 Calling onGifCreated with data:', gifData);
+            onGifCreated(gifData);
+          }
+        } catch (error) {
+          console.error('❌ handleUploadToGallery failed:', error);
+          // Don't throw here, just log the error
         }
         
         console.log('✅ Export process completed successfully');
