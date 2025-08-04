@@ -87,6 +87,7 @@ export default function HomePage() {
       pfp: string;
     };
   }) => {
+    console.log('🔄 handleGifCreated called with data:', gifData);
     try {
       const response = await fetch('/api/gallery', {
         method: 'POST',
@@ -109,8 +110,10 @@ export default function HomePage() {
           voters: [],
           userVote: null,
         };
+        console.log('✅ Gallery item created successfully:', newItem);
         setGalleryItems(prev => [itemWithVoters, ...prev]);
         setCurrentView("gallery"); // Auto-switch to gallery
+        console.log('✅ Switched to gallery view');
       } else {
         console.error('Failed to create gallery item');
       }

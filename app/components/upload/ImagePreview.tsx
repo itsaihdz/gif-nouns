@@ -183,6 +183,11 @@ export function ImagePreview({
     updateAnimatedPreview();
   }, [updateAnimatedPreview]);
 
+  // Debug: Log when generatedGifUrl changes
+  useEffect(() => {
+    console.log('🔄 generatedGifUrl changed:', generatedGifUrl);
+  }, [generatedGifUrl]);
+
   const handleExport = async () => {
     setIsExporting(true);
     setExportProgress(0);
@@ -246,6 +251,7 @@ export function ImagePreview({
 
         // Store the Supabase Storage URL
         setGeneratedGifUrl(storageGifUrl);
+        console.log('✅ Generated GIF URL set:', storageGifUrl);
 
         setExportProgress(90);
 
@@ -256,6 +262,8 @@ export function ImagePreview({
 
         // Show success message
         onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
+        
+        console.log('✅ Export process completed successfully');
         
         console.log('Supabase Storage Upload Results:', {
           gifUrl: storageGifUrl,
@@ -311,6 +319,9 @@ export function ImagePreview({
 
   const handleUploadToGallery = async () => {
     try {
+      console.log('🔄 Starting gallery upload process...');
+      console.log('🔄 Generated GIF URL:', generatedGifUrl);
+      
       if (!generatedGifUrl) {
         onError("Please generate a GIF first");
         return;
@@ -384,7 +395,9 @@ export function ImagePreview({
         creator: creatorData,
       };
 
+      console.log('✅ Calling onGifCreated with data:', gifData);
       onGifCreated?.(gifData);
+      console.log('✅ Gallery upload completed successfully');
     } catch (error) {
       onError("Failed to upload to gallery");
       console.error("Gallery upload error:", error);
