@@ -279,3 +279,53 @@ export async function createBucketIfNotExists(
     throw error;
   }
 } 
+
+// Get all GIFs from storage bucket
+export async function getAllGifsFromStorage(): Promise<Array<{
+  url: string;
+  path: string;
+  size: number;
+  contentType: string;
+  created_at: string;
+}>> {
+  try {
+    console.log('🔄 Fetching all GIFs from Supabase Storage...');
+    
+    const { data, error } = await supabase
+      .storage
+      .from('gifs')
+      .list('', {
+        limit: 1000, // Get all files
+        sortBy: { column: 'created_at', order: 'desc' }
+      });
+
+    if (error) {
+      console.error('❌ Error fetching GIFs from storage:', error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('📭 No GIFs found in storage bucket');
+      return [];
+    }
+
+    console.log(`✅ Found ${data.length} GIFs in storage bucket`);
+
+    // Get public URLs for all GIFs
+    const gifsWithUrls = data
+      .filter(file => file.name && file.name.toLowerCase().endsWith('.gif'))
+      .map(file => ({
+        url: supabase.storage.from('gifs').getPublicUrl(file.name).data.publicUrl,
+        path: file.name,
+        size: file.metadata?.size || 0,
+        contentType: 'image/gif',
+        created_at: file.created_at || new Date().toISOString()
+      }));
+
+    console.log(`✅ Processed ${gifsWithUrls.length} GIF files`);
+    return gifsWithUrls;
+  } catch (error) {
+    console.error('❌ Failed to fetch GIFs from storage:', error);
+    throw error;
+  }
+} 

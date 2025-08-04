@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Header } from "./components/layout/Header";
 import { UploadStudio } from "./components/upload/UploadStudio";
 import { Gallery } from "./components/gallery/Gallery";
+import { StorageGallery } from "./components/gallery/StorageGallery";
 import { Button } from "./components/ui/Button";
 import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
@@ -33,7 +34,7 @@ interface GalleryItem {
   userVote?: 'upvote' | 'downvote' | null;
 }
 
-type AppView = "create" | "gallery";
+type AppView = "create" | "gallery" | "storage";
 
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<AppView>("create");
@@ -242,6 +243,13 @@ export default function HomePage() {
             >
               Gallery
             </Button>
+            <Button
+              variant={currentView === "storage" ? "gradient" : "outline"}
+              onClick={() => setCurrentView("storage")}
+              icon={<Icon name="storage" size="sm" />}
+            >
+              Storage
+            </Button>
           </div>
 
           {/* Quick Stats */}
@@ -263,13 +271,15 @@ export default function HomePage() {
           {/* Main Content */}
           {currentView === "create" ? (
             <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
-          ) : (
+          ) : currentView === "gallery" ? (
             <Gallery 
               items={galleryItems} 
               setItems={setGalleryItems} 
               onRefresh={fetchGalleryItems}
               className="max-w-7xl mx-auto" 
             />
+          ) : (
+            <StorageGallery className="max-w-7xl mx-auto" />
           )}
         </main>
       </div>
