@@ -105,6 +105,7 @@ const EYE_ANIMATIONS = [
 
 export function ImagePreview({ 
   originalImageUrl, 
+  traits,
   onError,
   onGifCreated,
   className = "" 
