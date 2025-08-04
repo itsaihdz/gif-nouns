@@ -112,6 +112,7 @@ export function ImagePreview({
   onGifCreated,
   className = "" 
 }: ImagePreviewProps) {
+  console.log('🔄 ImagePreview component rendered with:', { originalImageUrl, traits });
   const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
   const [isExporting, setIsExporting] = useState(false);
