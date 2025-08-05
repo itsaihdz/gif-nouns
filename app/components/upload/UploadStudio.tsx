@@ -105,11 +105,15 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       pfp: string;
     };
   }) => {
-    console.log('🔄 UploadStudio handleGifCreated called with:', gifData);
+    console.log('🔄 ===== UploadStudio handleGifCreated CALLED =====');
+    console.log('🔄 Received gifData:', gifData);
+    console.log('🔄 Setting createdGifData...');
     setCreatedGifData(gifData);
+    console.log('🔄 Changing step to download...');
     setCurrentStep("download");
+    console.log('🔄 Calling parent onGifCreated callback...');
     onGifCreated?.(gifData);
-    console.log('🔄 UploadStudio onGifCreated callback executed');
+    console.log('🔄 ===== UploadStudio handleGifCreated COMPLETED =====');
   };
 
   const handleBackToCreate = () => {
@@ -162,9 +166,16 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
         ) : null;
 
       case "download":
-        console.log('🔄 Rendering download step with createdGifData:', createdGifData);
+        console.log('🔄 ===== RENDERING DOWNLOAD STEP =====');
+        console.log('🔄 Current step:', currentStep);
+        console.log('🔄 createdGifData:', createdGifData);
+        console.log('🔄 createdGifData type:', typeof createdGifData);
+        console.log('🔄 createdGifData is null?', createdGifData === null);
+        console.log('🔄 createdGifData is undefined?', createdGifData === undefined);
+        
         if (!createdGifData) {
-          console.error('❌ createdGifData is null in download step');
+          console.error('❌ createdGifData is null/undefined in download step');
+          console.error('❌ This means handleGifCreated was not called properly');
           return (
             <div className="text-center p-8">
               <p className="text-red-600 dark:text-red-400 mb-4">

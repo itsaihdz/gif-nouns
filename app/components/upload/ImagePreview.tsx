@@ -355,6 +355,25 @@ export function ImagePreview({
         console.log('🔄 onGifCreated callback available:', !!onGifCreated);
         console.log('🔄 ===== GALLERY UPLOAD PROCESS COMPLETED =====');
         
+        // IMPORTANT: Call onGifCreated directly here as a fallback
+        if (onGifCreated) {
+          console.log('🔄 Calling onGifCreated directly as fallback...');
+          const gifData = {
+            gifUrl: storageGifUrl,
+            title: `gifnouns #${nextGifNumber}`,
+            noggleColor: selectedNoggleColor,
+            eyeAnimation: selectedEyeAnimation,
+            creator: {
+              fid: 0,
+              username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Creator',
+              pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
+            },
+          };
+          console.log('🔄 Calling onGifCreated with fallback data:', gifData);
+          onGifCreated(gifData);
+          console.log('🔄 onGifCreated fallback call completed');
+        }
+        
         console.log('✅ Export process completed successfully');
         
         console.log('Supabase Storage Upload Results:', {
