@@ -339,8 +339,10 @@ export function ImagePreview({
         // Show success message
         onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
         
+        console.log('🔄 ===== STARTING GALLERY UPLOAD PROCESS =====');
+        
         // Automatically add to gallery first
-        console.log('🔄 About to call handleUploadToGallery...');
+        console.log('🔄 About to call handleUploadToGallery with URL:', storageGifUrl);
         try {
           await handleUploadToGallery(storageGifUrl);
           console.log('🔄 handleUploadToGallery completed successfully');
@@ -351,6 +353,7 @@ export function ImagePreview({
         
         // Debug: Check if onGifCreated is available
         console.log('🔄 onGifCreated callback available:', !!onGifCreated);
+        console.log('🔄 ===== GALLERY UPLOAD PROCESS COMPLETED =====');
         
         console.log('✅ Export process completed successfully');
         
@@ -407,6 +410,10 @@ export function ImagePreview({
   };
 
   const handleUploadToGallery = async (storageGifUrl?: string) => {
+    console.log('🔄 ===== handleUploadToGallery FUNCTION CALLED =====');
+    console.log('🔄 Received storageGifUrl parameter:', storageGifUrl);
+    console.log('🔄 Current generatedGifUrl state:', generatedGifUrl);
+    
     try {
       console.log('🔄 Starting gallery upload process...');
       
@@ -468,6 +475,8 @@ export function ImagePreview({
       console.log('🔄 Final GIF data being saved:', gifData);
       console.log('🔄 Traits used:', { selectedNoggleColor, selectedEyeAnimation });
       console.log('🔄 Original traits:', traits);
+      console.log('🔄 Available noggle colors:', NOGGLE_COLORS.map(c => c.value));
+      console.log('🔄 Available eye animations:', EYE_ANIMATIONS.map(e => e.value));
 
       // Save to database via API
       const saveResponse = await fetch('/api/gallery', {
