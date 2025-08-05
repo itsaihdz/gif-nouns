@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     console.log('🔄 Processing vote for storage GIF:', { gifUrl, userFid, username, voteType });
 
     // First, try to find the gallery item by gifUrl
-    let { data: item, error: itemError } = await supabase
+    let item;
+    const { data: existingItem, error: itemError } = await supabase
       .from('gallery_items')
       .select('id, upvotes, downvotes')
       .eq('gif_url', gifUrl)
@@ -57,7 +58,17 @@ export async function POST(request: NextRequest) {
       item = newItem;
       console.log('✅ Created new gallery item:', item);
     } else {
+      item = existingItem;
       console.log('✅ Found existing gallery item:', item);
+    }
+
+    // Ensure we have a valid item
+    if (!item) {
+      console.error('❌ No gallery item available for voting');
+      return NextResponse.json(
+        { success: false, error: 'Gallery item not found' },
+        { status: 404 }
+      );
     }
 
     // Check if user has already voted
