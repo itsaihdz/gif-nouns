@@ -181,42 +181,33 @@ export async function getUserByWalletAddress(walletAddress: string): Promise<{ u
   try {
     console.log('Fetching user by wallet address:', walletAddress);
     
-    // Try multiple approaches to find user by wallet address
+    // Use the proper Neynar endpoint for wallet address lookup
+    // This endpoint is available in the free tier and handles both custody and verified addresses
+    const response = await neynar.fetchBulkUsersByEthOrSolAddress({ 
+      addresses: [walletAddress], // Array of addresses
+      addressTypes: ['custody_address', 'verified_address'] // Search both types
+    });
     
-    // Approach 1: Try to get user by verified address (if available in free tier)
-    try {
-      // For now, skip the verification lookup as it requires paid plan
-      // In the future, you can implement this with a paid Neynar plan
-      console.log('Skipping verification lookup (requires paid plan)');
-    } catch (verificationError) {
-      console.log('Verification lookup failed, trying alternative methods...');
-    }
-    
-    // Approach 2: Try to get user by username (if wallet is stored as username)
-    try {
-      // Check if the wallet address might be stored as a username
-      const usernameResponse = await neynar.lookupUserByUsername({ username: walletAddress });
+    if (response && response.users && response.users.length > 0) {
+      // Get the first user found (usually the most relevant)
+      const user = response.users[0];
+      console.log('✅ Found Farcaster user for wallet:', user.username);
       
-      if (usernameResponse && usernameResponse.user) {
-        const user = usernameResponse.user;
-        return {
-          user: {
-            fid: user.fid,
-            username: user.username || walletAddress,
-            displayName: user.display_name || user.username || walletAddress,
-            pfp: user.pfp_url || `https://picsum.photos/32/32?random=${user.fid}`,
-            followerCount: user.follower_count || 0,
-            followingCount: user.following_count || 0,
-            bio: user.profile?.bio?.text,
-            verifiedAddresses: [walletAddress],
-          }
-        };
-      }
-    } catch (usernameError) {
-      console.log('Username lookup failed...');
+      return {
+        user: {
+          fid: user.fid,
+          username: user.username || `user${user.fid}.noun`,
+          displayName: user.display_name || user.username || `User ${user.fid}`,
+          pfp: user.pfp_url || `https://picsum.photos/32/32?random=${user.fid}`,
+          followerCount: user.follower_count || 0,
+          followingCount: user.following_count || 0,
+          bio: user.profile?.bio?.text,
+          verifiedAddresses: [walletAddress],
+        }
+      };
     }
     
-    // Approach 3: Fallback - return a user object with wallet address as display name
+    // If no user found, return a user object with wallet address as display name
     // This ensures the app continues to work even without Farcaster integration
     console.log('No Farcaster user found for wallet address, using fallback:', walletAddress);
     return {
