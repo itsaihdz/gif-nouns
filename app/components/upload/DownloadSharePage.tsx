@@ -7,7 +7,8 @@ import { Icon } from "../icons";
 import { downloadGif } from "@/lib/utils";
 
 interface DownloadSharePageProps {
-  gifUrl: string;
+  gifUrl: string; // Generated GIF URL for preview/download
+  shareUrl?: string; // Supabase URL for sharing
   title: string;
   noggleColor: string;
   eyeAnimation: string;
@@ -23,6 +24,7 @@ interface DownloadSharePageProps {
 
 export function DownloadSharePage({ 
   gifUrl, 
+  shareUrl,
   title, 
   noggleColor, 
   eyeAnimation, 
@@ -31,9 +33,9 @@ export function DownloadSharePage({
   onViewInGallery,
   className = "" 
 }: DownloadSharePageProps) {
-  console.log('🔄 DownloadSharePage received props:', { gifUrl, title, noggleColor, eyeAnimation, creator });
+  console.log('🔄 DownloadSharePage received props:', { gifUrl, shareUrl, title, noggleColor, eyeAnimation, creator });
   const [isSharing, setIsSharing] = useState(false);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareDialogUrl, setShareDialogUrl] = useState<string | null>(null);
 
   const handleDownload = () => {
     if (gifUrl) {
@@ -45,13 +47,14 @@ export function DownloadSharePage({
   const handleShareToFarcaster = async () => {
     setIsSharing(true);
     try {
-      // Create share text with Supabase link
-      const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${gifUrl}`;
+      // Use Supabase URL for sharing, fallback to generated GIF URL
+      const shareGifUrl = shareUrl || gifUrl;
+      const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${shareGifUrl}`;
       
       // Create Farcaster share URL
       const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
       
-      setShareUrl(farcasterUrl);
+      setShareDialogUrl(farcasterUrl);
       window.open(farcasterUrl, '_blank');
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
@@ -63,13 +66,14 @@ export function DownloadSharePage({
   const handleShareToTwitter = async () => {
     setIsSharing(true);
     try {
-      // Create share text with Supabase link
-      const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${gifUrl}`;
+      // Use Supabase URL for sharing, fallback to generated GIF URL
+      const shareGifUrl = shareUrl || gifUrl;
+      const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${shareGifUrl}`;
       
       // Create Twitter share URL
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
       
-      setShareUrl(twitterUrl);
+      setShareDialogUrl(twitterUrl);
       window.open(twitterUrl, '_blank');
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
@@ -80,7 +84,9 @@ export function DownloadSharePage({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(gifUrl);
+      // Use Supabase URL for sharing, fallback to generated GIF URL
+      const shareGifUrl = shareUrl || gifUrl;
+      await navigator.clipboard.writeText(shareGifUrl);
       // You could add a toast notification here
       console.log('Link copied to clipboard');
     } catch (error) {

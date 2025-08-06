@@ -25,6 +25,7 @@ interface UploadStudioProps {
   className?: string;
   onGifCreated?: (gifData: { 
     gifUrl: string; 
+    shareUrl?: string; // Supabase URL for sharing
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
@@ -46,6 +47,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [createdGifData, setCreatedGifData] = useState<{
     gifUrl: string;
+    shareUrl?: string; // Supabase URL for sharing
     title: string;
     noggleColor: string;
     eyeAnimation: string;
@@ -95,7 +97,8 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
   };
 
   const handleGifCreated = (gifData: { 
-    gifUrl: string; 
+    gifUrl: string; // Generated GIF URL for preview/download
+    shareUrl?: string; // Supabase URL for sharing
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
@@ -190,6 +193,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
         return (
           <DownloadSharePage
             gifUrl={createdGifData.gifUrl}
+            shareUrl={createdGifData.shareUrl}
             title={createdGifData.title}
             noggleColor={createdGifData.noggleColor}
             eyeAnimation={createdGifData.eyeAnimation}

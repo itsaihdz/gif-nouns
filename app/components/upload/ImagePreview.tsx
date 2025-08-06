@@ -44,6 +44,7 @@ interface ImagePreviewProps {
   onSuccess?: (message: string) => void;
   onGifCreated?: (gifData: { 
     gifUrl: string; 
+    shareUrl?: string; // Supabase URL for sharing
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
@@ -358,8 +359,14 @@ export function ImagePreview({
         // IMPORTANT: Call onGifCreated directly here as a fallback
         if (onGifCreated) {
           console.log('🔄 Calling onGifCreated directly as fallback...');
+          
+          // Use generated GIF URL for preview/download, Supabase URL for sharing
+          const previewGifUrl = generatedGifUrl; // This is the blob URL from GIF generation
+          const shareGifUrl = storageGifUrl; // This is the Supabase URL for sharing
+          
           const gifData = {
-            gifUrl: storageGifUrl,
+            gifUrl: previewGifUrl, // Use generated GIF URL for preview
+            shareUrl: shareGifUrl, // Use Supabase URL for sharing
             title: `gifnouns #${nextGifNumber}`,
             noggleColor: selectedNoggleColor,
             eyeAnimation: selectedEyeAnimation,
@@ -453,7 +460,7 @@ export function ImagePreview({
         console.log('🔄 Using wallet address for creator data:', address);
         creatorData = {
           fid: 0, // Will be handled by backend
-          username: `${address.slice(0, 6)}...${address.slice(-4)}`,
+          username: `${address.slice(0, 6)}...${address.slice(-4)}`, // Truncated for database
           pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
         };
         console.log('🔄 Created creator data:', creatorData);
