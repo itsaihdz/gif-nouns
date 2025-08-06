@@ -102,36 +102,54 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         const gifsWithCreatorInfo = await Promise.all(
           result.data.map(async (gif: StorageGif) => {
             try {
-              // First get creator wallet from database
+              // First get creator info from database
               const creatorResponse = await fetch(`/api/gallery/storage/creator?gifUrl=${encodeURIComponent(gif.url)}`);
               if (creatorResponse.ok) {
                 const creatorResult = await creatorResponse.json();
-                if (creatorResult.success && creatorResult.data.creator_wallet) {
-                  // Then fetch detailed info from Neynar using wallet address
-                  const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(creatorResult.data.creator_wallet)}`);
-                  if (neynarResponse.ok) {
-                    const neynarResult = await neynarResponse.json();
-                    return {
-                      ...gif,
-                      creator: {
-                        username: neynarResult.username,
-                        pfp: neynarResult.pfp,
-                        wallet: neynarResult.wallet,
-                      },
-                      title: creatorResult.data.title || gif.path,
-                      noggleColor: creatorResult.data.noggle_color || 'unknown',
-                      eyeAnimation: creatorResult.data.eye_animation || 'unknown',
-                      upvotes: creatorResult.data.upvotes || 0,
-                      downvotes: creatorResult.data.downvotes || 0,
-                      hasCreatorInfo: true
-                    };
+                if (creatorResult.success) {
+                  console.log('✅ Found creator info:', creatorResult.data);
+                  
+                  // Try to get wallet address (new schema) or username (old schema)
+                  let walletAddress = creatorResult.data.creator_wallet;
+                  let username = creatorResult.data.creator_username;
+                  let pfp = creatorResult.data.creator_pfp;
+                  
+                  // If we have a wallet address, try to get Farcaster info from Neynar
+                  if (walletAddress) {
+                    try {
+                      const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(walletAddress)}`);
+                      if (neynarResponse.ok) {
+                        const neynarResult = await neynarResponse.json();
+                        username = neynarResult.username;
+                        pfp = neynarResult.pfp;
+                        walletAddress = neynarResult.wallet;
+                      }
+                    } catch (neynarError) {
+                      console.log('Neynar lookup failed, using fallback data');
+                    }
                   }
+                  
+                  return {
+                    ...gif,
+                    creator: {
+                      username: username || 'Unknown Creator',
+                      pfp: pfp || `https://picsum.photos/32/32?random=${walletAddress?.slice(2, 8) || 'unknown'}`,
+                      wallet: walletAddress || 'unknown',
+                    },
+                    title: creatorResult.data.title || gif.path,
+                    noggleColor: creatorResult.data.noggle_color || 'unknown',
+                    eyeAnimation: creatorResult.data.eye_animation || 'unknown',
+                    upvotes: creatorResult.data.upvotes || 0,
+                    downvotes: creatorResult.data.downvotes || 0,
+                    hasCreatorInfo: true
+                  };
                 }
               }
             } catch (error) {
               console.error('Error fetching creator info for:', gif.url, error);
             }
-            // Always return the GIF, even without creator info
+            
+            // Fallback for GIFs without creator info
             return {
               ...gif,
               creator: {
@@ -172,22 +190,29 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
   // Filter and sort GIFs based on selected traits and sort option
   const filterGifs = () => {
+    console.log('🔄 filterGifs called with:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
+    console.log('🔄 Total gifs before filtering:', gifs.length);
+    
     let filtered = gifs;
     
     if (selectedNoggleColor !== 'all') {
       filtered = filtered.filter(gif => gif.noggleColor === selectedNoggleColor);
+      console.log('🔄 After noggle color filter:', filtered.length);
     }
     
     if (selectedEyeAnimation !== 'all') {
       filtered = filtered.filter(gif => gif.eyeAnimation === selectedEyeAnimation);
+      console.log('🔄 After eye animation filter:', filtered.length);
     }
     
     // Sort GIFs based on selected option
+    console.log('🔄 Sorting by:', sortBy);
     switch (sortBy) {
       case 'most-votes':
         filtered = filtered.sort((a, b) => {
           const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
           const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
+          console.log('🔄 Comparing votes:', { a: aVotes, b: bVotes });
           return bVotes - aVotes; // Most votes first
         });
         break;
@@ -215,13 +240,30 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         );
     }
     
+    console.log('🔄 Final filtered gifs:', filtered.length);
+    console.log('🔄 First few gifs after sorting:', filtered.slice(0, 3).map(gif => ({
+      title: gif.title,
+      noggleColor: gif.noggleColor,
+      eyeAnimation: gif.eyeAnimation,
+      upvotes: gif.upvotes,
+      downvotes: gif.downvotes,
+      created_at: gif.created_at
+    })));
+    
     setFilteredGifs(filtered);
   };
 
   // Get unique trait values for filter options
   const getUniqueTraits = () => {
+    console.log('🔄 Getting unique traits from gifs:', gifs.length);
+    console.log('🔄 All noggle colors:', gifs.map(gif => gif.noggleColor));
+    console.log('🔄 All eye animations:', gifs.map(gif => gif.eyeAnimation));
+    
     const noggleColors = [...new Set(gifs.map(gif => gif.noggleColor).filter(color => color && color !== 'unknown'))];
     const eyeAnimations = [...new Set(gifs.map(gif => gif.eyeAnimation).filter(animation => animation && animation !== 'unknown'))];
+    
+    console.log('🔄 Filtered noggle colors:', noggleColors);
+    console.log('🔄 Filtered eye animations:', eyeAnimations);
     
     return { noggleColors, eyeAnimations };
   };

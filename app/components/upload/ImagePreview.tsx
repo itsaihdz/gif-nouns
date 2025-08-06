@@ -343,23 +343,9 @@ export function ImagePreview({
         
         console.log('🔄 ===== STARTING GALLERY UPLOAD PROCESS =====');
         
-        // Automatically add to gallery first
-        console.log('🔄 About to call handleUploadToGallery with URL:', storageGifUrl);
-        try {
-          await handleUploadToGallery(storageGifUrl);
-          console.log('🔄 handleUploadToGallery completed successfully');
-        } catch (error) {
-          console.error('❌ handleUploadToGallery failed:', error);
-          // Don't throw here, just log the error
-        }
-        
-        // Debug: Check if onGifCreated is available
-        console.log('🔄 onGifCreated callback available:', !!onGifCreated);
-        console.log('🔄 ===== GALLERY UPLOAD PROCESS COMPLETED =====');
-        
-        // IMPORTANT: Call onGifCreated directly here as a fallback
+        // Call onGifCreated to navigate to download page
         if (onGifCreated) {
-          console.log('🔄 Calling onGifCreated directly as fallback...');
+          console.log('🔄 Calling onGifCreated to navigate to download page...');
           
           // Use generated GIF URL for preview/download, Supabase URL for sharing
           const previewGifUrl = gifUrl; // This is the blob URL from GIF generation
@@ -377,11 +363,11 @@ export function ImagePreview({
               pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
             },
           };
-          console.log('🔄 Calling onGifCreated with fallback data:', gifData);
+          console.log('🔄 Calling onGifCreated with data:', gifData);
           console.log('🔄 Preview GIF URL (blob):', previewGifUrl);
           console.log('🔄 Share GIF URL (Supabase):', shareGifUrl);
           onGifCreated(gifData);
-          console.log('🔄 onGifCreated fallback call completed');
+          console.log('🔄 onGifCreated call completed');
         }
         
         console.log('✅ Export process completed successfully');
