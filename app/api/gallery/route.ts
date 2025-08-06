@@ -35,6 +35,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { gifUrl, creator, title, noggleColor, eyeAnimation } = body;
 
+    console.log('🔄 Creating gallery item with data:', {
+      gifUrl,
+      creator,
+      title,
+      noggleColor,
+      eyeAnimation
+    });
+
     const newItem = await galleryService.createItem({
       gifUrl,
       creatorFid: creator.fid,

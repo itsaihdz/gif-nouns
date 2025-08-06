@@ -6,7 +6,7 @@ import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 import { useGifGenerator } from "./GifGenerator";
 import { useUser } from "../../contexts/UserContext";
-import { useAccount } from "wagmi";
+import { useAccount, useWalletClient } from "wagmi";
 import { ShareDialog } from "../social/ShareDialog";
 import { HighlightInfo } from "../ui/HighlightInfo";
 import {
@@ -41,8 +41,10 @@ interface ImagePreviewProps {
   originalImageUrl: string;
   traits: NounTraits;
   onError: (error: string) => void;
+  onSuccess?: (message: string) => void;
   onGifCreated?: (gifData: { 
     gifUrl: string; 
+    shareUrl?: string; // Supabase URL for sharing
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
@@ -105,12 +107,91 @@ const EYE_ANIMATIONS = [
 
 export function ImagePreview({ 
   originalImageUrl, 
+  traits,
   onError,
+  onSuccess,
   onGifCreated,
   className = "" 
 }: ImagePreviewProps) {
-  const [selectedNoggleColor, setSelectedNoggleColor] = useState(NOGGLE_COLORS[0]?.value || "");
-  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(EYE_ANIMATIONS[0]?.value || "");
+  console.log('🔄 ImagePreview component rendered with:', { originalImageUrl, traits });
+  
+  // Derive noggle color and eye animation from traits
+  const getNoggleColorFromTraits = () => {
+    if (traits?.noggles) {
+      const noggleColor = traits.noggles.toLowerCase();
+      console.log('🔄 Looking for noggle color:', noggleColor, 'in available colors:', NOGGLE_COLORS.map(c => c.value));
+      
+      // Try exact match first
+      let found = NOGGLE_COLORS.find(color => color.value.toLowerCase() === noggleColor);
+      
+      // If not found, try partial match
+      if (!found) {
+        found = NOGGLE_COLORS.find(color => 
+          color.value.toLowerCase().includes(noggleColor) || 
+          noggleColor.includes(color.value.toLowerCase())
+        );
+      }
+      
+      if (found) {
+        console.log('✅ Found noggle color:', found.value);
+        return found.value;
+      }
+    }
+    console.log('⚠️ Using default noggle color');
+    return NOGGLE_COLORS[0]?.value || "";
+  };
+
+  const getEyeAnimationFromTraits = () => {
+    if (traits?.eyes) {
+      const eyeType = traits.eyes.toLowerCase();
+      console.log('🔄 Looking for eye animation:', eyeType, 'in available animations:', EYE_ANIMATIONS.map(e => e.value));
+      
+      // Try exact match first
+      let found = EYE_ANIMATIONS.find(animation => animation.value.toLowerCase() === eyeType);
+      
+      // If not found, try partial match
+      if (!found) {
+        found = EYE_ANIMATIONS.find(animation => 
+          animation.value.toLowerCase().includes(eyeType) || 
+          eyeType.includes(animation.value.toLowerCase())
+        );
+      }
+      
+      if (found) {
+        console.log('✅ Found eye animation:', found.value);
+        return found.value;
+      }
+    }
+    console.log('⚠️ Using default eye animation');
+    return EYE_ANIMATIONS[0]?.value || "";
+  };
+
+  const [selectedNoggleColor, setSelectedNoggleColor] = useState(getNoggleColorFromTraits());
+  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(getEyeAnimationFromTraits());
+  
+  // Update selected values when traits change
+  useEffect(() => {
+    const newNoggleColor = getNoggleColorFromTraits();
+    const newEyeAnimation = getEyeAnimationFromTraits();
+    
+    setSelectedNoggleColor(newNoggleColor);
+    setSelectedEyeAnimation(newEyeAnimation);
+    
+    console.log('🔄 Updated trait values:', {
+      traits,
+      newNoggleColor,
+      newEyeAnimation
+    });
+  }, [traits]);
+  
+  // Debug: Log the derived values
+  console.log('🔄 Current trait values:', {
+    traits,
+    selectedNoggleColor,
+    selectedEyeAnimation,
+    noggleFromTraits: getNoggleColorFromTraits(),
+    eyeFromTraits: getEyeAnimationFromTraits()
+  });
   const [isExporting, setIsExporting] = useState(false);
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
@@ -119,6 +200,7 @@ export function ImagePreview({
   const [nextGifNumber, setNextGifNumber] = useState(1);
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
   const sendNotification = useNotification();
 
   // Get the next sequential number when component mounts
@@ -180,14 +262,20 @@ export function ImagePreview({
     updateAnimatedPreview();
   }, [updateAnimatedPreview]);
 
+  // Debug: Log when generatedGifUrl changes
+  useEffect(() => {
+    console.log('🔄 generatedGifUrl changed:', generatedGifUrl);
+  }, [generatedGifUrl]);
+
   const handleExport = async () => {
+    console.log('🔄 handleExport started');
     setIsExporting(true);
     setExportProgress(0);
     try {
       // First generate the GIF and wait for it to complete
-      console.log('Starting GIF generation...');
+      console.log('🔄 Starting GIF generation...');
       const gifUrl = await generateGifAsync();
-      console.log('GIF generation completed:', gifUrl);
+      console.log('🔄 GIF generation completed:', gifUrl);
       
       setExportProgress(25);
       
@@ -243,16 +331,57 @@ export function ImagePreview({
 
         // Store the Supabase Storage URL
         setGeneratedGifUrl(storageGifUrl);
+        console.log('✅ Generated GIF URL set:', storageGifUrl);
 
         setExportProgress(90);
-
-        // Automatically add to gallery
-        await handleUploadToGallery();
 
         setExportProgress(100);
 
         // Show success message
-        onError(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
+        onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
+        
+        console.log('🔄 ===== STARTING GALLERY UPLOAD PROCESS =====');
+        
+        // Automatically add to gallery first
+        console.log('🔄 About to call handleUploadToGallery with URL:', storageGifUrl);
+        try {
+          await handleUploadToGallery(storageGifUrl);
+          console.log('🔄 handleUploadToGallery completed successfully');
+        } catch (error) {
+          console.error('❌ handleUploadToGallery failed:', error);
+          // Don't throw here, just log the error
+        }
+        
+        // Debug: Check if onGifCreated is available
+        console.log('🔄 onGifCreated callback available:', !!onGifCreated);
+        console.log('🔄 ===== GALLERY UPLOAD PROCESS COMPLETED =====');
+        
+        // IMPORTANT: Call onGifCreated directly here as a fallback
+        if (onGifCreated) {
+          console.log('🔄 Calling onGifCreated directly as fallback...');
+          
+          // Use generated GIF URL for preview/download, Supabase URL for sharing
+          const previewGifUrl = generatedGifUrl; // This is the blob URL from GIF generation
+          const shareGifUrl = storageGifUrl; // This is the Supabase URL for sharing
+          
+          const gifData = {
+            gifUrl: previewGifUrl, // Use generated GIF URL for preview
+            shareUrl: shareGifUrl, // Use Supabase URL for sharing
+            title: `gifnouns #${nextGifNumber}`,
+            noggleColor: selectedNoggleColor,
+            eyeAnimation: selectedEyeAnimation,
+            creator: {
+              fid: 0,
+              username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Creator',
+              pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
+            },
+          };
+          console.log('🔄 Calling onGifCreated with fallback data:', gifData);
+          onGifCreated(gifData);
+          console.log('🔄 onGifCreated fallback call completed');
+        }
+        
+        console.log('✅ Export process completed successfully');
         
         console.log('Supabase Storage Upload Results:', {
           gifUrl: storageGifUrl,
@@ -306,53 +435,41 @@ export function ImagePreview({
     setShowShareDialog(false);
   };
 
-  const handleUploadToGallery = async () => {
+  const handleUploadToGallery = async (storageGifUrl?: string) => {
+    console.log('🔄 ===== handleUploadToGallery FUNCTION CALLED =====');
+    console.log('🔄 Received storageGifUrl parameter:', storageGifUrl);
+    console.log('🔄 Current generatedGifUrl state:', generatedGifUrl);
+    
     try {
-      if (!generatedGifUrl) {
+      console.log('🔄 Starting gallery upload process...');
+      
+      // Use provided storageGifUrl or fallback to generatedGifUrl
+      const gifUrlToUse = storageGifUrl || generatedGifUrl;
+      console.log('🔄 Using GIF URL:', gifUrlToUse);
+      
+      if (!gifUrlToUse) {
         onError("Please generate a GIF first");
         return;
       }
 
-      // Use IPFS URL if available, otherwise use the generated URL
-      const gifUrlToUse = generatedGifUrl.startsWith('https://ipfs.io/') 
-        ? generatedGifUrl 
-        : generatedGifUrl;
-
-      // Get user data - either from Farcaster context or fetch from API
+      // Get user data - simplified approach
       let creatorData = null;
       
-      if (isAuthenticated && user) {
-        // Use authenticated Farcaster user
-        creatorData = {
-          fid: user.fid,
-          username: user.username,
-          pfp: user.pfp,
-        };
-      } else if (address) {
-        // Try to fetch user data by wallet address
-        try {
-          const response = await fetch(`/api/auth/farcaster?address=${address}`);
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.user) {
-              creatorData = {
-                fid: result.user.fid,
-                username: result.user.username,
-                pfp: result.user.pfp,
-              };
-            }
-          }
-        } catch (error) {
-          console.log("Could not fetch user by wallet address:", error);
-        }
-      }
-
-      // If no user data found, use wallet address as fallback
-      if (!creatorData && address) {
+      if (address) {
+        // Always use wallet address for now (simplified)
+        console.log('🔄 Using wallet address for creator data:', address);
         creatorData = {
           fid: 0, // Will be handled by backend
-          username: `user_${address.slice(2, 8)}.noun`,
+          username: `${address.slice(0, 6)}...${address.slice(-4)}`, // Truncated for database
           pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
+        };
+        console.log('🔄 Created creator data:', creatorData);
+      } else {
+        console.log('⚠️ No wallet address found, using fallback creator data');
+        creatorData = {
+          fid: 0,
+          username: 'Unknown Creator',
+          pfp: 'https://picsum.photos/32/32?random=unknown',
         };
       }
 
@@ -381,10 +498,39 @@ export function ImagePreview({
         creator: creatorData,
       };
 
-      onGifCreated?.(gifData);
+      console.log('🔄 Final GIF data being saved:', gifData);
+      console.log('🔄 Traits used:', { selectedNoggleColor, selectedEyeAnimation });
+      console.log('🔄 Original traits:', traits);
+      console.log('🔄 Available noggle colors:', NOGGLE_COLORS.map(c => c.value));
+      console.log('🔄 Available eye animations:', EYE_ANIMATIONS.map(e => e.value));
+
+      // Save to database via API
+      const saveResponse = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(gifData),
+      });
+
+      if (!saveResponse.ok) {
+        console.error('Failed to save to database:', await saveResponse.text());
+      } else {
+        console.log('✅ Saved to database successfully');
+      }
+
+      console.log('✅ Calling onGifCreated with data:', gifData);
+      console.log('✅ onGifCreated function exists:', !!onGifCreated);
+      if (onGifCreated) {
+        onGifCreated(gifData);
+        console.log('✅ onGifCreated called successfully');
+      } else {
+        console.error('❌ onGifCreated is not available!');
+      }
+      console.log('✅ Gallery upload completed successfully');
     } catch (error) {
+      console.error("❌ Gallery upload error:", error);
       onError("Failed to upload to gallery");
-      console.error("Gallery upload error:", error);
     }
   };
 
@@ -494,7 +640,10 @@ export function ImagePreview({
               <Button
                 variant="gradient"
                 size="lg"
-                onClick={handleExport}
+                onClick={() => {
+                  console.log('🔄 Create & Upload GIF button clicked');
+                  handleExport();
+                }}
                 disabled={isExporting}
                 icon={<Icon name="sparkles" size="md" />}
                 className="flex-1"

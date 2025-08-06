@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileUpload } from "./FileUpload";
 import { NounDetector } from "./NounDetector";
 import { ImagePreview } from "./ImagePreview";
+import { DownloadSharePage } from "./DownloadSharePage";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
@@ -24,6 +25,7 @@ interface UploadStudioProps {
   className?: string;
   onGifCreated?: (gifData: { 
     gifUrl: string; 
+    shareUrl?: string; // Supabase URL for sharing
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
@@ -35,13 +37,26 @@ interface UploadStudioProps {
   }) => void;
 }
 
-type UploadStep = "upload" | "detecting" | "preview";
+type UploadStep = "upload" | "detecting" | "preview" | "download";
 
 export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps) {
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [traits, setTraits] = useState<NounTraits | null>(null);
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [createdGifData, setCreatedGifData] = useState<{
+    gifUrl: string;
+    shareUrl?: string; // Supabase URL for sharing
+    title: string;
+    noggleColor: string;
+    eyeAnimation: string;
+    creator: {
+      fid: number;
+      username: string;
+      pfp: string;
+    };
+  } | null>(null);
   const tracking = useTracking();
 
   const handleFileUpload = (file: File) => {
@@ -73,8 +88,17 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     setError(errorMessage);
   };
 
+  const handleSuccess = (message: string) => {
+    // Clear any existing errors and show success
+    setError("");
+    setSuccessMessage(message);
+    // Auto-clear success message after 5 seconds
+    setTimeout(() => setSuccessMessage(""), 5000);
+  };
+
   const handleGifCreated = (gifData: { 
-    gifUrl: string; 
+    gifUrl: string; // Generated GIF URL for preview/download
+    shareUrl?: string; // Supabase URL for sharing
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
@@ -84,8 +108,32 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       pfp: string;
     };
   }) => {
+    console.log('🔄 ===== UploadStudio handleGifCreated CALLED =====');
+    console.log('🔄 Received gifData:', gifData);
+    console.log('🔄 Setting createdGifData...');
+    setCreatedGifData(gifData);
+    console.log('🔄 Changing step to download...');
+    setCurrentStep("download");
+    console.log('🔄 Calling parent onGifCreated callback...');
     onGifCreated?.(gifData);
+    console.log('🔄 ===== UploadStudio handleGifCreated COMPLETED =====');
   };
+
+  const handleBackToCreate = () => {
+    setCurrentStep("upload");
+    setImageUrl("");
+    setTraits(null);
+    setCreatedGifData(null);
+    setError("");
+    setSuccessMessage("");
+  };
+
+  const handleViewInGallery = () => {
+    // This will be handled by the parent component
+    onGifCreated?.(createdGifData!);
+  };
+
+
 
   const renderStep = () => {
     switch (currentStep) {
@@ -114,10 +162,47 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
             originalImageUrl={imageUrl}
             traits={traits}
             onError={handleError}
+            onSuccess={handleSuccess}
             onGifCreated={handleGifCreated}
             className="max-w-6xl mx-auto"
           />
         ) : null;
+
+      case "download":
+        console.log('🔄 ===== RENDERING DOWNLOAD STEP =====');
+        console.log('🔄 Current step:', currentStep);
+        console.log('🔄 createdGifData:', createdGifData);
+        console.log('🔄 createdGifData type:', typeof createdGifData);
+        console.log('🔄 createdGifData is null?', createdGifData === null);
+        console.log('🔄 createdGifData is undefined?', createdGifData === undefined);
+        
+        if (!createdGifData) {
+          console.error('❌ createdGifData is null/undefined in download step');
+          console.error('❌ This means handleGifCreated was not called properly');
+          return (
+            <div className="text-center p-8">
+              <p className="text-red-600 dark:text-red-400 mb-4">
+                Error: GIF data not found. Please try creating the GIF again.
+              </p>
+              <Button onClick={handleBackToCreate} variant="outline">
+                Back to Create
+              </Button>
+            </div>
+          );
+        }
+        return (
+          <DownloadSharePage
+            gifUrl={createdGifData.gifUrl}
+            shareUrl={createdGifData.shareUrl}
+            title={createdGifData.title}
+            noggleColor={createdGifData.noggleColor}
+            eyeAnimation={createdGifData.eyeAnimation}
+            creator={createdGifData.creator}
+            onBackToCreate={handleBackToCreate}
+            onViewInGallery={handleViewInGallery}
+            className="max-w-6xl mx-auto"
+          />
+        );
 
       default:
         return null;
@@ -144,13 +229,13 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
               { step: "upload", label: "Upload", icon: "upload" },
               { step: "detecting", label: "Detect", icon: "eye" },
               { step: "preview", label: "Customize", icon: "palette" },
-              { step: "exported", label: "Export", icon: "download" },
+              { step: "download", label: "Download", icon: "download" },
             ].map((stepInfo, index) => {
               const isActive = currentStep === stepInfo.step;
               const isCompleted = [
-                "detecting", "preview", "exported"
+                "detecting", "preview", "download"
               ].includes(currentStep) && index < [
-                "detecting", "preview", "exported"
+                "detecting", "preview", "download"
               ].indexOf(currentStep) + 1;
 
               return (
@@ -198,6 +283,29 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
                   variant="ghost"
                   size="sm"
                   onClick={() => setError("")}
+                  className="ml-auto"
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Success Display */}
+        {successMessage && (
+          <div className="max-w-2xl mx-auto mb-2">
+            <Card variant="default" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+              <div className="p-2 flex items-center space-x-2">
+                <Icon name="check" className="text-green-500" size="md" />
+                <div>
+                  <p className="text-green-700 dark:text-green-300 font-medium">Success!</p>
+                  <p className="text-green-600 dark:text-green-400 text-sm">{successMessage}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSuccessMessage("")}
                   className="ml-auto"
                 >
                   Dismiss

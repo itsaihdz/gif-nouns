@@ -32,9 +32,10 @@ interface GalleryProps {
   className?: string;
   items: GalleryItem[];
   setItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>;
+  onRefresh?: () => void;
 }
 
-export function Gallery({ className = "", items, setItems }: GalleryProps) {
+export function Gallery({ className = "", items, setItems, onRefresh }: GalleryProps) {
   const [sortBy, setSortBy] = useState<"votes" | "recent">("votes");
   const [filterBy, setFilterBy] = useState<string>("all");
   const [showShareDialog, setShowShareDialog] = useState<string | null>(null);
@@ -142,6 +143,19 @@ export function Gallery({ className = "", items, setItems }: GalleryProps) {
               ))}
             </select>
           </div>
+
+          {onRefresh && (
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRefresh}
+                icon={<Icon name="refresh" size="sm" />}
+              >
+                Refresh
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

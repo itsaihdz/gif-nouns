@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Header } from "./components/layout/Header";
 import { UploadStudio } from "./components/upload/UploadStudio";
 import { Gallery } from "./components/gallery/Gallery";
+import { StorageGallery } from "./components/gallery/StorageGallery";
 import { Button } from "./components/ui/Button";
 import { Icon } from "./components/icons";
 import { UserProvider } from "./contexts/UserContext";
@@ -38,6 +39,7 @@ type AppView = "create" | "gallery";
 export default function HomePage() {
   const [currentView, setCurrentView] = useState<AppView>("create");
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [storageGifCount, setStorageGifCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
   const { setFrameReady, isFrameReady } = useMiniKit();
@@ -50,31 +52,57 @@ export default function HomePage() {
   }, [setFrameReady, isFrameReady]);
 
   // Fetch gallery items from Supabase
-  useEffect(() => {
-    const fetchGalleryItems = async () => {
-      try {
-        const response = await fetch('/api/gallery');
-        if (response.ok) {
-          const items = await response.json();
-          // Add voters array (empty for now, will be populated when needed)
-          const itemsWithVoters = items.map((item: GalleryItem) => ({
-            ...item,
-            voters: [],
-            isVoted: false,
-          }));
-          setGalleryItems(itemsWithVoters);
-        } else {
-          console.error('Failed to fetch gallery items');
-        }
-      } catch (error) {
-        console.error('Error fetching gallery items:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchGalleryItems = async () => {
+    try {
+      console.log('🔄 Fetching gallery items...');
+      const response = await fetch('/api/gallery');
+      if (response.ok) {
+        const items = await response.json();
+        console.log('✅ Gallery items fetched:', items.length, 'items');
+        // Add voters array (empty for now, will be populated when needed)
+        const itemsWithVoters = items.map((item: GalleryItem) => ({
+          ...item,
+          voters: [],
+          isVoted: false,
+        }));
+        setGalleryItems(itemsWithVoters);
+      } else {
+        console.error('Failed to fetch gallery items');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching gallery items:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  const fetchStorageGifCount = async () => {
+    try {
+      const response = await fetch('/api/gallery/storage');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setStorageGifCount(result.count);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching storage GIF count:', error);
+    }
+  };
+
+
+
+  useEffect(() => {
     fetchGalleryItems();
+    fetchStorageGifCount();
   }, []);
+
+  // Refresh gallery when switching to gallery view
+  useEffect(() => {
+    if (currentView === "gallery") {
+      fetchGalleryItems();
+    }
+  }, [currentView]);
 
   const handleGifCreated = async (gifData: { 
     gifUrl: string; 
@@ -87,6 +115,7 @@ export default function HomePage() {
       pfp: string;
     };
   }) => {
+    console.log('🔄 handleGifCreated called with data:', gifData);
     try {
       const response = await fetch('/api/gallery', {
         method: 'POST',
@@ -109,8 +138,10 @@ export default function HomePage() {
           voters: [],
           userVote: null,
         };
+        console.log('✅ Gallery item created successfully:', newItem);
         setGalleryItems(prev => [itemWithVoters, ...prev]);
         setCurrentView("gallery"); // Auto-switch to gallery
+        console.log('✅ Switched to gallery view');
       } else {
         console.error('Failed to create gallery item');
       }
@@ -230,13 +261,14 @@ export default function HomePage() {
             >
               Gallery
             </Button>
+
           </div>
 
           {/* Quick Stats */}
           <div className="flex justify-center gap-2 mb-2">
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {isLoading ? "..." : galleryItems.length}
+                {isLoading ? "..." : storageGifCount}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Creations</div>
             </div>
@@ -252,7 +284,7 @@ export default function HomePage() {
           {currentView === "create" ? (
             <UploadStudio onGifCreated={handleGifCreated} className="max-w-4xl mx-auto" />
           ) : (
-            <Gallery items={galleryItems} setItems={setGalleryItems} className="max-w-7xl mx-auto" />
+            <StorageGallery className="max-w-7xl mx-auto" />
           )}
         </main>
       </div>
