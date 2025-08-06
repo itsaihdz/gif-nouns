@@ -309,22 +309,6 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              
-              {/* Creator info overlay */}
-              {gif.creator && (
-                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs p-1 rounded">
-                  <div className="flex items-center gap-1">
-                    <img
-                      src={gif.creator.pfp}
-                      alt={gif.creator.username}
-                      className="w-4 h-4 rounded-full"
-                    />
-                    <span className="truncate">@{gif.creator.username}</span>
-                  </div>
-                </div>
-              )}
-
-
             </div>
 
             {/* GIF Details */}
@@ -338,7 +322,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                     className="w-4 h-4 rounded-full"
                   />
                   <span className="text-xs text-gray-500 dark:text-gray-500">
-                    {gif.creator.username}
+                    {gif.creator.wallet ? `${gif.creator.wallet.slice(0, 6)}...${gif.creator.wallet.slice(-4)}` : gif.creator.username}
                   </span>
                 </div>
               )}

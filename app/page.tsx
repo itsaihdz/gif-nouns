@@ -16,7 +16,7 @@ interface GalleryItem {
   id: string;
   gifUrl: string;
   creator: {
-    fid: number;
+    wallet: string;
     username: string;
     pfp: string;
   };
@@ -106,11 +106,12 @@ export default function HomePage() {
 
   const handleGifCreated = async (gifData: { 
     gifUrl: string; 
+    shareUrl?: string;
     title: string; 
     noggleColor: string; 
     eyeAnimation: string;
     creator: {
-      fid: number;
+      wallet: string;
       username: string;
       pfp: string;
     };

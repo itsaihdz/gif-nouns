@@ -30,7 +30,7 @@ interface UploadStudioProps {
     noggleColor: string; 
     eyeAnimation: string;
     creator: {
-      fid: number;
+      wallet: string;
       username: string;
       pfp: string;
     };
@@ -52,7 +52,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     noggleColor: string;
     eyeAnimation: string;
     creator: {
-      fid: number;
+      wallet: string;
       username: string;
       pfp: string;
     };
@@ -103,7 +103,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     noggleColor: string; 
     eyeAnimation: string;
     creator: {
-      fid: number;
+      wallet: string;
       username: string;
       pfp: string;
     };
