@@ -38,29 +38,61 @@ export const galleryService = {
     eyeAnimation: string;
   }): Promise<GalleryItem> {
     try {
-      const { data, error } = await supabase
-        .from('gallery_items')
-        .insert({
-          gif_url: item.gifUrl,
-          creator_wallet: item.creatorWallet, // Store wallet address only
-          creator_fid: null, // Will be fetched from Neynar
-          creator_username: null, // Will be fetched from Neynar
-          creator_pfp: null, // Will be fetched from Neynar
-          title: item.title,
-          noggle_color: item.noggleColor,
-          eye_animation: item.eyeAnimation,
-          upvotes: 0,
-          downvotes: 0,
-        })
-        .select()
-        .single();
+      // First try with the new schema (creator_wallet column)
+      try {
+        const { data, error } = await supabase
+          .from('gallery_items')
+          .insert({
+            gif_url: item.gifUrl,
+            creator_wallet: item.creatorWallet, // Store wallet address only
+            creator_fid: null, // Will be fetched from Neynar
+            creator_username: null, // Will be fetched from Neynar
+            creator_pfp: null, // Will be fetched from Neynar
+            title: item.title,
+            noggle_color: item.noggleColor,
+            eye_animation: item.eyeAnimation,
+            upvotes: 0,
+            downvotes: 0,
+          })
+          .select()
+          .single();
 
-      if (error) {
-        console.error('Error creating gallery item:', error);
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        return data;
+      } catch (schemaError: any) {
+        // If creator_wallet column doesn't exist, fall back to old schema
+        if (schemaError.message && schemaError.message.includes('creator_wallet')) {
+          console.log('⚠️ creator_wallet column not found, using fallback schema');
+          
+          const { data, error } = await supabase
+            .from('gallery_items')
+            .insert({
+              gif_url: item.gifUrl,
+              creator_fid: 0, // Fallback
+              creator_username: item.creatorWallet, // Store wallet as username temporarily
+              creator_pfp: `https://picsum.photos/32/32?random=${item.creatorWallet.slice(2, 8)}`,
+              title: item.title,
+              noggle_color: item.noggleColor,
+              eye_animation: item.eyeAnimation,
+              upvotes: 0,
+              downvotes: 0,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Error creating gallery item with fallback schema:', error);
+            throw error;
+          }
+
+          return data;
+        } else {
+          throw schemaError;
+        }
       }
-
-      return data;
     } catch (error) {
       console.error('Failed to create gallery item:', error);
       throw error;

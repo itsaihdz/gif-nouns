@@ -63,7 +63,7 @@ export interface Database {
         Row: {
           id: string;
           gif_url: string;
-          creator_wallet: string;
+          creator_wallet?: string; // Optional for backward compatibility
           creator_fid: number | null;
           creator_username: string | null;
           creator_pfp: string | null;
@@ -78,7 +78,7 @@ export interface Database {
         Insert: {
           id?: string;
           gif_url: string;
-          creator_wallet: string;
+          creator_wallet?: string; // Optional for backward compatibility
           creator_fid?: number | null;
           creator_username?: string | null;
           creator_pfp?: string | null;
@@ -93,7 +93,7 @@ export interface Database {
         Update: {
           id?: string;
           gif_url?: string;
-          creator_wallet?: string;
+          creator_wallet?: string; // Optional for backward compatibility
           creator_fid?: number | null;
           creator_username?: string | null;
           creator_pfp?: string | null;
