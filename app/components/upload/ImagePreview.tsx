@@ -329,9 +329,10 @@ export function ImagePreview({
 
         console.log('✅ Supabase Storage upload successful:', uploadResult);
 
-        // Store the Supabase Storage URL
-        setGeneratedGifUrl(storageGifUrl);
-        console.log('✅ Generated GIF URL set:', storageGifUrl);
+        // Store the original generated GIF URL (blob URL) for preview/download
+        setGeneratedGifUrl(gifUrl);
+        console.log('✅ Generated GIF URL set (blob):', gifUrl);
+        console.log('✅ Supabase Storage URL:', storageGifUrl);
 
         setExportProgress(90);
 
@@ -361,7 +362,7 @@ export function ImagePreview({
           console.log('🔄 Calling onGifCreated directly as fallback...');
           
           // Use generated GIF URL for preview/download, Supabase URL for sharing
-          const previewGifUrl = generatedGifUrl; // This is the blob URL from GIF generation
+          const previewGifUrl = gifUrl; // This is the blob URL from GIF generation
           const shareGifUrl = storageGifUrl; // This is the Supabase URL for sharing
           
           const gifData = {
@@ -377,6 +378,8 @@ export function ImagePreview({
             },
           };
           console.log('🔄 Calling onGifCreated with fallback data:', gifData);
+          console.log('🔄 Preview GIF URL (blob):', previewGifUrl);
+          console.log('🔄 Share GIF URL (Supabase):', shareGifUrl);
           onGifCreated(gifData);
           console.log('🔄 onGifCreated fallback call completed');
         }
