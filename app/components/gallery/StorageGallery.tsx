@@ -35,6 +35,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedNoggleColor, setSelectedNoggleColor] = useState<string>('all');
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
 
   const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
     try {
@@ -169,7 +170,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     fetchGifsFromStorage();
   };
 
-  // Filter GIFs based on selected traits
+  // Filter and sort GIFs based on selected traits and sort option
   const filterGifs = () => {
     let filtered = gifs;
     
@@ -179,6 +180,39 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     
     if (selectedEyeAnimation !== 'all') {
       filtered = filtered.filter(gif => gif.eyeAnimation === selectedEyeAnimation);
+    }
+    
+    // Sort GIFs based on selected option
+    switch (sortBy) {
+      case 'most-votes':
+        filtered = filtered.sort((a, b) => {
+          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
+          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
+          return bVotes - aVotes; // Most votes first
+        });
+        break;
+      case 'least-votes':
+        filtered = filtered.sort((a, b) => {
+          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
+          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
+          return aVotes - bVotes; // Least votes first
+        });
+        break;
+      case 'newest':
+        filtered = filtered.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        break;
+      case 'oldest':
+        filtered = filtered.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        break;
+      default:
+        // Default to newest
+        filtered = filtered.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
     }
     
     setFilteredGifs(filtered);
@@ -194,7 +228,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
   useEffect(() => {
     filterGifs();
-  }, [selectedNoggleColor, selectedEyeAnimation, gifs]);
+  }, [selectedNoggleColor, selectedEyeAnimation, sortBy, gifs]);
 
   if (loading) {
     return (
@@ -246,7 +280,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           All GIFs from Supabase Storage ({filteredGifs.length} of {gifs.length} total)
         </p>
 
-        {/* Filter Controls */}
+        {/* Filter and Sort Controls */}
         <div className="flex flex-wrap gap-2 mb-4 justify-center">
           <select
             value={selectedNoggleColor}
@@ -270,22 +304,21 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             ))}
           </select>
           
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            icon={<Icon name="refresh" size="sm" />}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
-            Refresh
-          </Button>
-        </div>
-
-        {/* Refresh Button */}
-        <div className="flex justify-end mb-2">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="most-votes">Most Votes</option>
+            <option value="least-votes">Least Votes</option>
+          </select>
+          
           <Button
+            onClick={handleRefresh}
             variant="outline"
             size="sm"
-            onClick={handleRefresh}
             icon={<Icon name="refresh" size="sm" />}
           >
             Refresh
