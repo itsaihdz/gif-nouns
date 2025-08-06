@@ -13,7 +13,7 @@ interface DownloadSharePageProps {
   noggleColor: string;
   eyeAnimation: string;
   creator: {
-    fid: number;
+    wallet: string;
     username: string;
     pfp: string;
   };

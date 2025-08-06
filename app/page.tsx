@@ -117,38 +117,15 @@ export default function HomePage() {
     };
   }) => {
     console.log('🔄 handleGifCreated called with data:', gifData);
-    try {
-      const response = await fetch('/api/gallery', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gifUrl: gifData.gifUrl,
-          creator: gifData.creator,
-          title: gifData.title,
-          noggleColor: gifData.noggleColor,
-          eyeAnimation: gifData.eyeAnimation,
-        }),
-      });
-
-      if (response.ok) {
-        const newItem = await response.json();
-        const itemWithVoters = {
-          ...newItem,
-          voters: [],
-          userVote: null,
-        };
-        console.log('✅ Gallery item created successfully:', newItem);
-        setGalleryItems(prev => [itemWithVoters, ...prev]);
-        setCurrentView("gallery"); // Auto-switch to gallery
-        console.log('✅ Switched to gallery view');
-      } else {
-        console.error('Failed to create gallery item');
-      }
-    } catch (error) {
-      console.error('Error creating gallery item:', error);
-    }
+    console.log('🔄 Traits being saved:', { noggleColor: gifData.noggleColor, eyeAnimation: gifData.eyeAnimation });
+    
+    // This is called when user clicks "View in Gallery" from download page
+    // Switch to gallery view and refresh gallery items
+    console.log('🔄 Switching to gallery view...');
+    setCurrentView("gallery");
+    
+    // Refresh gallery items to show the new GIF
+    await fetchGalleryItems();
   };
 
   // Show wallet connection screen if not connected

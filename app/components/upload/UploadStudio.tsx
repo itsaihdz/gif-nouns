@@ -128,9 +128,45 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     setSuccessMessage("");
   };
 
-  const handleViewInGallery = () => {
-    // This will be handled by the parent component
-    onGifCreated?.(createdGifData!);
+  const handleViewInGallery = async () => {
+    console.log('🔄 ===== handleViewInGallery CALLED =====');
+    console.log('🔄 createdGifData:', createdGifData);
+    
+    if (!createdGifData) {
+      console.error('❌ No GIF data available for gallery upload');
+      return;
+    }
+
+    try {
+      console.log('🔄 Uploading to gallery...');
+      const response = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gifUrl: createdGifData.shareUrl || createdGifData.gifUrl, // Use Supabase URL if available
+          creator: createdGifData.creator,
+          title: createdGifData.title,
+          noggleColor: createdGifData.noggleColor,
+          eyeAnimation: createdGifData.eyeAnimation,
+        }),
+      });
+
+      if (response.ok) {
+        const newItem = await response.json();
+        console.log('✅ Gallery item created successfully:', newItem);
+        
+        // Call parent callback to update gallery and switch view
+        onGifCreated?.(createdGifData);
+      } else {
+        console.error('❌ Failed to create gallery item');
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+      }
+    } catch (error) {
+      console.error('❌ Error uploading to gallery:', error);
+    }
   };
 
 

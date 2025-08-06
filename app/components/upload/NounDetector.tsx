@@ -49,9 +49,10 @@ export function NounDetector({
         setProgress(60);
         
         // Mock trait detection - replace with actual AI detection
+        // Using valid trait values that match the available options in ImagePreview
         const detectedTraits: NounTraits = {
-          eyes: "nouns",
-          noggles: "blue",
+          eyes: "nouns", // This matches "nouns.gif" in EYE_ANIMATIONS
+          noggles: "blue", // This matches "blue" in NOGGLE_COLORS
           background: "blue",
           body: "normal",
           head: "normal",
