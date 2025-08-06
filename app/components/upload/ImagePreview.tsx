@@ -49,7 +49,7 @@ interface ImagePreviewProps {
     noggleColor: string; 
     eyeAnimation: string;
     creator: {
-      fid: number;
+      wallet: string;
       username: string;
       pfp: string;
     };
@@ -372,7 +372,7 @@ export function ImagePreview({
             noggleColor: selectedNoggleColor,
             eyeAnimation: selectedEyeAnimation,
             creator: {
-              fid: 0,
+              wallet: address || 'unknown',
               username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Creator',
               pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
             },
@@ -455,22 +455,21 @@ export function ImagePreview({
         return;
       }
 
-      // Get user data - simplified approach
+      // Get user data - only wallet address
       let creatorData = null;
       
       if (address) {
-        // Always use wallet address for now (simplified)
         console.log('🔄 Using wallet address for creator data:', address);
         creatorData = {
-          fid: 0, // Will be handled by backend
-          username: `${address.slice(0, 6)}...${address.slice(-4)}`, // Truncated for database
-          pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`,
+          wallet: address, // Store full wallet address
+          username: `${address.slice(0, 6)}...${address.slice(-4)}`, // For display only
+          pfp: `https://picsum.photos/32/32?random=${address.slice(2, 8)}`, // For display only
         };
         console.log('🔄 Created creator data:', creatorData);
       } else {
         console.log('⚠️ No wallet address found, using fallback creator data');
         creatorData = {
-          fid: 0,
+          wallet: 'unknown',
           username: 'Unknown Creator',
           pfp: 'https://picsum.photos/32/32?random=unknown',
         };

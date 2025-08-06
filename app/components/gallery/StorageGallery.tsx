@@ -14,6 +14,7 @@ interface StorageGif {
   creator?: {
     username: string;
     pfp: string;
+    wallet: string;
   };
   title?: string;
   noggleColor?: string;
@@ -96,15 +97,34 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       if (result.success) {
         console.log(`✅ Fetched ${result.count} GIFs from storage`);
         
-        // Fetch creator info for each GIF (but don't block on it)
+        // Fetch creator info for each GIF from database and Neynar
         const gifsWithCreatorInfo = await Promise.all(
           result.data.map(async (gif: StorageGif) => {
             try {
+              // First get creator wallet from database
               const creatorResponse = await fetch(`/api/gallery/storage/creator?gifUrl=${encodeURIComponent(gif.url)}`);
               if (creatorResponse.ok) {
                 const creatorResult = await creatorResponse.json();
-                if (creatorResult.success) {
-                  return { ...gif, ...creatorResult.data };
+                if (creatorResult.success && creatorResult.data.creator_wallet) {
+                  // Then fetch detailed info from Neynar using wallet address
+                  const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(creatorResult.data.creator_wallet)}`);
+                  if (neynarResponse.ok) {
+                    const neynarResult = await neynarResponse.json();
+                    return {
+                      ...gif,
+                      creator: {
+                        username: neynarResult.username,
+                        pfp: neynarResult.pfp,
+                        wallet: neynarResult.wallet,
+                      },
+                      title: creatorResult.data.title || gif.path,
+                      noggleColor: creatorResult.data.noggle_color || 'unknown',
+                      eyeAnimation: creatorResult.data.eye_animation || 'unknown',
+                      upvotes: creatorResult.data.upvotes || 0,
+                      downvotes: creatorResult.data.downvotes || 0,
+                      hasCreatorInfo: true
+                    };
+                  }
                 }
               }
             } catch (error) {
@@ -116,6 +136,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
               creator: {
                 username: 'Unknown Creator',
                 pfp: 'https://picsum.photos/32/32?random=unknown',
+                wallet: 'unknown',
               },
               title: gif.path,
               noggleColor: 'unknown',

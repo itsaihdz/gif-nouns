@@ -11,6 +11,7 @@ export async function GET() {
       id: item.id,
       gifUrl: item.gif_url,
       creator: {
+        wallet: item.creator_wallet,
         fid: item.creator_fid,
         username: item.creator_username,
         pfp: item.creator_pfp,
@@ -45,9 +46,7 @@ export async function POST(request: NextRequest) {
 
     const newItem = await galleryService.createItem({
       gifUrl,
-      creatorFid: creator.fid,
-      creatorUsername: creator.username,
-      creatorPfp: creator.pfp,
+      creatorWallet: creator.wallet || creator.username, // Use wallet address
       title,
       noggleColor,
       eyeAnimation,
@@ -58,6 +57,7 @@ export async function POST(request: NextRequest) {
       id: newItem.id,
       gifUrl: newItem.gif_url,
       creator: {
+        wallet: newItem.creator_wallet,
         fid: newItem.creator_fid,
         username: newItem.creator_username,
         pfp: newItem.creator_pfp,

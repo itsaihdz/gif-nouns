@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Try to find the GIF in the gallery_items table
     const { data, error } = await supabase
       .from('gallery_items')
-      .select('creator_username, creator_pfp, title, noggle_color, eye_animation, upvotes, downvotes')
+      .select('creator_wallet, creator_username, creator_pfp, title, noggle_color, eye_animation, upvotes, downvotes')
       .eq('gif_url', gifUrl)
       .single();
 
@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
+        creator_wallet: data.creator_wallet,
         creator: {
           username: data.creator_username,
           pfp: data.creator_pfp,

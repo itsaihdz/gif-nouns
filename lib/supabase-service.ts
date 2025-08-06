@@ -32,47 +32,20 @@ export const galleryService = {
   // Create a new gallery item
   async createItem(item: {
     gifUrl: string;
-    creatorFid: number;
-    creatorUsername: string;
-    creatorPfp: string;
+    creatorWallet: string; // Only store wallet address
     title: string;
     noggleColor: string;
     eyeAnimation: string;
   }): Promise<GalleryItem> {
     try {
-      // If creatorFid is 0, create a user record first
-      let actualCreatorFid = item.creatorFid;
-      if (item.creatorFid === 0) {
-        // Generate a unique FID for this user
-        actualCreatorFid = Math.floor(Math.random() * 1000000) + 100000; // 6-digit number
-        
-        // Create user record
-        const { error: userError } = await supabase
-          .from('users')
-          .upsert({
-            fid: actualCreatorFid,
-            username: item.creatorUsername,
-            display_name: item.creatorUsername,
-            pfp: item.creatorPfp,
-            follower_count: 0,
-            following_count: 0,
-          });
-
-        if (userError) {
-          console.error('Error creating user record:', userError);
-          throw userError;
-        }
-        
-        console.log('✅ Created user record with FID:', actualCreatorFid);
-      }
-
       const { data, error } = await supabase
         .from('gallery_items')
         .insert({
           gif_url: item.gifUrl,
-          creator_fid: actualCreatorFid,
-          creator_username: item.creatorUsername,
-          creator_pfp: item.creatorPfp,
+          creator_wallet: item.creatorWallet, // Store wallet address only
+          creator_fid: null, // Will be fetched from Neynar
+          creator_username: null, // Will be fetched from Neynar
+          creator_pfp: null, // Will be fetched from Neynar
           title: item.title,
           noggle_color: item.noggleColor,
           eye_animation: item.eyeAnimation,
