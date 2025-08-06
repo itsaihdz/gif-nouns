@@ -212,15 +212,22 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         filtered = filtered.sort((a, b) => {
           const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
           const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
-          console.log('🔄 Comparing votes:', { a: aVotes, b: bVotes });
-          return bVotes - aVotes; // Most votes first
+          console.log('🔄 Comparing votes for most-votes:', { 
+            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, netVotes: aVotes },
+            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, netVotes: bVotes }
+          });
+          return bVotes - aVotes; // Most votes first (descending)
         });
         break;
       case 'least-votes':
         filtered = filtered.sort((a, b) => {
           const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
           const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
-          return aVotes - bVotes; // Least votes first
+          console.log('🔄 Comparing votes for least-votes:', { 
+            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, netVotes: aVotes },
+            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, netVotes: bVotes }
+          });
+          return aVotes - bVotes; // Least votes first (ascending)
         });
         break;
       case 'newest':
@@ -241,12 +248,13 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     }
     
     console.log('🔄 Final filtered gifs:', filtered.length);
-    console.log('🔄 First few gifs after sorting:', filtered.slice(0, 3).map(gif => ({
+    console.log('🔄 First few gifs after sorting:', filtered.slice(0, 5).map(gif => ({
       title: gif.title,
       noggleColor: gif.noggleColor,
       eyeAnimation: gif.eyeAnimation,
       upvotes: gif.upvotes,
       downvotes: gif.downvotes,
+      netVotes: (gif.upvotes || 0) - (gif.downvotes || 0),
       created_at: gif.created_at
     })));
     
@@ -259,11 +267,12 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     console.log('🔄 All noggle colors:', gifs.map(gif => gif.noggleColor));
     console.log('🔄 All eye animations:', gifs.map(gif => gif.eyeAnimation));
     
-    const noggleColors = [...new Set(gifs.map(gif => gif.noggleColor).filter(color => color && color !== 'unknown'))];
-    const eyeAnimations = [...new Set(gifs.map(gif => gif.eyeAnimation).filter(animation => animation && animation !== 'unknown'))];
+    // Include all traits, even "unknown" ones, but filter out null/undefined
+    const noggleColors = [...new Set(gifs.map(gif => gif.noggleColor).filter(color => color))];
+    const eyeAnimations = [...new Set(gifs.map(gif => gif.eyeAnimation).filter(animation => animation))];
     
-    console.log('🔄 Filtered noggle colors:', noggleColors);
-    console.log('🔄 Filtered eye animations:', eyeAnimations);
+    console.log('🔄 All noggle colors (including unknown):', noggleColors);
+    console.log('🔄 All eye animations (including unknown):', eyeAnimations);
     
     return { noggleColors, eyeAnimations };
   };
