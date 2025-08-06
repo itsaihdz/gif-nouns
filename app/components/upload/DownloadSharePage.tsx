@@ -34,6 +34,10 @@ export function DownloadSharePage({
   className = "" 
 }: DownloadSharePageProps) {
   console.log('🔄 DownloadSharePage received props:', { gifUrl, shareUrl, title, noggleColor, eyeAnimation, creator });
+  console.log('🔄 Share URL type:', typeof shareUrl);
+  console.log('🔄 Share URL value:', shareUrl);
+  console.log('🔄 GIF URL type:', typeof gifUrl);
+  console.log('🔄 GIF URL value:', gifUrl);
   const [isSharing, setIsSharing] = useState(false);
   const [shareDialogUrl, setShareDialogUrl] = useState<string | null>(null);
 
@@ -49,6 +53,10 @@ export function DownloadSharePage({
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
+      console.log('🔄 Sharing to Farcaster with URL:', shareGifUrl);
+      console.log('🔄 Share URL available:', !!shareUrl);
+      console.log('🔄 Fallback to GIF URL:', !shareUrl);
+      
       const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${shareGifUrl}`;
       
       // Create Farcaster share URL
@@ -68,6 +76,10 @@ export function DownloadSharePage({
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
+      console.log('🔄 Sharing to Twitter with URL:', shareGifUrl);
+      console.log('🔄 Share URL available:', !!shareUrl);
+      console.log('🔄 Fallback to GIF URL:', !shareUrl);
+      
       const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${shareGifUrl}`;
       
       // Create Twitter share URL
@@ -86,6 +98,10 @@ export function DownloadSharePage({
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
+      console.log('🔄 Copying link to clipboard:', shareGifUrl);
+      console.log('🔄 Share URL available:', !!shareUrl);
+      console.log('🔄 Fallback to GIF URL:', !shareUrl);
+      
       await navigator.clipboard.writeText(shareGifUrl);
       // You could add a toast notification here
       console.log('Link copied to clipboard');
