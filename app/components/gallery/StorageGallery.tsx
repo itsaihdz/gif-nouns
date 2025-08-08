@@ -37,6 +37,11 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
 
+  // Debug state changes
+  useEffect(() => {
+    console.log('🔥 FILTER STATE CHANGED:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
+  }, [selectedNoggleColor, selectedEyeAnimation, sortBy]);
+
   const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
     try {
       const response = await fetch('/api/gallery/vote-storage', {
