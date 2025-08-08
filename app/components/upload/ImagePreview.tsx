@@ -267,11 +267,12 @@ export function ImagePreview({
         }
 
         const uploadResult = await uploadResponse.json();
-        const storageGifUrl = uploadResult?.url;
-        const storagePath = uploadResult?.path;
+        const storageGifUrl = uploadResult?.data?.url;
+        const storagePath = uploadResult?.data?.path;
 
         console.log('✅ Supabase Storage upload successful:', uploadResult);
         console.log('🔍 Extracted storageGifUrl:', storageGifUrl);
+        console.log('🔍 Upload result structure:', JSON.stringify(uploadResult, null, 2));
         
         if (!storageGifUrl) {
           console.error('❌ No URL returned from Supabase Storage upload:', uploadResult);
