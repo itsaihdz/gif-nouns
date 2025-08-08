@@ -261,21 +261,51 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     setFilteredGifs(filtered);
   };
 
-  // Get unique trait values for filter options
-  const getUniqueTraits = () => {
-    console.log('🔄 Getting unique traits from gifs:', gifs.length);
-    console.log('🔄 All noggle colors:', gifs.map(gif => gif.noggleColor));
-    console.log('🔄 All eye animations:', gifs.map(gif => gif.eyeAnimation));
-    
-    // Include all traits, even "unknown" ones, but filter out null/undefined
-    const noggleColors = [...new Set(gifs.map(gif => gif.noggleColor).filter(color => color))];
-    const eyeAnimations = [...new Set(gifs.map(gif => gif.eyeAnimation).filter(animation => animation))];
-    
-    console.log('🔄 All noggle colors (including unknown):', noggleColors);
-    console.log('🔄 All eye animations (including unknown):', eyeAnimations);
-    
-    return { noggleColors, eyeAnimations };
-  };
+  // All available noggle colors from ImagePreview component
+  const ALL_NOGGLE_COLORS = [
+    { name: "Blue", value: "blue" },
+    { name: "Deep Teal", value: "deep-teal" },
+    { name: "Gomita", value: "gomita" },
+    { name: "Grass", value: "grass" },
+    { name: "Green Blue", value: "green-blue" },
+    { name: "Grey Light", value: "grey-light" },
+    { name: "Guava", value: "guava" },
+    { name: "Hip Rose", value: "hip-rose" },
+    { name: "Honey", value: "honey" },
+    { name: "Hyper", value: "hyper" },
+    { name: "Hyperliquid", value: "hyperliquid" },
+    { name: "Lavender", value: "lavender" },
+    { name: "Magenta", value: "magenta" },
+    { name: "Orange", value: "orange" },
+    { name: "Pink Purple", value: "pink-purple" },
+    { name: "Purple", value: "purple" },
+    { name: "Red", value: "red" },
+    { name: "Smoke", value: "smoke" },
+    { name: "Teal", value: "teal" },
+    { name: "Watermelon", value: "watermelon" },
+    { name: "Yellow Orange", value: "yellow-orange" },
+    { name: "Yellow", value: "yellow" },
+  ];
+
+  // All available eye animations from ImagePreview component
+  const ALL_EYE_ANIMATIONS = [
+    { name: "Nouns", value: "nouns" },
+    { name: "Ojos Nouns", value: "ojos-nouns" },
+    { name: "Ojos Pepepunk", value: "ojos-pepepunk" },
+    { name: "Ojos Pepepunk En Medio", value: "ojos-pepepunk-en-medio" },
+    { name: "Arriba", value: "arriba" },
+    { name: "Arriba Derecha", value: "arriba-derecha" },
+    { name: "Arriba Izquierda", value: "arriba-izquierda" },
+    { name: "Abajo", value: "abajo" },
+    { name: "Abajo Derecha", value: "abajo-derecha" },
+    { name: "Abajo Izquierda", value: "abajo-izquierda" },
+    { name: "Viscos", value: "viscos" },
+    { name: "Viscos Derecha", value: "viscos-derecha" },
+    { name: "Viscos Izquierda", value: "viscos-izquierda" },
+    { name: "Locos", value: "locos" },
+    { name: "Serpiente", value: "serpiente" },
+    { name: "Vampiro", value: "vampiro" },
+  ];
 
   useEffect(() => {
     filterGifs();
@@ -339,8 +369,8 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="all">All Noggle Colors</option>
-            {getUniqueTraits().noggleColors.map(color => (
-              <option key={color} value={color}>{color}</option>
+            {ALL_NOGGLE_COLORS.map(color => (
+              <option key={color.value} value={color.value}>{color.name}</option>
             ))}
           </select>
           
@@ -350,8 +380,8 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="all">All Eye Animations</option>
-            {getUniqueTraits().eyeAnimations.map(animation => (
-              <option key={animation} value={animation}>{animation}</option>
+            {ALL_EYE_ANIMATIONS.map(animation => (
+              <option key={animation.value} value={animation.value}>{animation.name}</option>
             ))}
           </select>
           

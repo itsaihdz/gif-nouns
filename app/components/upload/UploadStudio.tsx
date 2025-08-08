@@ -114,8 +114,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     setCreatedGifData(gifData);
     console.log('🔄 Changing step to download...');
     setCurrentStep("download");
-    console.log('🔄 Calling parent onGifCreated callback...');
-    onGifCreated?.(gifData);
+    // Don't call onGifCreated here - only call it when user clicks "View in Gallery"
     console.log('🔄 ===== UploadStudio handleGifCreated COMPLETED =====');
   };
 
