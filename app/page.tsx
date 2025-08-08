@@ -42,11 +42,20 @@ export default function HomePage() {
   const [storageGifCount, setStorageGifCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
-  const { setFrameReady, isFrameReady } = useMiniKit();
+  
+  // Safely handle MiniKit hooks
+  let miniKitHooks = { setFrameReady: () => {}, isFrameReady: true };
+  try {
+    miniKitHooks = useMiniKit();
+  } catch (error) {
+    console.log('MiniKit not available:', error);
+  }
+  
+  const { setFrameReady, isFrameReady } = miniKitHooks;
 
   // Initialize MiniKit frame readiness
   useEffect(() => {
-    if (!isFrameReady) {
+    if (!isFrameReady && setFrameReady) {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
