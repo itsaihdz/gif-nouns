@@ -197,6 +197,11 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const filterGifs = useCallback(() => {
     console.log('🔄 filterGifs called with:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
     console.log('🔄 Total gifs before filtering:', gifs.length);
+    console.log('🔄 All GIFs with their traits:', gifs.map(g => ({ 
+      title: g.title, 
+      noggleColor: g.noggleColor, 
+      eyeAnimation: g.eyeAnimation 
+    })));
     
     let filtered = gifs;
     
@@ -382,7 +387,10 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         <div className="flex flex-wrap gap-2 mb-4 justify-center">
           <select
             value={selectedNoggleColor}
-            onChange={(e) => setSelectedNoggleColor(e.target.value)}
+            onChange={(e) => {
+              console.log('🔥 DROPDOWN CHANGED - Noggle Color:', e.target.value);
+              setSelectedNoggleColor(e.target.value);
+            }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="all">All Noggle Colors</option>
@@ -393,7 +401,10 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           
           <select
             value={selectedEyeAnimation}
-            onChange={(e) => setSelectedEyeAnimation(e.target.value)}
+            onChange={(e) => {
+              console.log('🔥 DROPDOWN CHANGED - Eye Animation:', e.target.value);
+              setSelectedEyeAnimation(e.target.value);
+            }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="all">All Eye Animations</option>
