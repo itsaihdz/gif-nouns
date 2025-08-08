@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FileUpload } from "./FileUpload";
-import { NounDetector } from "./NounDetector";
+
 import { ImagePreview } from "./ImagePreview";
 import { DownloadSharePage } from "./DownloadSharePage";
 import { Card } from "../ui/Card";
@@ -37,7 +37,7 @@ interface UploadStudioProps {
   }) => void;
 }
 
-type UploadStep = "upload" | "detecting" | "preview" | "download";
+type UploadStep = "upload" | "customize" | "download";
 
 export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps) {
   const [currentStep, setCurrentStep] = useState<UploadStep>("upload");
@@ -67,8 +67,18 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       const url = URL.createObjectURL(file);
       setImageUrl(url);
       
-      // Move to detection step
-      setCurrentStep("detecting");
+      // Set default traits for the image
+      const defaultTraits: NounTraits = {
+        eyes: "nouns",
+        noggles: "blue",
+        background: "blue",
+        body: "normal",
+        head: "normal",
+      };
+      setTraits(defaultTraits);
+      
+      // Move to customize step
+      setCurrentStep("customize");
       
       // Track upload event
       tracking.uploadStart(file.name, file.size);
@@ -79,10 +89,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     }
   };
 
-  const handleTraitsDetected = (detectedTraits: NounTraits) => {
-    setTraits(detectedTraits);
-    setCurrentStep("preview");
-  };
+
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
@@ -182,17 +189,9 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
           />
         );
 
-      case "detecting":
-        return (
-          <NounDetector
-            imageUrl={imageUrl}
-            onTraitsDetected={handleTraitsDetected}
-            onError={handleError}
-            className="max-w-4xl mx-auto"
-          />
-        );
 
-      case "preview":
+
+      case "customize":
         return traits ? (
           <ImagePreview
             originalImageUrl={imageUrl}
@@ -263,15 +262,14 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
           <div className="flex items-center justify-center space-x-2">
             {[
               { step: "upload", label: "Upload", icon: "upload" },
-              { step: "detecting", label: "Detect", icon: "eye" },
-              { step: "preview", label: "Customize", icon: "palette" },
+              { step: "customize", label: "Customize", icon: "palette" },
               { step: "download", label: "Download", icon: "download" },
             ].map((stepInfo, index) => {
               const isActive = currentStep === stepInfo.step;
               const isCompleted = [
-                "detecting", "preview", "download"
+                "customize", "download"
               ].includes(currentStep) && index < [
-                "detecting", "preview", "download"
+                "customize", "download"
               ].indexOf(currentStep) + 1;
 
               return (
