@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
@@ -189,7 +189,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   };
 
   // Filter and sort GIFs based on selected traits and sort option
-  const filterGifs = () => {
+  const filterGifs = useCallback(() => {
     console.log('🔄 filterGifs called with:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
     console.log('🔄 Total gifs before filtering:', gifs.length);
     
@@ -259,7 +259,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     })));
     
     setFilteredGifs(filtered);
-  };
+  }, [selectedNoggleColor, selectedEyeAnimation, sortBy, gifs]);
 
   // All available noggle colors from ImagePreview component
   const ALL_NOGGLE_COLORS = [
@@ -309,7 +309,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
 
   useEffect(() => {
     filterGifs();
-  }, [selectedNoggleColor, selectedEyeAnimation, sortBy, gifs]);
+  }, [filterGifs]);
 
   if (loading) {
     return (
