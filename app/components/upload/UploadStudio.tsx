@@ -136,36 +136,10 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       return;
     }
 
-    try {
-      console.log('🔄 Uploading to gallery...');
-      const response = await fetch('/api/gallery', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gifUrl: createdGifData.shareUrl || createdGifData.gifUrl, // Use Supabase URL if available
-          creator: createdGifData.creator,
-          title: createdGifData.title,
-          noggleColor: createdGifData.noggleColor,
-          eyeAnimation: createdGifData.eyeAnimation,
-        }),
-      });
-
-      if (response.ok) {
-        const newItem = await response.json();
-        console.log('✅ Gallery item created successfully:', newItem);
-        
-        // Call parent callback to update gallery and switch view
-        onGifCreated?.(createdGifData);
-      } else {
-        console.error('❌ Failed to create gallery item');
-        const errorText = await response.text();
-        console.error('❌ Error response:', errorText);
-      }
-    } catch (error) {
-      console.error('❌ Error uploading to gallery:', error);
-    }
+    // Since the database entry is automatically created during GIF upload,
+    // we just need to call the parent callback to switch to gallery view
+    console.log('🔄 Database entry already exists, just switching to gallery view...');
+    onGifCreated?.(createdGifData);
   };
 
 

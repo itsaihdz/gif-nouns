@@ -278,6 +278,41 @@ export function ImagePreview({
 
         setExportProgress(90);
 
+        // Automatically create database entry with traits
+        console.log('🔄 ===== AUTOMATICALLY CREATING DATABASE ENTRY =====');
+        try {
+          const databaseEntry = {
+            gifUrl: storageGifUrl, // Use Supabase URL for database
+            title: `gifnouns #${nextGifNumber}`,
+            noggleColor: selectedNoggleColor,
+            eyeAnimation: selectedEyeAnimation,
+            creator: {
+              wallet: address || 'unknown',
+              username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Creator',
+              pfp: address ? `https://picsum.photos/32/32?random=${address.slice(2, 8)}` : 'https://picsum.photos/32/32?random=unknown',
+            },
+          };
+
+          console.log('🔄 Creating database entry:', databaseEntry);
+          const databaseResponse = await fetch('/api/gallery', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(databaseEntry),
+          });
+
+          if (databaseResponse.ok) {
+            const newItem = await databaseResponse.json();
+            console.log('✅ Database entry created successfully:', newItem);
+          } else {
+            const errorText = await databaseResponse.text();
+            console.error('❌ Failed to create database entry:', errorText);
+          }
+        } catch (dbError) {
+          console.error('❌ Error creating database entry:', dbError);
+        }
+
         setExportProgress(100);
 
         // Show success message
