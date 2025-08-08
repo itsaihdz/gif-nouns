@@ -153,11 +153,11 @@ export function ImagePreview({
     fetchNextNumber();
   }, []);
 
-  // Initialize GIF generator
+  // Initialize GIF generator only when we have valid selections
   const { generateGif, generateGifAsync, downloadGif, mintAsNFT } = useGifGenerator({
     originalImageUrl,
-    noggleColor: selectedNoggleColor,
-    eyeAnimation: selectedEyeAnimation,
+    noggleColor: selectedNoggleColor || undefined,
+    eyeAnimation: selectedEyeAnimation || undefined,
     width: 800,
     height: 800,
     fps: 8,
@@ -169,6 +169,7 @@ export function ImagePreview({
       setIsExporting(false);
     },
     onError: (error) => {
+      console.error('GIF generation error:', error);
       onError(error);
       setIsExporting(false);
     }
@@ -202,11 +203,19 @@ export function ImagePreview({
 
   const handleExport = async () => {
     console.log('🔄 handleExport started');
+    
+    // Validate selections before proceeding
+    if (!selectedNoggleColor || !selectedEyeAnimation) {
+      onError('Please select both a noggle color and eye animation before creating your GIF');
+      return;
+    }
+    
     setIsExporting(true);
     setExportProgress(0);
     try {
       // First generate the GIF and wait for it to complete
       console.log('🔄 Starting GIF generation...');
+      console.log('🔄 Using selections:', { selectedNoggleColor, selectedEyeAnimation });
       const gifUrl = await generateGifAsync();
       console.log('🔄 GIF generation completed:', gifUrl);
       
