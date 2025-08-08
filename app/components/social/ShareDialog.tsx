@@ -10,7 +10,8 @@ declare global {
 }
 
 interface ShareDialogProps {
-  gifUrl: string;
+  gifUrl: string; // For preview display
+  shareUrl?: string; // Supabase URL for sharing
   title: string;
   noggleColor: string;
   eyeAnimation: string;
@@ -20,6 +21,7 @@ interface ShareDialogProps {
 
 export function ShareDialog({ 
   gifUrl, 
+  shareUrl,
   title, 
   noggleColor, 
   eyeAnimation, 
@@ -35,7 +37,8 @@ export function ShareDialog({
     try {
       setIsSharing(true);
       
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
+      const shareGifUrl = shareUrl || gifUrl; // Use Supabase URL if available, fallback to blob URL
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${shareGifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       
       const encodedText = encodeURIComponent(shareText);
       const url = `https://warpcast.com/~/compose?text=${encodedText}`;
@@ -61,7 +64,8 @@ export function ShareDialog({
     try {
       setIsSharing(true);
       
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
+      const shareGifUrl = shareUrl || gifUrl; // Use Supabase URL if available, fallback to blob URL
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${shareGifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       const encodedText = encodeURIComponent(shareText);
       const url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodeURIComponent('https://gifnouns.freezerserve.com')}`;
       
@@ -85,7 +89,8 @@ export function ShareDialog({
 
   const copyGifLink = async () => {
     try {
-      await navigator.clipboard.writeText(gifUrl);
+      const shareGifUrl = shareUrl || gifUrl; // Use Supabase URL if available, fallback to blob URL
+      await navigator.clipboard.writeText(shareGifUrl);
       
       // Track copy event
       if (typeof gtag !== 'undefined') {

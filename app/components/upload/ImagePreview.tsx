@@ -128,6 +128,7 @@ export function ImagePreview({
   const [isExporting, setIsExporting] = useState(false);
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
   const [generatedGifUrl, setGeneratedGifUrl] = useState<string>("");
+  const [shareGifUrl, setShareGifUrl] = useState<string>(""); // Store Supabase URL for sharing
   const [exportProgress, setExportProgress] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [nextGifNumber, setNextGifNumber] = useState(1);
@@ -273,8 +274,10 @@ export function ImagePreview({
 
         // Store the original generated GIF URL (blob URL) for preview/download
         setGeneratedGifUrl(gifUrl);
+        // Store the Supabase URL for sharing
+        setShareGifUrl(storageGifUrl);
         console.log('✅ Generated GIF URL set (blob):', gifUrl);
-        console.log('✅ Supabase Storage URL:', storageGifUrl);
+        console.log('✅ Supabase Storage URL (for sharing):', storageGifUrl);
 
         setExportProgress(90);
 
@@ -857,6 +860,7 @@ export function ImagePreview({
       {/* Share Dialog */}
       <ShareDialog
         gifUrl={generatedGifUrl}
+        shareUrl={shareGifUrl}
         title={`gifnouns #${nextGifNumber}`}
         noggleColor={selectedNoggleColor}
         eyeAnimation={selectedEyeAnimation}
