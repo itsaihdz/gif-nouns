@@ -267,10 +267,16 @@ export function ImagePreview({
         }
 
         const uploadResult = await uploadResponse.json();
-        const storageGifUrl = uploadResult.url;
-        const storagePath = uploadResult.path;
+        const storageGifUrl = uploadResult?.url;
+        const storagePath = uploadResult?.path;
 
         console.log('✅ Supabase Storage upload successful:', uploadResult);
+        console.log('🔍 Extracted storageGifUrl:', storageGifUrl);
+        
+        if (!storageGifUrl) {
+          console.error('❌ No URL returned from Supabase Storage upload:', uploadResult);
+          throw new Error('Supabase Storage upload succeeded but no URL returned');
+        }
 
         // Store the original generated GIF URL (blob URL) for preview/download
         setGeneratedGifUrl(gifUrl);
@@ -297,6 +303,22 @@ export function ImagePreview({
           };
 
           console.log('🔄 Creating database entry:', databaseEntry);
+          console.log('🔄 Stringified data:', JSON.stringify(databaseEntry));
+          console.log('🔄 StorageGifUrl value:', storageGifUrl);
+          
+          // Validate required fields before API call
+          if (!databaseEntry.gifUrl) {
+            console.error('❌ Missing gifUrl in database entry');
+            throw new Error('Cannot create database entry: missing GIF URL');
+          }
+          if (!databaseEntry.noggleColor) {
+            console.error('❌ Missing noggleColor in database entry');
+            throw new Error('Cannot create database entry: missing noggle color');
+          }
+          if (!databaseEntry.eyeAnimation) {
+            console.error('❌ Missing eyeAnimation in database entry');
+            throw new Error('Cannot create database entry: missing eye animation');
+          }
           const databaseResponse = await fetch('/api/gallery', {
             method: 'POST',
             headers: {
