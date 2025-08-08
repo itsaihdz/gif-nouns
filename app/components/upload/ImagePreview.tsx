@@ -39,7 +39,7 @@ interface NounTraits {
 
 interface ImagePreviewProps {
   originalImageUrl: string;
-  traits: NounTraits;
+  traits?: NounTraits | null;
   onError: (error: string) => void;
   onSuccess?: (message: string) => void;
   onGifCreated?: (gifData: { 
@@ -116,81 +116,14 @@ export function ImagePreview({
   console.log('🔄 ImagePreview component rendered with:', { originalImageUrl, traits });
   
   // Derive noggle color and eye animation from traits
-  const getNoggleColorFromTraits = () => {
-    if (traits?.noggles) {
-      const noggleColor = traits.noggles.toLowerCase();
-      console.log('🔄 Looking for noggle color:', noggleColor, 'in available colors:', NOGGLE_COLORS.map(c => c.value));
-      
-      // Try exact match first
-      let found = NOGGLE_COLORS.find(color => color.value.toLowerCase() === noggleColor);
-      
-      // If not found, try partial match
-      if (!found) {
-        found = NOGGLE_COLORS.find(color => 
-          color.value.toLowerCase().includes(noggleColor) || 
-          noggleColor.includes(color.value.toLowerCase())
-        );
-      }
-      
-      if (found) {
-        console.log('✅ Found noggle color:', found.value);
-        return found.value;
-      }
-    }
-    console.log('⚠️ Using default noggle color');
-    return NOGGLE_COLORS[0]?.value || "";
-  };
-
-  const getEyeAnimationFromTraits = () => {
-    if (traits?.eyes) {
-      const eyeType = traits.eyes.toLowerCase();
-      console.log('🔄 Looking for eye animation:', eyeType, 'in available animations:', EYE_ANIMATIONS.map(e => e.value));
-      
-      // Try exact match first
-      let found = EYE_ANIMATIONS.find(animation => animation.value.toLowerCase() === eyeType);
-      
-      // If not found, try partial match
-      if (!found) {
-        found = EYE_ANIMATIONS.find(animation => 
-          animation.value.toLowerCase().includes(eyeType) || 
-          eyeType.includes(animation.value.toLowerCase())
-        );
-      }
-      
-      if (found) {
-        console.log('✅ Found eye animation:', found.value);
-        return found.value;
-      }
-    }
-    console.log('⚠️ Using default eye animation');
-    return EYE_ANIMATIONS[0]?.value || "";
-  };
-
-  const [selectedNoggleColor, setSelectedNoggleColor] = useState(getNoggleColorFromTraits());
-  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState(getEyeAnimationFromTraits());
+  // Initialize with empty selections - user will select their own
+  const [selectedNoggleColor, setSelectedNoggleColor] = useState("");
+  const [selectedEyeAnimation, setSelectedEyeAnimation] = useState("");
   
-  // Update selected values when traits change
-  useEffect(() => {
-    const newNoggleColor = getNoggleColorFromTraits();
-    const newEyeAnimation = getEyeAnimationFromTraits();
-    
-    setSelectedNoggleColor(newNoggleColor);
-    setSelectedEyeAnimation(newEyeAnimation);
-    
-    console.log('🔄 Updated trait values:', {
-      traits,
-      newNoggleColor,
-      newEyeAnimation
-    });
-  }, [traits]);
-  
-  // Debug: Log the derived values
-  console.log('🔄 Current trait values:', {
-    traits,
+  // Debug: Log the current selections
+  console.log('🔄 Current user selections:', {
     selectedNoggleColor,
-    selectedEyeAnimation,
-    noggleFromTraits: getNoggleColorFromTraits(),
-    eyeFromTraits: getEyeAnimationFromTraits()
+    selectedEyeAnimation
   });
   const [isExporting, setIsExporting] = useState(false);
   const [animatedPreviewUrl, setAnimatedPreviewUrl] = useState<string>("");
@@ -623,6 +556,23 @@ export function ImagePreview({
 
           {/* Export Actions */}
           <div className="space-y-2">
+            {/* Validation Messages */}
+            {(!selectedNoggleColor || !selectedEyeAnimation) && (
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Icon name="alert-triangle" className="text-yellow-600" size="sm" />
+                  <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Please select both a noggle color and eye animation before creating your GIF
+                  </span>
+                </div>
+                <div className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+                  {!selectedNoggleColor && "• Select a noggle color above"}
+                  {!selectedNoggleColor && !selectedEyeAnimation && " • "}
+                  {!selectedEyeAnimation && "• Select an eye animation above"}
+                </div>
+              </div>
+            )}
+            
             {/* Generate GIF Button */}
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
@@ -632,11 +582,14 @@ export function ImagePreview({
                   console.log('🔄 Create & Upload GIF button clicked');
                   handleExport();
                 }}
-                disabled={isExporting}
+                disabled={isExporting || !selectedNoggleColor || !selectedEyeAnimation}
                 icon={<Icon name="sparkles" size="md" />}
                 className="flex-1"
               >
-                {isExporting ? `Creating... ${exportProgress.toFixed(0)}%` : "Create & Upload GIF"}
+                {isExporting ? `Creating... ${exportProgress.toFixed(0)}%` : 
+                 !selectedNoggleColor ? "Select Noggle Color" :
+                 !selectedEyeAnimation ? "Select Eye Animation" :
+                 "Create & Upload GIF"}
               </Button>
             </div>
 

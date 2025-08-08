@@ -67,15 +67,8 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       const url = URL.createObjectURL(file);
       setImageUrl(url);
       
-      // Set default traits for the image
-      const defaultTraits: NounTraits = {
-        eyes: "nouns",
-        noggles: "blue",
-        background: "blue",
-        body: "normal",
-        head: "normal",
-      };
-      setTraits(defaultTraits);
+      // Don't set default traits - let user select them in the customize step
+      setTraits(null);
       
       // Move to customize step
       setCurrentStep("customize");
@@ -192,7 +185,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
 
 
       case "customize":
-        return traits ? (
+        return (
           <ImagePreview
             originalImageUrl={imageUrl}
             traits={traits}
@@ -201,7 +194,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
             onGifCreated={handleGifCreated}
             className="max-w-6xl mx-auto"
           />
-        ) : null;
+        );
 
       case "download":
         console.log('🔄 ===== RENDERING DOWNLOAD STEP =====');
