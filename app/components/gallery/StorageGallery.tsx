@@ -196,12 +196,24 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     let filtered = gifs;
     
     if (selectedNoggleColor !== 'all') {
-      filtered = filtered.filter(gif => gif.noggleColor === selectedNoggleColor);
+      console.log('🔍 Filtering by noggle color:', selectedNoggleColor);
+      console.log('🔍 Available noggle colors in gifs:', gifs.map(g => g.noggleColor));
+      filtered = filtered.filter(gif => {
+        const matches = gif.noggleColor === selectedNoggleColor;
+        console.log(`🔍 GIF "${gif.title}" has noggleColor "${gif.noggleColor}", matches "${selectedNoggleColor}": ${matches}`);
+        return matches;
+      });
       console.log('🔄 After noggle color filter:', filtered.length);
     }
     
     if (selectedEyeAnimation !== 'all') {
-      filtered = filtered.filter(gif => gif.eyeAnimation === selectedEyeAnimation);
+      console.log('🔍 Filtering by eye animation:', selectedEyeAnimation);
+      console.log('🔍 Available eye animations in gifs:', gifs.map(g => g.eyeAnimation));
+      filtered = filtered.filter(gif => {
+        const matches = gif.eyeAnimation === selectedEyeAnimation;
+        console.log(`🔍 GIF "${gif.title}" has eyeAnimation "${gif.eyeAnimation}", matches "${selectedEyeAnimation}": ${matches}`);
+        return matches;
+      });
       console.log('🔄 After eye animation filter:', filtered.length);
     }
     
