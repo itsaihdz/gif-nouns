@@ -250,13 +250,13 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
                     schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
                   >
                     <Avatar className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <Name className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-20 sm:max-w-none truncate">
+                    <Name className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       <Badge />
                     </Name>
                   </Identity>
                 ) : (
                   // Fallback for when no wallet address - just show username
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     @{item.creator.username}
                   </span>
                 )}

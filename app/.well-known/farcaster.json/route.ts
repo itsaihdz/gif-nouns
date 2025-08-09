@@ -32,7 +32,7 @@ export async function GET() {
       homeUrl: URL,
       webhookUrl: `${URL}/api/webhook`,
       primaryCategory: "art-creativity",
-      tags: ["nouns", "gif", "animation", "pfp", "community"],
+      tags: ["gifnouns", "nouns", "gif", "animation", "pfp", "community"],
       heroImageUrl: `${URL}/hero.png`,
       tagline: "Animate your Nouns",
       ogTitle: "GifNouns",

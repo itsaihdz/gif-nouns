@@ -680,7 +680,7 @@ ${gif.url}`;
                     schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
                   >
                     <Avatar className="w-5 h-5 sm:w-4 sm:h-4" />
-                    <Name className="text-xs text-gray-500 dark:text-gray-500 max-w-16 sm:max-w-20 truncate">
+                    <Name className="text-xs text-gray-500 dark:text-gray-500">
                       <Badge />
                     </Name>
                   </Identity>
