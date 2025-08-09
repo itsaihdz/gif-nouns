@@ -1,13 +1,1 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
-  <circle cx="10" cy="12" r="2" fill="white"/>
-  <circle cx="22" cy="12" r="2" fill="white"/>
-  <rect x="8" y="8" width="16" height="4" rx="2" fill="white" opacity="0.8"/>
-  <rect x="12" y="20" width="8" height="2" rx="1" fill="white"/>
-  <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8B5CF6"/>
-      <stop offset="100%" style="stop-color:#2563EB"/>
-    </linearGradient>
-  </defs>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?><svg id="Capa_2" xmlns="http://www.w3.org/2000/svg" width="1073.1486" height="195.3312" viewBox="0 0 1073.1486 195.3312"><defs><style>.cls-1{font-size:122.0968px;}.cls-1,.cls-2{fill:#fff;}.cls-3{fill:#f3322c;}.cls-4{font-family:Montserrat-Medium, Montserrat;font-variation-settings:'wght' 500;font-weight:500;}.cls-5{font-family:Montserrat-Bold, Montserrat;font-variation-settings:'wght' 700;font-weight:700;}</style></defs><g id="Capa_1-2"><polygon class="cls-2" points="95.0509 47.1899 95.0509 70.9526 95.0509 94.7154 95.0509 118.4781 142.5763 118.4781 142.5763 94.7154 142.5763 70.9526 142.5763 47.1899 142.5763 23.4272 95.0509 23.4272 95.0509 47.1899"/><polygon class="cls-2" points="261.3899 23.4272 261.3899 47.1899 261.3899 70.9526 261.3899 94.7154 261.3899 118.4781 308.9153 118.4781 308.9153 94.7154 308.9153 70.9526 308.9153 47.1899 308.9153 23.4272 261.3899 23.4272"/><polygon points="142.5763 47.1899 142.5763 70.9526 142.5763 94.7154 142.5763 118.4781 190.1017 118.4781 190.1017 94.7154 190.1017 70.9526 190.1017 47.1899 190.1017 23.4272 142.5763 23.4272 142.5763 47.1899"/><polygon points="308.9153 23.4272 308.9153 47.1899 308.9153 70.9526 308.9153 94.7154 308.9153 118.4781 356.4407 118.4781 356.4407 94.7154 356.4407 70.9526 356.4407 47.1899 356.4407 23.4272 308.9153 23.4272"/><path class="cls-3" d="M236.5088,0v47.3018h-23.6509V0H70.9526v47.3018H0v70.9526h23.6509v-47.3018h47.3018v70.9526h141.9053v-70.9526h23.6509v70.9526h141.9053V0h-141.9053ZM189.207,47.3018v70.9526h-94.6035V23.6509h94.6035v23.6509ZM260.1597,118.2544V23.6509h94.6035v94.6035h-94.6035Z"/><text class="cls-1" transform="translate(427.2629 140.0206)"><tspan class="cls-4" x="0" y="0">Gif</tspan><tspan class="cls-5" x="171.4209" y="0">NOUNS</tspan></text></g></svg>
