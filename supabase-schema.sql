@@ -97,13 +97,13 @@ CREATE TRIGGER update_gallery_items_updated_at BEFORE UPDATE ON gallery_items
 
 -- Insert some sample data
 INSERT INTO users (fid, username, display_name, pfp, follower_count, following_count) VALUES
-  (12345, 'alice.noun', 'Alice Noun', 'https://picsum.photos/32/32?random=1', 42, 38),
-  (23456, 'bob.noun', 'Bob Noun', 'https://picsum.photos/32/32?random=5', 38, 42),
-  (34567, 'charlie.noun', 'Charlie Noun', 'https://picsum.photos/32/32?random=3', 25, 30),
-  (45678, 'diana.noun', 'Diana Noun', 'https://picsum.photos/32/32?random=4', 55, 45)
+  (12345, 'alice.noun', 'Alice Noun', '', 42, 38),
+  (23456, 'bob.noun', 'Bob Noun', '', 38, 42),
+  (34567, 'charlie.noun', 'Charlie Noun', '', 25, 30),
+  (45678, 'diana.noun', 'Diana Noun', '', 55, 45)
 ON CONFLICT (fid) DO NOTHING;
 
 INSERT INTO gallery_items (gif_url, creator_fid, creator_username, creator_pfp, title, noggle_color, eye_animation, upvotes, downvotes) VALUES
-  ('/api/generate-gif?demo=1', 12345, 'alice.noun', 'https://picsum.photos/32/32?random=1', 'gifnouns #1', 'blue', 'nouns', 42, 5),
-  ('/api/generate-gif?demo=2', 23456, 'bob.noun', 'https://picsum.photos/32/32?random=5', 'gifnouns #2', 'grass', 'viscos', 38, 2)
+  ('/api/generate-gif?demo=1', 12345, 'alice.noun', '', 'gifnouns #1', 'blue', 'nouns', 42, 5),
+  ('/api/generate-gif?demo=2', 23456, 'bob.noun', '', 'gifnouns #2', 'grass', 'viscos', 38, 2)
 ON CONFLICT DO NOTHING; 

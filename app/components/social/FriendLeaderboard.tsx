@@ -56,7 +56,7 @@ export function FriendLeaderboard({ className = "" }: FriendLeaderboardProps) {
           {
             fid: 23456,
             username: 'alice.noun',
-            pfp: 'https://picsum.photos/32/32?random=1',
+            pfp: '',
             score: 142,
             rank: 2,
             isFriend: true,
@@ -65,7 +65,7 @@ export function FriendLeaderboard({ className = "" }: FriendLeaderboardProps) {
           {
             fid: 34567,
             username: 'bob.noun',
-            pfp: 'https://picsum.photos/32/32?random=2',
+            pfp: '',
             score: 128,
             rank: 3,
             isFriend: true,
@@ -74,7 +74,7 @@ export function FriendLeaderboard({ className = "" }: FriendLeaderboardProps) {
           {
             fid: 45678,
             username: 'charlie.noun',
-            pfp: 'https://picsum.photos/32/32?random=3',
+            pfp: '',
             score: 115,
             rank: 4,
             isFriend: false,
@@ -83,7 +83,7 @@ export function FriendLeaderboard({ className = "" }: FriendLeaderboardProps) {
           {
             fid: 56789,
             username: 'diana.noun',
-            pfp: 'https://picsum.photos/32/32?random=4',
+            pfp: '',
             score: 98,
             rank: 5,
             isFriend: true,

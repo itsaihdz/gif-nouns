@@ -73,7 +73,7 @@ export const galleryService = {
               gif_url: item.gifUrl,
               creator_fid: 0, // Fallback
               creator_username: item.creatorWallet, // Store wallet as username temporarily
-              creator_pfp: `https://picsum.photos/32/32?random=${item.creatorWallet.slice(2, 8)}`,
+              creator_pfp: '',
               title: item.title,
               noggle_color: item.noggleColor,
               eye_animation: item.eyeAnimation,

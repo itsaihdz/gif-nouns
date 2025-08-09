@@ -34,7 +34,7 @@ export async function getUserByFid(fid: number): Promise<{ user: FarcasterUser }
           fid: user.fid,
           username: user.username || `user${fid}.noun`,
           displayName: user.display_name || user.username || `User ${fid}`,
-          pfp: user.pfp_url || `https://picsum.photos/32/32?random=${fid}`,
+          pfp: user.pfp_url || '',
           followerCount: user.follower_count || 0,
           followingCount: user.following_count || 0,
           bio: user.profile?.bio?.text,
@@ -49,7 +49,7 @@ export async function getUserByFid(fid: number): Promise<{ user: FarcasterUser }
         fid,
         username: `user${fid}.noun`,
         displayName: `User ${fid}`,
-        pfp: `https://picsum.photos/32/32?random=${fid}`,
+        pfp: '',
         followerCount: Math.floor(Math.random() * 1000),
         followingCount: Math.floor(Math.random() * 500)
       }
@@ -63,7 +63,7 @@ export async function getUserByFid(fid: number): Promise<{ user: FarcasterUser }
         fid,
         username: `user${fid}.noun`,
         displayName: `User ${fid}`,
-        pfp: `https://picsum.photos/32/32?random=${fid}`,
+        pfp: '',
         followerCount: Math.floor(Math.random() * 1000),
         followingCount: Math.floor(Math.random() * 500)
       }
@@ -85,7 +85,7 @@ export async function getUserByUsername(username: string): Promise<{ user: Farca
           fid: user.fid,
           username: user.username || username,
           displayName: user.display_name || user.username || username.replace('.noun', ''),
-          pfp: user.pfp_url || `https://picsum.photos/32/32?random=${Math.random()}`,
+          pfp: user.pfp_url || '',
           followerCount: user.follower_count || 0,
           followingCount: user.following_count || 0,
           bio: user.profile?.bio?.text,
@@ -100,7 +100,7 @@ export async function getUserByUsername(username: string): Promise<{ user: Farca
         fid: Math.floor(Math.random() * 100000),
         username,
         displayName: username.replace('.noun', ''),
-        pfp: `https://picsum.photos/32/32?random=${Math.random()}`,
+        pfp: '',
         followerCount: Math.floor(Math.random() * 1000),
         followingCount: Math.floor(Math.random() * 500)
       }
@@ -114,7 +114,7 @@ export async function getUserByUsername(username: string): Promise<{ user: Farca
         fid: Math.floor(Math.random() * 100000),
         username,
         displayName: username.replace('.noun', ''),
-        pfp: `https://picsum.photos/32/32?random=${Math.random()}`,
+        pfp: '',
         followerCount: Math.floor(Math.random() * 1000),
         followingCount: Math.floor(Math.random() * 500)
       }
@@ -134,7 +134,7 @@ export async function getMultipleUsersByFid(fids: number[]): Promise<FarcasterUs
         fid: user.fid,
         username: user.username || `user${user.fid}.noun`,
         displayName: user.display_name || user.username || `User ${user.fid}`,
-        pfp: user.pfp_url || `https://picsum.photos/32/32?random=${user.fid}`,
+                  pfp: user.pfp_url || '',
         followerCount: user.follower_count || 0,
         followingCount: user.following_count || 0,
         bio: user.profile?.bio?.text,
@@ -147,7 +147,7 @@ export async function getMultipleUsersByFid(fids: number[]): Promise<FarcasterUs
       fid,
       username: `user${fid}.noun`,
       displayName: `User ${fid}`,
-      pfp: `https://picsum.photos/32/32?random=${fid}`,
+      pfp: '',
       followerCount: Math.floor(Math.random() * 1000),
       followingCount: Math.floor(Math.random() * 500)
     }));
@@ -159,7 +159,7 @@ export async function getMultipleUsersByFid(fids: number[]): Promise<FarcasterUs
       fid,
       username: `user${fid}.noun`,
       displayName: `User ${fid}`,
-      pfp: `https://picsum.photos/32/32?random=${fid}`,
+      pfp: '',
       followerCount: Math.floor(Math.random() * 1000),
       followingCount: Math.floor(Math.random() * 500)
     }));
@@ -198,7 +198,7 @@ export async function getUserByWalletAddress(walletAddress: string): Promise<{ u
           fid: user.fid,
           username: user.username || `user${user.fid}.noun`,
           displayName: user.display_name || user.username || `User ${user.fid}`,
-          pfp: user.pfp_url || `https://picsum.photos/32/32?random=${user.fid}`,
+          pfp: user.pfp_url || '',
           followerCount: user.follower_count || 0,
           followingCount: user.following_count || 0,
           bio: user.profile?.bio?.text,
@@ -215,7 +215,7 @@ export async function getUserByWalletAddress(walletAddress: string): Promise<{ u
         fid: 0, // Unknown FID
         username: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
         displayName: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
-        pfp: `https://picsum.photos/32/32?random=${walletAddress.slice(2, 8)}`,
+        pfp: '',
         followerCount: 0,
         followingCount: 0,
         verifiedAddresses: [walletAddress],
@@ -230,7 +230,7 @@ export async function getUserByWalletAddress(walletAddress: string): Promise<{ u
         fid: 0,
         username: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
         displayName: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
-        pfp: `https://picsum.photos/32/32?random=${walletAddress.slice(2, 8)}`,
+        pfp: '',
         followerCount: 0,
         followingCount: 0,
         verifiedAddresses: [walletAddress],

@@ -1,4 +1,4 @@
-// Mock Database Schema for Nouns Remix Studio
+// Mock Database Schema for GifNouns
 // In a real implementation, this would be a proper database schema
 
 export interface User {

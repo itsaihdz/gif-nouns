@@ -146,7 +146,7 @@ export function Features({ className = "" }: FeaturesProps) {
             </h3>
             <p className="text-lg text-gray-600 dark:text-gray-300">
               Whether you&apos;re a creator, collector, or community member, 
-              Nouns Remix Studio has something for everyone.
+              GifNouns has something for everyone.
             </p>
           </div>
 

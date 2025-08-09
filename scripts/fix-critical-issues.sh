@@ -172,7 +172,7 @@ export const config = createConfig({
   chains: [base],
   connectors: [
     injected(),
-    coinbaseWallet({ appName: 'Nouns Remix Studio' }),
+    coinbaseWallet({ appName: 'GifNouns' }),
   ],
   transports: {
     [base.id]: http(),

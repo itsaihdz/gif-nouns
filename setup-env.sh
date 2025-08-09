@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Setting up environment variables for Nouns Remix Studio"
+echo "🚀 Setting up environment variables for GifNouns"
 echo ""
 
 # Check if .env.local already exists

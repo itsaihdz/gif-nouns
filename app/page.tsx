@@ -141,68 +141,68 @@ export default function HomePage() {
       <UserProvider>
         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
           <Header />
-          <main className="container mx-auto px-2 py-2">
+          <main className="max-w-sm mx-auto px-3 py-3 sm:max-w-md sm:px-4 sm:py-4 md:max-w-2xl lg:max-w-7xl lg:px-8">
             {/* Welcome Screen */}
-            <div className="max-w-2xl mx-auto text-center">
-              <div className="mb-2">
-                <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                  <Icon name="sparkles" className="text-white" size="xl" />
+            <div className="text-center">
+              <div className="mb-4 sm:mb-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <Icon name="sparkles" className="text-white" size="lg" />
                 </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                  Nouns Remix Studio
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2 sm:mb-3">
+                  GifNouns
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 px-2">
                   Create animated Nouns and discover community creations
                 </p>
               </div>
 
               {/* Wallet Connection */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg border border-gray-200 dark:border-gray-700">
-                <div className="mb-2">
-                  <Icon name="wallet" className="text-purple-600 mx-auto mb-2" size="lg" />
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div className="mb-4 sm:mb-6">
+                  <Icon name="wallet" className="text-purple-600 mx-auto mb-3 sm:mb-4" size="md" />
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
                     Connect Your Wallet
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 px-2">
                     Connect your wallet to start creating animated Nouns
                   </p>
                 </div>
                 
-                <div className="max-w-sm mx-auto">
+                <div className="mb-4">
                   <WalletConnect variant="button" size="lg" />
                 </div>
 
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                   <p>By connecting, you agree to our terms of service</p>
                 </div>
               </div>
 
               {/* Features Preview */}
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Icon name="upload" className="text-purple-600" size="md" />
+              <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-0 sm:grid sm:grid-cols-1 md:grid-cols-3 md:gap-4">
+                <div className="text-center bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 sm:p-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Icon name="upload" className="text-purple-600" size="sm" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Upload & Customize</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Upload & Customize</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Upload your Noun PFP and customize with different noggles and eye animations
                   </p>
                 </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Icon name="gallery" className="text-blue-600" size="md" />
+                <div className="text-center bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 sm:p-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Icon name="gallery" className="text-blue-600" size="sm" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Community Gallery</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Community Gallery</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Discover and vote on community creations
                   </p>
                 </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Icon name="share" className="text-green-600" size="md" />
+                <div className="text-center bg-green-50 dark:bg-green-900/20 rounded-lg p-3 sm:p-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Icon name="share" className="text-green-600" size="sm" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Share & Mint</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2">Share & Mint</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Share your creations and mint them as NFTs
                   </p>
                 </div>
@@ -219,19 +219,19 @@ export default function HomePage() {
     <UserProvider>
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
         <Header />
-        <main className="container mx-auto px-2 py-2">
+        <main className="max-w-sm mx-auto px-3 py-3 sm:max-w-md sm:px-4 sm:py-4 md:max-w-2xl lg:max-w-7xl lg:px-8">
           {/* Mini App Header */}
-          <div className="text-center mb-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              Nouns Remix Studio
+          <div className="text-center mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2 sm:mb-3">
+              GifNouns
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 px-2">
               Create animated Nouns and discover community creations
             </p>
           </div>
 
           {/* View Toggle */}
-          <div className="flex justify-center gap-2 mb-2">
+          <div className="flex justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <Button
               variant={currentView === "create" ? "gradient" : "outline"}
               onClick={() => setCurrentView("create")}

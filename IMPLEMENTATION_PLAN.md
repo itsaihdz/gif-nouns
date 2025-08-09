@@ -284,7 +284,7 @@ export async function GET() {
 ```json
 // public/manifest.json
 {
-  "name": "Nouns Remix Studio",
+  "name": "GifNouns",
   "description": "Create animated Nouns and discover community creations",
   "icon": "/icon.png",
   "splash": "/splash.png",

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         data: {
           creator: {
             username: 'Unknown Creator',
-            pfp: 'https://picsum.photos/32/32?random=unknown',
+            pfp: '',
           },
           title: 'Animated Noun',
           noggleColor: 'unknown',

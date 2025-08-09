@@ -16,17 +16,17 @@ export const viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   const URL = process.env.NEXT_PUBLIC_URL || "https://gifnouns.freezerverse.com";
   return {
-    title: "Nouns Remix Studio",
+    title: "GifNouns",
     description: "Create animated Nouns with custom noggles and eye animations",
     other: {
       "fc:frame": JSON.stringify({
         version: "next",
         imageUrl: `${URL}/hero.png`,
         button: {
-          title: "Launch Nouns Remix Studio",
+          title: "Launch GifNouns",
           action: {
             type: "launch_frame",
-            name: "Nouns Remix Studio",
+            name: "GifNouns",
             url: URL,
             splashImageUrl: `${URL}/splash.png`,
             splashBackgroundColor: "#8B5CF6",

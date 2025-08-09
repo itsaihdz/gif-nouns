@@ -1,7 +1,7 @@
 # Testing Plan for Upload & Preview System
 
 ## Overview
-This document outlines the comprehensive testing strategy for the "Upload & Preview System" feature of Nouns Remix Studio.
+This document outlines the comprehensive testing strategy for the "Upload & Preview System" feature of GifNouns.
 
 ## 1. Technical Testing
 

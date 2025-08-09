@@ -1,6 +1,6 @@
-# Nouns Remix Studio - Landing Page
+# GifNouns - Landing Page
 
-A professional, modern landing page for the Nouns Remix Studio Mini App built with Next.js 14, TypeScript, and TailwindCSS.
+A professional, modern landing page for the GifNouns Mini App built with Next.js 14, TypeScript, and TailwindCSS.
 
 ## 🚀 Features
 
@@ -118,7 +118,7 @@ Before running the app, you need to configure the Web3 environment variables:
 ```bash
 # MiniKit Configuration
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=your_onchainkit_api_key_here
-NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME=Nouns Remix Studio
+NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME=GifNouns
 NEXT_PUBLIC_ICON_URL=https://your-domain.com/icon.png
 
 # WalletConnect Configuration
