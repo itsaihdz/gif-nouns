@@ -133,9 +133,9 @@ export function ImagePreview({
   const [exportProgress, setExportProgress] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [nextGifNumber, setNextGifNumber] = useState(1);
-  const { user, isAuthenticated } = useUser();
+  const { user } = useUser();
   const { address } = useAccount();
-  const { data: walletClient } = useWalletClient();
+  const { } = useWalletClient();
   const { notificationOccurred, selectionChanged } = useHaptics();
   const sendNotification = useNotification();
 

@@ -39,7 +39,7 @@ export function DownloadSharePage({
   console.log('🔄 GIF URL type:', typeof gifUrl);
   console.log('🔄 GIF URL value:', gifUrl);
   const [isSharing, setIsSharing] = useState(false);
-  const [shareDialogUrl, setShareDialogUrl] = useState<string | null>(null);
+  const [, setShareDialogUrl] = useState<string | null>(null);
 
   const handleDownload = () => {
     if (gifUrl) {

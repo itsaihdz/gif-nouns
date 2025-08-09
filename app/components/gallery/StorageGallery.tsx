@@ -139,7 +139,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                         pfp = neynarResult.pfp;
                         walletAddress = neynarResult.wallet;
                       }
-                    } catch (neynarError) {
+                    } catch (error) {
                       console.log('Neynar lookup failed, using fallback data');
                     }
                   }

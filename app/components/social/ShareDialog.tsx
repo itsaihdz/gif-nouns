@@ -46,7 +46,7 @@ export function ShareDialog({
       // Use Farcaster MiniApp SDK composeCast action
       await sdk.actions.composeCast({ 
         text: shareText,
-        embeds: [{ url: shareGifUrl }]
+        embeds: [shareGifUrl]
       });
       
       // Success haptic feedback
