@@ -10,6 +10,33 @@
     "iconUrl": "https://gifnouns.freezerverse.com/icon.png",
     "homeUrl": "https://gifnouns.freezerverse.com",
     "splashImageUrl": "https://gifnouns.freezerverse.com/splash.png",
-    "splashBackgroundColor": "#8B5CF6"
+    "splashBackgroundColor": "#8B5CF6",
+    "subtitle": "Animate your Nouns PFP",
+    "description": "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
+    "screenshotUrls": [
+      "https://gifnouns.freezerverse.com/screenshot.png"
+    ],
+    "primaryCategory": "art-creativity",
+    "tags": [
+      "nouns",
+      "animation",
+      "pfp",
+      "gif",
+      "art"
+    ],
+    "heroImageUrl": "https://gifnouns.freezerverse.com/hero.png",
+    "tagline": "Bring your Nouns to life",
+    "ogTitle": "GifNouns",
+    "ogDescription": "Create animated Nouns with custom noggles and eye animations",
+    "ogImageUrl": "https://gifnouns.freezerverse.com/hero.png",
+    "requiredChains": [
+      "eip155:1",
+      "eip155:8453"
+    ],
+    "requiredCapabilities": [
+      "wallet.getEthereumProvider",
+      "actions.signIn"
+    ],
+    "noindex": false
   }
 }
