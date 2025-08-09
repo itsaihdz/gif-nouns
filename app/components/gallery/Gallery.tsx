@@ -143,7 +143,9 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
     })
     .sort((a, b) => {
       if (sortBy === "votes") {
-        return b.upvotes - b.downvotes - (a.upvotes - a.downvotes);
+        const aTotalVotes = (a.upvotes || 0) + (a.downvotes || 0);
+        const bTotalVotes = (b.upvotes || 0) + (b.downvotes || 0);
+        return bTotalVotes - aTotalVotes; // Most total votes first
       } else {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
@@ -177,7 +179,7 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
               onChange={(e) => setSortBy(e.target.value as "votes" | "recent")}
               className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
-              <option value="votes">Most Voted</option>
+              <option value="votes">Most Total Votes</option>
               <option value="recent">Most Recent</option>
             </select>
           </div>
@@ -267,10 +269,10 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
                 <div className="flex items-center gap-2 mb-2">
                   <Icon name="heart" size="sm" className={item.userVote === 'upvote' ? "text-red-500" : "text-gray-400"} />
                   <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                    {item.upvotes - item.downvotes} votes
+                    {(item.upvotes || 0) + (item.downvotes || 0)} total votes
                   </span>
                   <span className="text-xs text-gray-500 hidden sm:inline">
-                    ({item.upvotes} up, {item.downvotes} down)
+                    ({item.upvotes || 0} up, {item.downvotes || 0} down)
                   </span>
                 </div>
                 

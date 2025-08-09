@@ -415,24 +415,20 @@ ${gif.url}`;
     switch (sortBy) {
       case 'most-votes':
         filtered = filtered.sort((a, b) => {
-          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
-          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
-          console.log('🔄 Comparing votes for most-votes:', { 
-            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, netVotes: aVotes },
-            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, netVotes: bVotes }
+          const aTotalVotes = (a.upvotes || 0) + (a.downvotes || 0);
+          const bTotalVotes = (b.upvotes || 0) + (b.downvotes || 0);
+          console.log('🔄 Comparing total votes for most-votes:', { 
+            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, totalVotes: aTotalVotes },
+            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, totalVotes: bTotalVotes }
           });
-          return bVotes - aVotes; // Most votes first (descending)
+          return bTotalVotes - aTotalVotes; // Most total votes first (descending)
         });
         break;
       case 'least-votes':
         filtered = filtered.sort((a, b) => {
-          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
-          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
-          console.log('🔄 Comparing votes for least-votes:', { 
-            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, netVotes: aVotes },
-            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, netVotes: bVotes }
-          });
-          return aVotes - bVotes; // Least votes first (ascending)
+          const aTotalVotes = (a.upvotes || 0) + (a.downvotes || 0);
+          const bTotalVotes = (b.upvotes || 0) + (b.downvotes || 0);
+          return aTotalVotes - bTotalVotes; // Least total votes first (ascending)
         });
         break;
       case 'newest':
@@ -459,7 +455,7 @@ ${gif.url}`;
       eyeAnimation: gif.eyeAnimation,
       upvotes: gif.upvotes,
       downvotes: gif.downvotes,
-      netVotes: (gif.upvotes || 0) - (gif.downvotes || 0),
+      totalVotes: (gif.upvotes || 0) + (gif.downvotes || 0),
       created_at: gif.created_at
     })));
     
@@ -637,8 +633,8 @@ ${gif.url}`;
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
-            <option value="most-votes">Most Votes</option>
-            <option value="least-votes">Least Votes</option>
+                            <option value="most-votes">Most Total Votes</option>
+                <option value="least-votes">Least Total Votes</option>
           </select>
           
           <Button

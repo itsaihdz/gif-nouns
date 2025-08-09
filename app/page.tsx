@@ -256,7 +256,7 @@ export default function HomePage() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + item.upvotes - item.downvotes, 0)}
+                {isLoading ? "..." : galleryItems.reduce((sum, item) => sum + (item.upvotes || 0) + (item.downvotes || 0), 0)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
             </div>
