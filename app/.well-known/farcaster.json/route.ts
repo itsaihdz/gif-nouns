@@ -22,7 +22,7 @@ export async function GET() {
     },
     frame: withValidProperties({
       version: "1",
-      name: "Nouns Remix Studio",
+      name: "GifNouns.",
       subtitle: "Create animated Nouns",
       description: "Upload your Noun PFP, customize with noggle colors and animated eyes, then export as GIF. Join the community gallery!",
       screenshotUrls: [],
@@ -35,7 +35,7 @@ export async function GET() {
       tags: ["nouns", "gif", "animation", "pfp", "community"],
       heroImageUrl: `${URL}/hero.png`,
       tagline: "Animate your Nouns",
-      ogTitle: "Nouns Remix Studio",
+      ogTitle: "GifNouns",
       ogDescription: "Create animated Nouns with custom noggles and eye animations",
       ogImageUrl: `${URL}/hero.png`,
     }),
