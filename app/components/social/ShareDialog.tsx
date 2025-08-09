@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Icon } from '../icons';
 import { useUser } from '../../contexts/UserContext';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 declare global {
   function gtag(...args: any[]): void;
@@ -38,11 +39,13 @@ export function ShareDialog({
       setIsSharing(true);
       
       const shareGifUrl = shareUrl || gifUrl; // Use Supabase URL if available, fallback to blob URL
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${shareGifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun:\n\n#Nouns #AnimatedNouns #Farcaster`;
       
-      const encodedText = encodeURIComponent(shareText);
-      const url = `https://warpcast.com/~/compose?text=${encodedText}`;
-      window.open(url, '_blank');
+      // Use Farcaster MiniApp SDK composeCast action
+      await sdk.actions.composeCast({ 
+        text: shareText,
+        embeds: [{ url: shareGifUrl }]
+      });
       
       // Track share event
       if (typeof gtag !== 'undefined') {
@@ -55,6 +58,12 @@ export function ShareDialog({
       
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
+      // Fallback to Warpcast URL if MiniApp SDK fails
+      const shareGifUrl = shareUrl || gifUrl;
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${shareGifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
+      const encodedText = encodeURIComponent(shareText);
+      const url = `https://warpcast.com/~/compose?text=${encodedText}`;
+      window.open(url, '_blank');
     } finally {
       setIsSharing(false);
     }
