@@ -24,23 +24,17 @@ const config = createConfig({
 });
 
 export function Providers(props: { children: ReactNode }) {
-  // Temporarily disable MiniKit to debug the 'call' error
-  const hasApiKey = process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY;
   
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {hasApiKey ? (
-          <MiniKitProvider
-            apiKey={process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY}
-            chain={base}
-          >
-            {props.children}
-          </MiniKitProvider>
-        ) : (
-          // Render without MiniKit if no API key
-          props.children
-        )}
+        <MiniKitProvider
+          apiKey={apiKey || "placeholder"} // Use placeholder if no API key to avoid build errors
+          chain={base}
+        >
+          {props.children}
+        </MiniKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

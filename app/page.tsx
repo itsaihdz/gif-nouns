@@ -44,12 +44,17 @@ export default function HomePage() {
   const { isConnected } = useAccount();
   
   // Always call useMiniKit hook (required by React rules)
-  const { setFrameReady, isFrameReady } = useMiniKit();
+  const miniKitHook = useMiniKit();
+  const { setFrameReady, isFrameReady } = miniKitHook || { setFrameReady: null, isFrameReady: false };
 
-  // Initialize MiniKit frame readiness
+  // Initialize MiniKit frame readiness (only in browser environment)
   useEffect(() => {
-    if (!isFrameReady && setFrameReady) {
-      setFrameReady();
+    if (typeof window !== 'undefined' && !isFrameReady && setFrameReady) {
+      try {
+        setFrameReady();
+      } catch (error) {
+        console.warn('Failed to set frame ready:', error);
+      }
     }
   }, [setFrameReady, isFrameReady]);
 
