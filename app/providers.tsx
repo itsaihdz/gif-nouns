@@ -27,6 +27,9 @@ const config = createConfig({
 export function Providers(props: { children: ReactNode }) {
   const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
   
+  console.log('🔧 Providers: OnchainKit API Key:', apiKey ? `${apiKey.slice(0, 8)}...` : 'NOT SET');
+  console.log('🔧 Providers: Environment:', process.env.NODE_ENV);
+  
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
