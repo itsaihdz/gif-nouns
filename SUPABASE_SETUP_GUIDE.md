@@ -1,7 +1,7 @@
 # 🚀 Complete Supabase Setup Guide
 
 ## 📋 Overview
-This guide will help you set up Supabase for your Nouns Remix Studio app. Supabase will handle:
+This guide will help you set up Supabase for your GifNouns app. Supabase will handle:
 - ✅ Gallery items storage
 - ✅ User voting system
 - ✅ User profiles

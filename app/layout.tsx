@@ -3,8 +3,8 @@ import "@coinbase/onchainkit/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Analytics } from "@vercel/analytics/react";
+// import { ErrorBoundary } from "./components/ui/ErrorBoundary"; // Unused import
+// import { Analytics } from "@vercel/analytics/react"; // Unused import
 
 export const viewport = {
   width: "device-width",
@@ -16,17 +16,17 @@ export const viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   const URL = process.env.NEXT_PUBLIC_URL || "https://gifnouns.freezerverse.com";
   return {
-    title: "Nouns Remix Studio",
+    title: "GifNouns",
     description: "Create animated Nouns with custom noggles and eye animations",
     other: {
       "fc:frame": JSON.stringify({
         version: "next",
         imageUrl: `${URL}/hero.png`,
         button: {
-          title: "Launch Nouns Remix Studio",
+          title: "Launch GifNouns",
           action: {
             type: "launch_frame",
-            name: "Nouns Remix Studio",
+            name: "GifNouns",
             url: URL,
             splashImageUrl: `${URL}/splash.png`,
             splashBackgroundColor: "#8B5CF6",

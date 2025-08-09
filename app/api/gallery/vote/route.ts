@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { voteService, galleryService } from '../../../../lib/supabase-service';
+import { voteService, galleryService, userService } from '../../../../lib/supabase-service';
 
 export async function POST(request: NextRequest) {
   let body;
   try {
     body = await request.json();
-    const { itemId, userFid, username, pfp, voteType } = body;
+    const { itemId, userFid, username, voteType } = body;
 
-    if (!itemId || !userFid || !username || !pfp || !voteType) {
+    if (!itemId || !userFid || !username || !voteType) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -21,16 +21,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure user exists in the users table first
+    await userService.upsertUser({
+      fid: userFid,
+      username: username,
+      displayName: username, // Use username as display name
+      pfp: '', // Temporary: provide empty string until schema is updated
+    });
+
     // Check if user has already voted
     const existingVote = await voteService.hasUserVoted(itemId, userFid);
+    let finalUserVote: 'upvote' | 'downvote' | null = null;
 
     if (existingVote.hasVoted) {
       if (existingVote.voteType === voteType) {
         // User is trying to vote the same way again - remove the vote
         await voteService.removeVote(itemId, userFid);
+        finalUserVote = null; // Vote was removed
       } else {
         // User is changing their vote (upvote to downvote or vice versa)
         await voteService.changeVote(itemId, userFid, voteType);
+        finalUserVote = voteType; // Vote was changed
       }
     } else {
       // User is voting for the first time
@@ -38,9 +49,10 @@ export async function POST(request: NextRequest) {
         galleryItemId: itemId,
         voterFid: userFid,
         voterUsername: username,
-        voterPfp: pfp,
+
         voteType: voteType,
       });
+      finalUserVote = voteType; // New vote was added
     }
 
     // Get updated vote counts
@@ -55,7 +67,7 @@ export async function POST(request: NextRequest) {
       success: true,
       upvotes,
       downvotes,
-      userVote: existingVote.hasVoted && existingVote.voteType === voteType ? null : voteType
+      userVote: finalUserVote
     });
 
   } catch (error) {

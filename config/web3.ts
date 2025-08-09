@@ -1,9 +1,9 @@
-// Web3 Configuration for Nouns Remix Studio
+// Web3 Configuration for GifNouns
 export const web3Config = {
   // MiniKit Configuration
   onchainKit: {
     apiKey: process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || "",
-    projectName: "Nouns Remix Studio",
+    projectName: "GifNouns",
     iconUrl: process.env.NEXT_PUBLIC_ICON_URL || "/icon.png",
   },
 

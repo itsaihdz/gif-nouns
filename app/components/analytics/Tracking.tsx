@@ -3,7 +3,7 @@
 import React from "react";
 import { track } from "@vercel/analytics";
 
-// Custom tracking events for Nouns Remix Studio
+// Custom tracking events for GifNouns
 export const trackingEvents = {
   // Page views
   pageView: (page: string) => {

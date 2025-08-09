@@ -1,4 +1,4 @@
-# 🚀 Supabase Setup Guide for Nouns Remix Studio
+# 🚀 Supabase Setup Guide for GifNouns
 
 ## 📋 Prerequisites
 - Supabase account (free tier works great!)

@@ -87,7 +87,7 @@ async function createSampleData() {
         fid: 99999,
         username: 'test.noun',
         display_name: 'Test User',
-        pfp: 'https://picsum.photos/32/32?random=999',
+        pfp: '',
         follower_count: 10,
         following_count: 15
       })
@@ -107,7 +107,7 @@ async function createSampleData() {
         gif_url: '/api/generate-gif?demo=test',
         creator_fid: 99999,
         creator_username: 'test.noun',
-        creator_pfp: 'https://picsum.photos/32/32?random=999',
+        creator_pfp: '',
         title: 'Test Creation',
         noggle_color: 'blue',
         eye_animation: 'nouns',

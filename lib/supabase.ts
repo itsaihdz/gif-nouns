@@ -112,7 +112,7 @@ export interface Database {
           gallery_item_id: string;
           voter_fid: number;
           voter_username: string;
-          voter_pfp: string;
+
           vote_type: 'upvote' | 'downvote';
           created_at: string;
         };
@@ -121,7 +121,7 @@ export interface Database {
           gallery_item_id: string;
           voter_fid: number;
           voter_username: string;
-          voter_pfp: string;
+
           vote_type: 'upvote' | 'downvote';
           created_at?: string;
         };
@@ -130,7 +130,7 @@ export interface Database {
           gallery_item_id?: string;
           voter_fid?: number;
           voter_username?: string;
-          voter_pfp?: string;
+
           vote_type?: 'upvote' | 'downvote';
           created_at?: string;
         };

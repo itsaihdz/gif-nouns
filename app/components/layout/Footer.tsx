@@ -55,7 +55,7 @@ export function Footer({ className = "" }: FooterProps) {
                 <Icon name="sparkles" className="text-white" size="sm" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Nouns Remix Studio
+                GifNouns
               </span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
@@ -191,7 +191,7 @@ export function Footer({ className = "" }: FooterProps) {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center space-x-6 mb-4 md:mb-0">
               <p className="text-gray-400 text-sm">
-                © {currentYear} Nouns Remix Studio. All rights reserved.
+                © {currentYear} GifNouns. All rights reserved.
               </p>
               <div className="flex items-center space-x-2 text-gray-400 text-sm">
                 <Icon name="heart" className="text-red-400" size="sm" />

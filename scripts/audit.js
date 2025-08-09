@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Performance Audit Script for Nouns Remix Studio
+ * Performance Audit Script for GifNouns
  * Run with: node scripts/audit.js
  */
 
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 Performance Audit for Nouns Remix Studio\n');
+console.log('🔍 Performance Audit for GifNouns\n');
 
 // Check bundle size
 function checkBundleSize() {

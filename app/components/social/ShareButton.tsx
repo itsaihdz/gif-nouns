@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Icon } from '../icons';
+import { useComposeCast } from '@coinbase/onchainkit/minikit';
+import { useHaptics } from "@/app/hooks/useHaptics";
+import { sdk } from '@farcaster/miniapp-sdk';
 
 declare global {
   function gtag(...args: any[]): void;
@@ -19,18 +22,33 @@ interface ShareButtonProps {
 export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, className = "" }: ShareButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  
+  // Initialize hooks
+  const { composeCast } = useComposeCast();
+  const { selectionChanged, notificationOccurred } = useHaptics();
 
   const shareToFarcaster = async () => {
     try {
       setIsSharing(true);
+      await selectionChanged(); // Haptic feedback
       
       // Create share text with GIF URL
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
       
-      // For now, use URL fallback since compose method may not be available
-      const encodedText = encodeURIComponent(shareText);
-      const url = `https://warpcast.com/~/compose?text=${encodedText}`;
-      setShareUrl(url);
+      // Use native composeCast if available, otherwise fallback
+      if (typeof composeCast === 'function') {
+        await composeCast({
+          text: shareText,
+          embeds: [gifUrl],
+        });
+        await notificationOccurred('success');
+      } else {
+        // Fallback to URL
+        const encodedText = encodeURIComponent(shareText);
+        const url = `https://warpcast.com/~/compose?text=${encodedText}`;
+        setShareUrl(url);
+        await notificationOccurred('warning'); // Different feedback for fallback
+      }
       
       // Track share event
       if (typeof gtag !== 'undefined') {
@@ -43,6 +61,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
+      await notificationOccurred('error');
     } finally {
       setIsSharing(false);
     }
@@ -51,12 +70,41 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
   const shareToTwitter = async () => {
     try {
       setIsSharing(true);
+      await selectionChanged(); // Haptic feedback
       
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
-      const encodedText = encodeURIComponent(shareText);
-      const url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodeURIComponent('https://gifnouns.freezerserve.com')}`;
+      // Use consistent text template like Farcaster sharing
+      const shareText = `Check out my animated Noun "${title}"! 🎨✨
+
+Created with #NounsRemixStudio
+
+${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
+
+Vote for it in the gallery! 🗳️
+
+${gifUrl}`;
       
-      setShareUrl(url);
+      // Try Twitter deep link first (for mobile apps)
+      const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
+      const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+      
+      // Try opening with MiniApp SDK openUrl if available, otherwise use fallback
+      if (typeof sdk?.actions?.openUrl === 'function') {
+        try {
+          // Try deep link first
+          await sdk.actions.openUrl(twitterDeepLink);
+          await notificationOccurred('success');
+        } catch (deepLinkError) {
+          console.log('Deep link failed, trying web URL:', deepLinkError);
+          // Fallback to web URL
+          await sdk.actions.openUrl(twitterWebUrl);
+          await notificationOccurred('success');
+        }
+      } else {
+        // Fallback to setting shareUrl for external window.open
+        console.log('MiniApp SDK not available, using window.open fallback');
+        setShareUrl(twitterWebUrl);
+        await notificationOccurred('warning'); // Different feedback for fallback
+      }
       
       // Track share event
       if (typeof gtag !== 'undefined') {
@@ -69,6 +117,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
+      await notificationOccurred('error');
     } finally {
       setIsSharing(false);
     }
@@ -76,8 +125,11 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
 
   const copyLink = async () => {
     try {
+      await selectionChanged(); // Haptic feedback
+      
       // Copy the direct GIF URL instead of the app URL
       await navigator.clipboard.writeText(gifUrl);
+      await notificationOccurred('success');
       
       // Track copy event
       if (typeof gtag !== 'undefined') {
@@ -89,6 +141,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       
     } catch (error) {
       console.error('Error copying link:', error);
+      await notificationOccurred('error');
     }
   };
 
@@ -123,7 +176,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
         icon={<Icon name="farcaster" size="sm" />}
         className="flex-1"
       >
-        {isSharing ? 'Sharing...' : 'Share to Farcaster'}
+        {isSharing ? 'Sharing...' : (typeof composeCast === 'function' ? 'Cast to Farcaster' : 'Share to Farcaster')}
       </Button>
       
       <Button

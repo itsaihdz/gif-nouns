@@ -14,7 +14,6 @@ export async function GET() {
         wallet: item.creator_wallet || item.creator_username || 'unknown', // Fallback to username if wallet not available
         fid: item.creator_fid,
         username: item.creator_username,
-        pfp: item.creator_pfp,
       },
       title: item.title,
       noggleColor: item.noggle_color,
@@ -60,7 +59,6 @@ export async function POST(request: NextRequest) {
         wallet: newItem.creator_wallet || newItem.creator_username || 'unknown', // Fallback to username if wallet not available
         fid: newItem.creator_fid,
         username: newItem.creator_username,
-        pfp: newItem.creator_pfp,
       },
       title: newItem.title,
       noggleColor: newItem.noggle_color,

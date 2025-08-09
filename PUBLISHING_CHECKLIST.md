@@ -9,7 +9,7 @@
 
 ### 2. **Manifest Requirements**
 - ✅ Version: "1"
-- ✅ Name: "Nouns Remix Studio" (≤32 chars)
+- ✅ Name: "GifNouns" (≤32 chars)
 - ✅ Icon: 1024x1024px PNG ✅
 - ✅ Home URL: `https://gifnouns.freezerserve.com`
 - ✅ Splash image and background color

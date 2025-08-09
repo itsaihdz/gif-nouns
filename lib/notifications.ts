@@ -96,7 +96,7 @@ export const notificationService = {
     const notification: NotificationData = {
       fid,
       title: 'Your friend joined! 👋',
-      body: `@${friendUsername} just joined Nouns Remix Studio. Welcome them and show off your creations!`,
+      body: `@${friendUsername} just joined GifNouns. Welcome them and show off your creations!`,
       url: 'https://gif-nouns.vercel.app',
       imageUrl: '/hero.png'
     };
