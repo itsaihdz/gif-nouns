@@ -7,6 +7,7 @@ import { Icon } from "../icons";
 import { downloadGif } from "@/lib/utils";
 import { useComposeCast } from '@coinbase/onchainkit/minikit';
 import { useHaptics } from "@/app/hooks/useHaptics";
+import { sdk } from '@farcaster/miniapp-sdk';
 
 interface DownloadSharePageProps {
   gifUrl: string; // Generated GIF URL for preview/download
@@ -109,14 +110,40 @@ Vote for it in the gallery! 🗳️`;
       console.log('🔄 Share URL available:', !!shareUrl);
       console.log('🔄 Fallback to GIF URL:', !shareUrl);
       
-      const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${shareGifUrl}`;
+      // Use the same text template as Farcaster sharing for consistency
+      const shareText = `Check out my animated Noun "${title}"! 🎨✨
+
+Created with #NounsRemixStudio
+
+${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
+
+Vote for it in the gallery! 🗳️
+
+${shareGifUrl}`;
       
-      // Create Twitter share URL
-      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+      // Try Twitter deep link first (for mobile apps)
+      const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
+      const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
       
-      setShareDialogUrl(twitterUrl);
-      window.open(twitterUrl, '_blank');
-      await notificationOccurred('success');
+      // Try opening with MiniApp SDK openUrl if available, otherwise use fallback
+      if (typeof sdk?.actions?.openUrl === 'function') {
+        try {
+          // Try deep link first
+          await sdk.actions.openUrl(twitterDeepLink);
+          await notificationOccurred('success');
+        } catch (deepLinkError) {
+          console.log('Deep link failed, trying web URL:', deepLinkError);
+          // Fallback to web URL
+          await sdk.actions.openUrl(twitterWebUrl);
+          await notificationOccurred('success');
+        }
+      } else {
+        // Fallback to regular window.open
+        console.log('MiniApp SDK not available, using window.open');
+        setShareDialogUrl(twitterWebUrl);
+        window.open(twitterWebUrl, '_blank');
+        await notificationOccurred('warning'); // Different feedback for fallback
+      }
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
       await notificationOccurred('error');

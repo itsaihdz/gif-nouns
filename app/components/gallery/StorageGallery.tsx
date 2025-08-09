@@ -5,6 +5,9 @@ import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 import { useHaptics } from "../../hooks/useHaptics";
+import { useComposeCast } from '@coinbase/onchainkit/minikit';
+import { sdk } from '@farcaster/miniapp-sdk';
+import { Avatar, Identity, Name, Badge, Address } from '@coinbase/onchainkit/identity';
 
 interface StorageGif {
   url: string;
@@ -38,6 +41,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const { selectionChanged, notificationOccurred } = useHaptics();
+  const { composeCast } = useComposeCast();
 
   // Debug state changes
   useEffect(() => {
@@ -96,6 +100,50 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     }
   };
 
+  const handleShare = async (gif: StorageGif) => {
+    try {
+      await selectionChanged(); // Haptic feedback
+      
+      // Use consistent text template from other sharing components
+      const shareText = `Check out this animated Noun "${gif.title || 'GIF'}"! 🎨✨
+
+Created with #NounsRemixStudio
+
+${gif.noggleColor || 'custom'} noggle + ${gif.eyeAnimation || 'custom'} eyes = pure magic! 🌟
+
+Vote for it in the gallery! 🗳️`;
+      
+      // Try native Farcaster composeCast first
+      if (typeof composeCast === 'function') {
+        await composeCast({
+          text: shareText,
+          embeds: [gif.url], // Include GIF as embed
+        });
+        await notificationOccurred('success');
+      } else if (typeof sdk?.actions?.composeCast === 'function') {
+        // Fallback to Farcaster MiniApp SDK
+        await sdk.actions.composeCast({ 
+          text: shareText,
+          embeds: [gif.url]
+        });
+        await notificationOccurred('success');
+      } else {
+        // Fallback to external link
+        const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+        if (typeof sdk?.actions?.openUrl === 'function') {
+          await sdk.actions.openUrl(farcasterUrl);
+        } else {
+          window.open(farcasterUrl, '_blank');
+        }
+        await notificationOccurred('warning'); // Different feedback for fallback
+      }
+      
+    } catch (error) {
+      console.error('Error sharing GIF:', error);
+      await notificationOccurred('error');
+    }
+  };
+
   const fetchGifsFromStorage = async () => {
     try {
       setLoading(true);
@@ -129,25 +177,26 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                   let username = creatorResult.data.creator_username;
                   let pfp = creatorResult.data.creator_pfp;
                   
-                  // If we have a wallet address, try to get Farcaster info from Neynar
-                  if (walletAddress) {
+                  // For wallet addresses, OnchainKit Identity will handle ENS resolution
+                  // Only use Neynar for additional Farcaster-specific data if needed
+                  if (walletAddress && (!username || !pfp)) {
                     try {
                       const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(walletAddress)}`);
                       if (neynarResponse.ok) {
                         const neynarResult = await neynarResponse.json();
-                        username = neynarResult.username;
-                        pfp = neynarResult.pfp;
-                        walletAddress = neynarResult.wallet;
+                        // Only override if we don't have data and Neynar has it
+                        username = username || neynarResult.username;
+                        pfp = pfp || neynarResult.pfp;
                       }
                     } catch (error) {
-                      console.log('Neynar lookup failed, using fallback data');
+                      console.log('Neynar lookup failed, OnchainKit Identity will handle wallet resolution');
                     }
                   }
                   
                   return {
                     ...gif,
                     creator: {
-                      username: username || 'Unknown Creator',
+                      username: username || (walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Unknown Creator'),
                       pfp: pfp || `https://picsum.photos/32/32?random=${walletAddress?.slice(2, 8) || 'unknown'}`,
                       wallet: walletAddress || 'unknown',
                     },
@@ -471,16 +520,49 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             {/* GIF Details */}
             <div className="p-2">
               {/* Creator Info */}
-              {gif.creator && (
+              {gif.creator && gif.creator.wallet && gif.creator.wallet !== 'unknown' && (
+                <div className="flex items-center gap-1 mb-1">
+                  <Identity
+                    address={gif.creator.wallet as `0x${string}`}
+                    schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
+                  >
+                    <Avatar className="w-4 h-4" />
+                    <Name className="text-xs text-gray-500 dark:text-gray-500 max-w-20 truncate">
+                      <Badge />
+                    </Name>
+                  </Identity>
+                  
+                  {/* Share Icon - positioned at right */}
+                  <button
+                    onClick={() => handleShare(gif)}
+                    className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    title="Share this GIF"
+                  >
+                    <Icon name="share" size="sm" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" />
+                  </button>
+                </div>
+              )}
+              
+              {/* Fallback for GIFs without valid wallet info */}
+              {gif.creator && (!gif.creator.wallet || gif.creator.wallet === 'unknown') && (
                 <div className="flex items-center gap-1 mb-1">
                   <img
-                    src={gif.creator.pfp}
-                    alt={gif.creator.username}
+                    src={gif.creator.pfp || 'https://picsum.photos/32/32?random=unknown'}
+                    alt={gif.creator.username || 'Unknown Creator'}
                     className="w-4 h-4 rounded-full"
                   />
                   <span className="text-xs text-gray-500 dark:text-gray-500">
-                    {gif.creator.wallet ? `${gif.creator.wallet.slice(0, 6)}...${gif.creator.wallet.slice(-4)}` : gif.creator.username}
+                    {gif.creator.username || 'Unknown Creator'}
                   </span>
+                  
+                  {/* Share Icon - positioned at right */}
+                  <button
+                    onClick={() => handleShare(gif)}
+                    className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    title="Share this GIF"
+                  >
+                    <Icon name="share" size="sm" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" />
+                  </button>
                 </div>
               )}
 
