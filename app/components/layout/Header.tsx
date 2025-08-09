@@ -25,12 +25,12 @@ export function Header({ className = "" }: HeaderProps) {
       <div className="max-w-sm mx-auto px-3 sm:max-w-md sm:px-4 md:max-w-2xl lg:max-w-7xl lg:px-8">
         <div className="flex justify-between items-center h-12 sm:h-14 lg:h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center py-4">
             <div className="flex-shrink-0">
               <img 
                 src="/gifnouns.svg" 
                 alt="GifNouns" 
-                className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9"
+                className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12"
               />
             </div>
           </div>
