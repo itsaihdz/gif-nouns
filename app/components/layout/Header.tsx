@@ -2,9 +2,8 @@
 
 // import { Icon } from "../icons"; // Unused import
 import { WalletConnect } from "../ui/WalletConnect";
-// import { useUser } from "../../contexts/UserContext"; // Unused import
+// import { useUser } from "../../contexts/UserContext"; // Unused variables
 import { useAccount } from "wagmi";
-import { useFarcasterData } from "../../hooks/useFarcasterData";
 import { Avatar, Identity, Name, Badge } from '@coinbase/onchainkit/identity';
 import { useEffect } from "react";
 
@@ -15,16 +14,13 @@ interface HeaderProps {
 export function Header({ className = "" }: HeaderProps) {
   // const { user, isAuthenticated } = useUser(); // Unused variables
   const { address, isConnected } = useAccount();
-  const { farcasterUser, isLoading: farcasterLoading } = useFarcasterData();
 
   // Debug logging for OnchainKit Identity
   useEffect(() => {
     if (isConnected && address) {
       console.log('🔍 Header: Wallet connected, address:', address);
-      console.log('🔍 Header: Farcaster user:', farcasterUser);
-      console.log('🔍 Header: Farcaster loading:', farcasterLoading);
     }
-  }, [isConnected, address, farcasterUser, farcasterLoading]);
+  }, [isConnected, address]);
 
   // const formatAddress = (addr: string) => { // Unused function
   //   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -48,47 +44,18 @@ export function Header({ className = "" }: HeaderProps) {
           {/* Wallet Indicator */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             {isConnected ? (
-              // Always show OnchainKit Identity when wallet is connected
-              <div className="flex items-center space-x-1.5 sm:space-x-2">
-                <Identity
-                  address={address as `0x${string}`}
-                  schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
-                >
+              // Show OnchainKit Identity when wallet is connected
+              <Identity
+                address={address as `0x${string}`}
+                schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
+              >
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
                   <Avatar className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
                   <Name className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white hidden sm:inline-block">
                     <Badge />
                   </Name>
-                </Identity>
-                
-                {/* Show Farcaster info as additional overlay if available */}
-                {farcasterUser && (
-                  <div className="flex items-center space-x-1.5 sm:space-x-2 ml-2 pl-2 border-l border-gray-200 dark:border-gray-600">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:w-8 rounded-full overflow-hidden border-2 border-purple-200 dark:border-purple-800">
-                      <img 
-                        src={farcasterUser.pfp} 
-                        alt={`${farcasterUser.displayName}'s profile`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                    <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white hidden sm:inline-block max-w-20 lg:max-w-none truncate">
-                      {farcasterUser.displayName || farcasterUser.username}
-                    </span>
-                  </div>
-                )}
-                
-                {/* Show loading state for Farcaster if still loading */}
-                {farcasterLoading && (
-                  <div className="flex items-center space-x-1.5 sm:space-x-2 ml-2 pl-2 border-l border-gray-200 dark:border-gray-600">
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:w-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-                    <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:inline-block">
-                      Loading...
-                    </span>
-                  </div>
-                )}
-              </div>
+                </div>
+              </Identity>
             ) : (
               // Show connect wallet button
               <WalletConnect variant="button" size="sm" />

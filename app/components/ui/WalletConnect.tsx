@@ -2,7 +2,6 @@
 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { ConnectWallet, WalletDropdown } from "@coinbase/onchainkit/wallet";
-import { Avatar, Identity, Name, Badge } from '@coinbase/onchainkit/identity';
 import { Button } from "./Button";
 import { Icon } from "../icons";
 import { Loading } from "./Loading";
@@ -54,19 +53,6 @@ export function WalletConnect({
               Connected
             </span>
           </div>
-          
-          {/* OnchainKit Identity Display */}
-          <Identity
-            address={address as `0x${string}`}
-            schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
-          >
-            <div className="flex items-center space-x-2">
-              <Avatar className="w-6 h-6" />
-              <Name className="text-sm text-gray-600 dark:text-gray-300">
-                <Badge />
-              </Name>
-            </div>
-          </Identity>
           
           <Button
             variant="outline"
