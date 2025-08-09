@@ -32,7 +32,7 @@ interface UploadStudioProps {
     creator: {
       wallet: string;
       username: string;
-      pfp: string;
+
     };
   }) => void;
 }
@@ -54,7 +54,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     creator: {
       wallet: string;
       username: string;
-      pfp: string;
+
     };
   } | null>(null);
   const tracking = useTracking();
@@ -105,7 +105,7 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
     creator: {
       wallet: string;
       username: string;
-      pfp: string;
+
     };
   }) => {
     console.log('🔄 ===== UploadStudio handleGifCreated CALLED =====');

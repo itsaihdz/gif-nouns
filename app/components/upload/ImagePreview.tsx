@@ -52,7 +52,7 @@ interface ImagePreviewProps {
     creator: {
       wallet: string;
       username: string;
-      pfp: string;
+
     };
   }) => void;
   className?: string;
@@ -302,7 +302,7 @@ export function ImagePreview({
             creator: {
               wallet: address || 'unknown',
               username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Creator',
-              pfp: undefined, // OnchainKit will handle avatar resolution
+              pfp: '', // OnchainKit will handle avatar resolution
             },
           };
 
@@ -369,7 +369,7 @@ export function ImagePreview({
             creator: {
               wallet: address || 'unknown',
               username: address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown Creator',
-              pfp: undefined, // OnchainKit will handle avatar resolution
+              pfp: '', // OnchainKit will handle avatar resolution
             },
           };
           console.log('🔄 Calling onGifCreated with data:', gifData);
@@ -459,7 +459,6 @@ export function ImagePreview({
         creatorData = {
           wallet: address, // Store full wallet address
           username: `${address.slice(0, 6)}...${address.slice(-4)}`, // For display only
-          pfp: undefined, // OnchainKit will handle avatar resolution
         };
         console.log('🔄 Created creator data:', creatorData);
       } else {
@@ -467,7 +466,6 @@ export function ImagePreview({
         creatorData = {
           wallet: 'unknown',
           username: 'Unknown Creator',
-          pfp: undefined, // No mock avatar
         };
       }
 

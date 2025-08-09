@@ -47,7 +47,7 @@ export const galleryService = {
             creator_wallet: item.creatorWallet, // Store wallet address only
             creator_fid: null, // Will be fetched from Neynar
             creator_username: null, // Will be fetched from Neynar
-            creator_pfp: null, // Will be fetched from Neynar
+
             title: item.title,
             noggle_color: item.noggleColor,
             eye_animation: item.eyeAnimation,
@@ -73,7 +73,7 @@ export const galleryService = {
               gif_url: item.gifUrl,
               creator_fid: 0, // Fallback
               creator_username: item.creatorWallet, // Store wallet as username temporarily
-              creator_pfp: '',
+
               title: item.title,
               noggle_color: item.noggleColor,
               eye_animation: item.eyeAnimation,
@@ -171,7 +171,6 @@ export const voteService = {
     galleryItemId: string;
     voterFid: number;
     voterUsername: string;
-    voterPfp: string;
     voteType: 'upvote' | 'downvote';
   }): Promise<Vote> {
     try {
@@ -181,7 +180,7 @@ export const voteService = {
           gallery_item_id: vote.galleryItemId,
           voter_fid: vote.voterFid,
           voter_username: vote.voterUsername,
-          voter_pfp: vote.voterPfp,
+          voter_pfp: '', // Temporary: provide empty string until schema is updated
           vote_type: vote.voteType,
         })
         .select()
@@ -244,7 +243,7 @@ export const userService = {
     fid: number;
     username: string;
     displayName: string;
-    pfp: string;
+    pfp?: string;
     followerCount?: number;
     followingCount?: number;
   }) {
@@ -254,7 +253,7 @@ export const userService = {
         fid: userData.fid,
         username: userData.username,
         display_name: userData.displayName,
-        pfp: userData.pfp,
+        pfp: userData.pfp || '',
         follower_count: userData.followerCount || 0,
         following_count: userData.followingCount || 0,
       })

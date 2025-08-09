@@ -3,6 +3,7 @@
 import { type ReactNode } from "react";
 import { base } from "wagmi/chains";
 import { MiniKitProvider } from "@coinbase/onchainkit/minikit";
+import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http } from "wagmi";
@@ -24,17 +25,22 @@ const config = createConfig({
 });
 
 export function Providers(props: { children: ReactNode }) {
-  const apiKey = process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
   
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <MiniKitProvider
-          apiKey={apiKey || "placeholder"} // Use placeholder if no API key to avoid build errors
+        <OnchainKitProvider
+          apiKey={apiKey || "placeholder"} // Required for ENS resolution
           chain={base}
         >
-          {props.children}
-        </MiniKitProvider>
+          <MiniKitProvider
+            apiKey={apiKey || "placeholder"} // Use placeholder if no API key to avoid build errors
+            chain={base}
+          >
+            {props.children}
+          </MiniKitProvider>
+        </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

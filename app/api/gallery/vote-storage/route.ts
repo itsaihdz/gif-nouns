@@ -3,9 +3,9 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { gifUrl, userFid, username, pfp, voteType } = await request.json();
+    const { gifUrl, userFid, username, voteType } = await request.json();
 
-    if (!gifUrl || !userFid || !username || !pfp || !voteType) {
+    if (!gifUrl || !userFid || !username || !voteType) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
           gif_url: gifUrl,
           creator_fid: userFid, // Use voter as creator for now
           creator_username: username,
-          creator_pfp: pfp,
+          creator_pfp: '',
           title: filename,
           noggle_color: 'unknown',
           eye_animation: 'unknown',
@@ -90,7 +90,8 @@ export async function POST(request: NextRequest) {
         fid: userFid,
         username: username,
         display_name: username, // Use username as display_name
-        pfp: pfp,
+        pfp: '', // Temporary: provide empty string until schema is updated
+
       }, {
         onConflict: 'fid'
       });
@@ -188,7 +189,7 @@ export async function POST(request: NextRequest) {
           gallery_item_id: item.id,
           voter_fid: userFid,
           voter_username: username,
-          voter_pfp: pfp,
+          voter_pfp: '', // Temporary: provide empty string until schema is updated
           vote_type: voteType,
         });
 

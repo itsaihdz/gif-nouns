@@ -5,9 +5,9 @@ export async function POST(request: NextRequest) {
   let body;
   try {
     body = await request.json();
-    const { itemId, userFid, username, pfp, voteType } = body;
+    const { itemId, userFid, username, voteType } = body;
 
-    if (!itemId || !userFid || !username || !pfp || !voteType) {
+    if (!itemId || !userFid || !username || !voteType) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       fid: userFid,
       username: username,
       displayName: username, // Use username as display name
-      pfp: pfp,
+      pfp: '', // Temporary: provide empty string until schema is updated
     });
 
     // Check if user has already voted
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         galleryItemId: itemId,
         voterFid: userFid,
         voterUsername: username,
-        voterPfp: pfp,
+
         voteType: voteType,
       });
       finalUserVote = voteType; // New vote was added

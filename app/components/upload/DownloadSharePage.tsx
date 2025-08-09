@@ -18,7 +18,7 @@ interface DownloadSharePageProps {
   creator: {
     wallet: string;
     username: string;
-    pfp: string;
+
   };
   onBackToCreate: () => void;
   onViewInGallery: () => void;
@@ -208,11 +208,9 @@ ${shareGifUrl}`;
 
         {/* Creator Info */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          <img
-            src={creator.pfp}
-            alt={creator.username}
-            className="w-8 h-8 rounded-full"
-          />
+          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-medium">
+            {creator.username.charAt(0).toUpperCase()}
+          </div>
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Created by @{creator.username}
           </span>

@@ -3,8 +3,8 @@ import "@coinbase/onchainkit/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-import { Analytics } from "@vercel/analytics/react";
+// import { ErrorBoundary } from "./components/ui/ErrorBoundary"; // Unused import
+// import { Analytics } from "@vercel/analytics/react"; // Unused import
 
 export const viewport = {
   width: "device-width",

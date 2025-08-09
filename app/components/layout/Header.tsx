@@ -1,8 +1,8 @@
 "use client";
 
-import { Icon } from "../icons";
+// import { Icon } from "../icons"; // Unused import
 import { WalletConnect } from "../ui/WalletConnect";
-import { useUser } from "../../contexts/UserContext";
+// import { useUser } from "../../contexts/UserContext"; // Unused import
 import { useAccount } from "wagmi";
 import { useFarcasterData } from "../../hooks/useFarcasterData";
 import { Avatar, Identity, Name, Badge } from '@coinbase/onchainkit/identity';
@@ -12,13 +12,13 @@ interface HeaderProps {
 }
 
 export function Header({ className = "" }: HeaderProps) {
-  const { user, isAuthenticated } = useUser();
+  // const { user, isAuthenticated } = useUser(); // Unused variables
   const { address, isConnected } = useAccount();
   const { farcasterUser, isLoading: farcasterLoading } = useFarcasterData();
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
+  // const formatAddress = (addr: string) => { // Unused function
+  //   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  // };
 
   return (
     <header className={`sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 ${className}`}>

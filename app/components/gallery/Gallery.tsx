@@ -15,7 +15,6 @@ interface GalleryItem {
   creator: {
     fid: number;
     username: string;
-    pfp: string;
     wallet?: string; // Add wallet address for OnchainKit Identity
   };
   title: string;
@@ -26,7 +25,6 @@ interface GalleryItem {
   voters: Array<{
     fid: number;
     username: string;
-    pfp: string;
   }>;
   createdAt: string;
   userVote?: 'upvote' | 'downvote' | null;
@@ -77,7 +75,6 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
           voteType,
           userFid,
           username,
-          pfp: `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress}`,
         }),
       });
 
@@ -258,20 +255,10 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
                     </Name>
                   </Identity>
                 ) : (
-                  // Fallback to Farcaster data when no wallet address
-                  <>
-                    <img
-                      src={item.creator.pfp}
-                      alt={item.creator.username}
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                      @{item.creator.username}
-                    </span>
-                  </>
+                  // Fallback for when no wallet address - just show username
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                    @{item.creator.username}
+                  </span>
                 )}
               </div>
 
@@ -291,13 +278,13 @@ export function Gallery({ className = "", items, setItems, onRefresh }: GalleryP
                 {item.voters.length > 0 && (
                   <div className="flex -space-x-1.5 sm:-space-x-2">
                     {item.voters.slice(0, 4).map((voter) => (
-                      <img
+                      <div
                         key={voter.fid}
-                        src={voter.pfp}
-                        alt={voter.username}
-                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-white dark:border-gray-800"
+                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium"
                         title={voter.username}
-                      />
+                      >
+                        {voter.username.charAt(0).toUpperCase()}
+                      </div>
                     ))}
                     {item.voters.length > 4 && (
                       <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-600 dark:text-gray-400 border-2 border-white dark:border-gray-800">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Header } from "./components/layout/Header";
 import { UploadStudio } from "./components/upload/UploadStudio";
-import { Gallery } from "./components/gallery/Gallery";
+// import { Gallery } from "./components/gallery/Gallery"; // Unused import
 import { StorageGallery } from "./components/gallery/StorageGallery";
 import { Button } from "./components/ui/Button";
 import { Icon } from "./components/icons";
@@ -18,7 +18,6 @@ interface GalleryItem {
   creator: {
     wallet: string;
     username: string;
-    pfp: string;
   };
   title: string;
   noggleColor: string;
@@ -28,7 +27,6 @@ interface GalleryItem {
   voters: Array<{
     fid: number;
     username: string;
-    pfp: string;
   }>;
   createdAt: string;
   userVote?: 'upvote' | 'downvote' | null;
@@ -120,7 +118,6 @@ export default function HomePage() {
     creator: {
       wallet: string;
       username: string;
-      pfp: string;
     };
   }) => {
     console.log('🔄 handleGifCreated called with data:', gifData);

@@ -7,7 +7,7 @@ import { Icon } from "../icons";
 import { useHaptics } from "../../hooks/useHaptics";
 import { useComposeCast } from '@coinbase/onchainkit/minikit';
 import { sdk } from '@farcaster/miniapp-sdk';
-import { Avatar, Identity, Name, Badge, Address } from '@coinbase/onchainkit/identity';
+import { Avatar, Identity, Name, Badge } from '@coinbase/onchainkit/identity';
 import { useUserVotes } from "../../hooks/useUserVotes";
 import { useAccount } from "wagmi";
 
@@ -19,7 +19,6 @@ interface StorageGif {
   created_at: string;
   creator?: {
     username: string;
-    pfp: string;
     wallet: string;
   };
   title?: string;
@@ -84,7 +83,6 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           voteType,
           userFid,
           username,
-          pfp: `https://api.dicebear.com/7.x/avataaars/svg?seed=${walletAddress}`,
         }),
       });
 
@@ -125,6 +123,8 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                 : gif
             )
           );
+          
+          // Note: filterGifs will be called automatically via useEffect when gifs state changes
         } else {
           console.error('❌ Vote failed:', result);
           await notificationOccurred('error');
@@ -293,22 +293,20 @@ ${gif.url}`;
                   console.log('✅ Found creator info:', creatorResult.data);
                   
                   // Try to get wallet address (new schema) or username (old schema)
-                  let walletAddress = creatorResult.data.creator_wallet;
+                  const walletAddress = creatorResult.data.creator_wallet;
                   let username = creatorResult.data.creator_username;
-                  let pfp = creatorResult.data.creator_pfp;
                   
                   // For wallet addresses, OnchainKit Identity will handle ENS resolution
                   // Only use Neynar for additional Farcaster-specific data if needed
-                  if (walletAddress && (!username || !pfp)) {
+                  if (walletAddress && !username) {
                     try {
                       const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(walletAddress)}`);
                       if (neynarResponse.ok) {
                         const neynarResult = await neynarResponse.json();
                         // Only override if we don't have data and Neynar has it
                         username = username || neynarResult.username;
-                        pfp = pfp || neynarResult.pfp;
                       }
-                    } catch (error) {
+                    } catch {
                       console.log('Neynar lookup failed, OnchainKit Identity will handle wallet resolution');
                     }
                   }
@@ -317,7 +315,6 @@ ${gif.url}`;
                     ...gif,
                     creator: {
                       username: username || (walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Unknown Creator'),
-                      pfp: pfp, // No fallback - OnchainKit will handle avatar resolution
                       wallet: walletAddress || 'unknown',
                     },
                     title: creatorResult.data.title || gif.path,
@@ -338,7 +335,6 @@ ${gif.url}`;
               ...gif,
               creator: {
                 username: 'Unknown Creator',
-                pfp: undefined, // No mock avatar
                 wallet: 'unknown',
               },
               title: gif.path,
@@ -566,9 +562,26 @@ ${gif.url}`;
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 text-center">
           Community Gallery
         </h2>
-        <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-4 sm:mb-6 text-center px-2">
-          All GIFs from Supabase Storage ({filteredGifs.length} of {gifs.length} total)
-        </p>
+        <div className="text-center mb-4 sm:mb-6 px-2">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400">
+            All GIFs from Supabase Storage
+          </p>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {filteredGifs.length} of {gifs.length} total
+            </span>
+            {(selectedNoggleColor !== 'all' || selectedEyeAnimation !== 'all') && (
+              <span className="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
+                Filtered
+              </span>
+            )}
+            {sortBy !== 'newest' && (
+              <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                Sorted: {sortBy.replace('-', ' ')}
+              </span>
+            )}
+          </div>
+        </div>
 
         {/* Filter and Sort Controls */}
         <div className="space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-3 mb-4 sm:mb-6 sm:justify-center">
@@ -579,7 +592,11 @@ ${gif.url}`;
               await selectionChanged();
               setSelectedNoggleColor(e.target.value);
             }}
-            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              selectedNoggleColor !== 'all' 
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium' 
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+            }`}
           >
             <option value="all">All Noggle Colors</option>
             {ALL_NOGGLE_COLORS.map(color => (
@@ -594,7 +611,11 @@ ${gif.url}`;
               await selectionChanged();
               setSelectedEyeAnimation(e.target.value);
             }}
-            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              selectedEyeAnimation !== 'all' 
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium' 
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+            }`}
           >
             <option value="all">All Eye Animations</option>
             {ALL_EYE_ANIMATIONS.map(animation => (
@@ -608,7 +629,11 @@ ${gif.url}`;
               await selectionChanged();
               setSortBy(e.target.value);
             }}
-            className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              sortBy !== 'newest' 
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100 font-medium' 
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+            }`}
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>

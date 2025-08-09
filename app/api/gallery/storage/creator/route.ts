@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
         data: {
           creator: {
             username: 'Unknown Creator',
-            pfp: '',
           },
           title: 'Animated Noun',
           noggleColor: 'unknown',
@@ -50,7 +49,6 @@ export async function GET(request: NextRequest) {
         creator_wallet: data.creator_wallet,
         creator: {
           username: data.creator_username,
-          pfp: data.creator_pfp,
         },
         title: data.title,
         noggleColor: data.noggle_color,
