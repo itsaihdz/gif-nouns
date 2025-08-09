@@ -2,6 +2,7 @@
 
 import { type ReactNode, forwardRef } from "react";
 import { cn } from "../../../lib/utils";
+import { useHaptics } from "../../hooks/useHaptics";
 
 interface ButtonProps {
   children: ReactNode;
@@ -16,6 +17,8 @@ interface ButtonProps {
   iconPosition?: "left" | "right";
   href?: string;
   target?: string;
+  haptics?: boolean; // Enable haptic feedback
+  hapticStyle?: "light" | "medium" | "heavy"; // Haptic intensity
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
@@ -31,8 +34,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   iconPosition = "left",
   href,
   target,
+  haptics = true, // Enable haptics by default
+  hapticStyle = "medium",
   ...props
 }, ref) => {
+  const { impactOccurred } = useHaptics();
   const baseClasses = "inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none relative overflow-hidden";
 
   const variantClasses = {
@@ -70,6 +76,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     </>
   );
 
+  const handleClick = async () => {
+    if (haptics && !disabled && !loading) {
+      await impactOccurred(hapticStyle);
+    }
+    onClick?.();
+  };
+
   if (href) {
     return (
       <a
@@ -77,7 +90,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
         target={target}
         rel={target === "_blank" ? "noopener noreferrer" : undefined}
         className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}
-        onClick={onClick}
+        onClick={handleClick}
         {...props}
       >
         {content}
@@ -90,7 +103,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       ref={ref}
       type={type}
       className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled || loading}
       {...props}
     >

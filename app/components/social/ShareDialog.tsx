@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Icon } from '../icons';
 import { useUser } from '../../contexts/UserContext';
 import { sdk } from '@farcaster/miniapp-sdk';
+import { useHaptics } from '../../hooks/useHaptics';
 
 declare global {
   function gtag(...args: any[]): void;
@@ -31,6 +32,7 @@ export function ShareDialog({
 }: ShareDialogProps) {
   const [isSharing, setIsSharing] = useState(false);
   const { user } = useUser();
+  const { notificationOccurred } = useHaptics();
 
   if (!isOpen) return null;
 
@@ -47,6 +49,9 @@ export function ShareDialog({
         embeds: [{ url: shareGifUrl }]
       });
       
+      // Success haptic feedback
+      await notificationOccurred('success');
+      
       // Track share event
       if (typeof gtag !== 'undefined') {
         gtag('event', 'share', {
@@ -58,6 +63,10 @@ export function ShareDialog({
       
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
+      
+      // Error haptic feedback
+      await notificationOccurred('error');
+      
       // Fallback to Warpcast URL if MiniApp SDK fails
       const shareGifUrl = shareUrl || gifUrl;
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${shareGifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
@@ -80,6 +89,9 @@ export function ShareDialog({
       
       window.open(url, '_blank');
       
+      // Success haptic feedback
+      await notificationOccurred('success');
+      
       // Track share event
       if (typeof gtag !== 'undefined') {
         gtag('event', 'share', {
@@ -91,6 +103,7 @@ export function ShareDialog({
       
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
+      await notificationOccurred('error');
     } finally {
       setIsSharing(false);
     }
@@ -100,6 +113,9 @@ export function ShareDialog({
     try {
       const shareGifUrl = shareUrl || gifUrl; // Use Supabase URL if available, fallback to blob URL
       await navigator.clipboard.writeText(shareGifUrl);
+      
+      // Success haptic feedback
+      await notificationOccurred('success');
       
       // Track copy event
       if (typeof gtag !== 'undefined') {
@@ -111,6 +127,7 @@ export function ShareDialog({
       
     } catch (error) {
       console.error('Error copying link:', error);
+      await notificationOccurred('error');
     }
   };
 

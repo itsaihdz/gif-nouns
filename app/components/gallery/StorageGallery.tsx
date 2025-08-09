@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
+import { useHaptics } from "../../hooks/useHaptics";
 
 interface StorageGif {
   url: string;
@@ -36,6 +37,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [selectedNoggleColor, setSelectedNoggleColor] = useState<string>('all');
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
+  const { selectionChanged, notificationOccurred } = useHaptics();
 
   // Debug state changes
   useEffect(() => {
@@ -62,6 +64,9 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         const result = await response.json();
         
         if (result.success) {
+          // Success haptic feedback for voting
+          await notificationOccurred('success');
+          
           // Update the GIF in the list
           setGifs(prevGifs => 
             prevGifs.map(gif => 
@@ -79,10 +84,15 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           setTimeout(() => {
             fetchGifsFromStorage();
           }, 1000);
+        } else {
+          await notificationOccurred('error');
         }
+      } else {
+        await notificationOccurred('error');
       }
     } catch (error) {
       console.error('Error voting:', error);
+      await notificationOccurred('error');
     }
   };
 
@@ -387,8 +397,9 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         <div className="flex flex-wrap gap-2 mb-4 justify-center">
           <select
             value={selectedNoggleColor}
-            onChange={(e) => {
+            onChange={async (e) => {
               console.log('🔥 DROPDOWN CHANGED - Noggle Color:', e.target.value);
+              await selectionChanged();
               setSelectedNoggleColor(e.target.value);
             }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -401,8 +412,9 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           
           <select
             value={selectedEyeAnimation}
-            onChange={(e) => {
+            onChange={async (e) => {
               console.log('🔥 DROPDOWN CHANGED - Eye Animation:', e.target.value);
+              await selectionChanged();
               setSelectedEyeAnimation(e.target.value);
             }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -415,7 +427,10 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={async (e) => {
+              await selectionChanged();
+              setSortBy(e.target.value);
+            }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="newest">Newest First</option>

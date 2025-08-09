@@ -9,6 +9,7 @@ import { useUser } from "../../contexts/UserContext";
 import { useAccount, useWalletClient } from "wagmi";
 import { ShareDialog } from "../social/ShareDialog";
 import { HighlightInfo } from "../ui/HighlightInfo";
+import { useHaptics } from "../../hooks/useHaptics";
 import {
   Transaction,
   TransactionButton,
@@ -135,6 +136,7 @@ export function ImagePreview({
   const { user, isAuthenticated } = useUser();
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
+  const { notificationOccurred, selectionChanged } = useHaptics();
   const sendNotification = useNotification();
 
   // Get the next sequential number when component mounts
@@ -207,6 +209,7 @@ export function ImagePreview({
     
     // Validate selections before proceeding
     if (!selectedNoggleColor || !selectedEyeAnimation) {
+      await notificationOccurred('error');
       onError('Please select both a noggle color and eye animation before creating your GIF');
       return;
     }
@@ -341,6 +344,9 @@ export function ImagePreview({
 
         setExportProgress(100);
 
+        // Success haptic feedback
+        await notificationOccurred('success');
+        
         // Show success message
         onSuccess?.(`GIF created successfully! Uploaded to Supabase Storage and added to gallery.`);
         
@@ -383,6 +389,7 @@ export function ImagePreview({
       }
     } catch (error) {
       console.error('Export error:', error);
+      await notificationOccurred('error');
       const errorMessage = error instanceof Error ? error.message : 'Failed to export GIF to Supabase Storage';
       onError(errorMessage);
     } finally {
@@ -793,7 +800,10 @@ export function ImagePreview({
             {NOGGLE_COLORS.map((color) => (
               <button
                 key={color.value}
-                onClick={() => setSelectedNoggleColor(color.value)}
+                onClick={async () => {
+                  await selectionChanged();
+                  setSelectedNoggleColor(color.value);
+                }}
                 className={`p-2 rounded-lg border-2 transition-all duration-200 ${
                   selectedNoggleColor === color.value
                     ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
@@ -837,7 +847,10 @@ export function ImagePreview({
             {EYE_ANIMATIONS.map((animation) => (
               <button
                 key={animation.value}
-                onClick={() => setSelectedEyeAnimation(animation.value)}
+                onClick={async () => {
+                  await selectionChanged();
+                  setSelectedEyeAnimation(animation.value);
+                }}
                 className={`p-2 rounded-lg border-2 transition-all duration-200 ${
                   selectedEyeAnimation === animation.value
                     ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
