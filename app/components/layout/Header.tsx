@@ -30,7 +30,7 @@ export function Header({ className = "" }: HeaderProps) {
               <img 
                 src="/gifnouns.svg" 
                 alt="GifNouns" 
-                className="h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24"
+                className="h-32 w-32 sm:h-40 sm:w-40 lg:h-48 lg:w-48"
               />
             </div>
           </div>
