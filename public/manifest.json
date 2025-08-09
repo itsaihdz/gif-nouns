@@ -1,7 +1,8 @@
 {
-  "name": "GifNouns",
-  "short_name": "Nouns Remix",
-  "description": "Create animated Nouns and discover community creations",
+  "name": "GifNouns. Animate your nouns pfp",
+  "short_name": "Gifnouns",
+  "description": "Turn your static Nouns PFP into a living, blinking, emotional GIF. Upload your Noun, pick eye animations, and bring it to life onchain.",
+
   "start_url": "/",
   "display": "standalone",
   "background_color": "#8B5CF6",
