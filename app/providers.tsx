@@ -24,11 +24,13 @@ const config = createConfig({
 });
 
 export function Providers(props: { children: ReactNode }) {
+  const apiKey = process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY;
+  
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <MiniKitProvider
-          apiKey={process.env.NEXT_PUBLIC_CDP_CLIENT_API_KEY}
+          apiKey={apiKey || "placeholder"} // Use placeholder if no API key to avoid build errors
           chain={base}
         >
           {props.children}

@@ -75,8 +75,13 @@ export function useGifGenerator({
 }: GifGeneratorProps) {
   const generateGif = useCallback(async () => {
     try {
+      // Validate that we have required parameters
+      if (!eyeAnimation || !eyeAnimation.trim()) {
+        throw new Error('Eye animation is required');
+      }
+      
       // Get the correct file name for the eye animation
-      const eyeAnimationFile = EYE_ANIMATION_FILES[eyeAnimation || ""];
+      const eyeAnimationFile = EYE_ANIMATION_FILES[eyeAnimation];
       if (!eyeAnimationFile) {
         throw new Error(`Unknown eye animation: ${eyeAnimation}`);
       }
@@ -90,7 +95,7 @@ export function useGifGenerator({
       // Load original image and noggle overlay
       const originalImg = await loadImage(originalImageUrl);
       let noggleImg = null;
-      if (noggleColor && noggleColor !== "original") {
+      if (noggleColor && noggleColor.trim() && noggleColor !== "original") {
         const noggleFile = NOGGLE_COLOR_FILES[noggleColor];
         if (noggleFile) {
           noggleImg = await loadImage(`/assets/noggles/${noggleFile}`);

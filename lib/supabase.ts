@@ -63,9 +63,10 @@ export interface Database {
         Row: {
           id: string;
           gif_url: string;
-          creator_fid: number;
-          creator_username: string;
-          creator_pfp: string;
+          creator_wallet?: string; // Optional for backward compatibility
+          creator_fid: number | null;
+          creator_username: string | null;
+          creator_pfp: string | null;
           title: string;
           noggle_color: string;
           eye_animation: string;
@@ -77,9 +78,10 @@ export interface Database {
         Insert: {
           id?: string;
           gif_url: string;
-          creator_fid: number;
-          creator_username: string;
-          creator_pfp: string;
+          creator_wallet?: string; // Optional for backward compatibility
+          creator_fid?: number | null;
+          creator_username?: string | null;
+          creator_pfp?: string | null;
           title: string;
           noggle_color: string;
           eye_animation: string;
@@ -91,9 +93,10 @@ export interface Database {
         Update: {
           id?: string;
           gif_url?: string;
-          creator_fid?: number;
-          creator_username?: string;
-          creator_pfp?: string;
+          creator_wallet?: string; // Optional for backward compatibility
+          creator_fid?: number | null;
+          creator_username?: string | null;
+          creator_pfp?: string | null;
           title?: string;
           noggle_color?: string;
           eye_animation?: string;

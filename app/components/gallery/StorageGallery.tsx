@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
+import { useHaptics } from "../../hooks/useHaptics";
 
 interface StorageGif {
   url: string;
@@ -14,6 +15,7 @@ interface StorageGif {
   creator?: {
     username: string;
     pfp: string;
+    wallet: string;
   };
   title?: string;
   noggleColor?: string;
@@ -34,6 +36,13 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedNoggleColor, setSelectedNoggleColor] = useState<string>('all');
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
+  const { selectionChanged, notificationOccurred } = useHaptics();
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('🔥 FILTER STATE CHANGED:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
+  }, [selectedNoggleColor, selectedEyeAnimation, sortBy]);
 
   const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
     try {
@@ -55,6 +64,9 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
         const result = await response.json();
         
         if (result.success) {
+          // Success haptic feedback for voting
+          await notificationOccurred('success');
+          
           // Update the GIF in the list
           setGifs(prevGifs => 
             prevGifs.map(gif => 
@@ -72,10 +84,15 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           setTimeout(() => {
             fetchGifsFromStorage();
           }, 1000);
+        } else {
+          await notificationOccurred('error');
         }
+      } else {
+        await notificationOccurred('error');
       }
     } catch (error) {
       console.error('Error voting:', error);
+      await notificationOccurred('error');
     }
   };
 
@@ -96,26 +113,64 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       if (result.success) {
         console.log(`✅ Fetched ${result.count} GIFs from storage`);
         
-        // Fetch creator info for each GIF (but don't block on it)
+        // Fetch creator info for each GIF from database and Neynar
         const gifsWithCreatorInfo = await Promise.all(
           result.data.map(async (gif: StorageGif) => {
             try {
+              // First get creator info from database
               const creatorResponse = await fetch(`/api/gallery/storage/creator?gifUrl=${encodeURIComponent(gif.url)}`);
               if (creatorResponse.ok) {
                 const creatorResult = await creatorResponse.json();
                 if (creatorResult.success) {
-                  return { ...gif, ...creatorResult.data };
+                  console.log('✅ Found creator info:', creatorResult.data);
+                  
+                  // Try to get wallet address (new schema) or username (old schema)
+                  let walletAddress = creatorResult.data.creator_wallet;
+                  let username = creatorResult.data.creator_username;
+                  let pfp = creatorResult.data.creator_pfp;
+                  
+                  // If we have a wallet address, try to get Farcaster info from Neynar
+                  if (walletAddress) {
+                    try {
+                      const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(walletAddress)}`);
+                      if (neynarResponse.ok) {
+                        const neynarResult = await neynarResponse.json();
+                        username = neynarResult.username;
+                        pfp = neynarResult.pfp;
+                        walletAddress = neynarResult.wallet;
+                      }
+                    } catch (error) {
+                      console.log('Neynar lookup failed, using fallback data');
+                    }
+                  }
+                  
+                  return {
+                    ...gif,
+                    creator: {
+                      username: username || 'Unknown Creator',
+                      pfp: pfp || `https://picsum.photos/32/32?random=${walletAddress?.slice(2, 8) || 'unknown'}`,
+                      wallet: walletAddress || 'unknown',
+                    },
+                    title: creatorResult.data.title || gif.path,
+                    noggleColor: creatorResult.data.noggle_color || 'unknown',
+                    eyeAnimation: creatorResult.data.eye_animation || 'unknown',
+                    upvotes: creatorResult.data.upvotes || 0,
+                    downvotes: creatorResult.data.downvotes || 0,
+                    hasCreatorInfo: true
+                  };
                 }
               }
             } catch (error) {
               console.error('Error fetching creator info for:', gif.url, error);
             }
-            // Always return the GIF, even without creator info
+            
+            // Fallback for GIFs without creator info
             return {
               ...gif,
               creator: {
                 username: 'Unknown Creator',
                 pfp: 'https://picsum.photos/32/32?random=unknown',
+                wallet: 'unknown',
               },
               title: gif.path,
               noggleColor: 'unknown',
@@ -148,32 +203,145 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     fetchGifsFromStorage();
   };
 
-  // Filter GIFs based on selected traits
-  const filterGifs = () => {
+  // Filter and sort GIFs based on selected traits and sort option
+  const filterGifs = useCallback(() => {
+    console.log('🔄 filterGifs called with:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
+    console.log('🔄 Total gifs before filtering:', gifs.length);
+    console.log('🔄 All GIFs with their traits:', gifs.map(g => ({ 
+      title: g.title, 
+      noggleColor: g.noggleColor, 
+      eyeAnimation: g.eyeAnimation 
+    })));
+    
     let filtered = gifs;
     
     if (selectedNoggleColor !== 'all') {
-      filtered = filtered.filter(gif => gif.noggleColor === selectedNoggleColor);
+      console.log('🔍 Filtering by noggle color:', selectedNoggleColor);
+      console.log('🔍 Available noggle colors in gifs:', gifs.map(g => g.noggleColor));
+      filtered = filtered.filter(gif => {
+        const matches = gif.noggleColor === selectedNoggleColor;
+        console.log(`🔍 GIF "${gif.title}" has noggleColor "${gif.noggleColor}", matches "${selectedNoggleColor}": ${matches}`);
+        return matches;
+      });
+      console.log('🔄 After noggle color filter:', filtered.length);
     }
     
     if (selectedEyeAnimation !== 'all') {
-      filtered = filtered.filter(gif => gif.eyeAnimation === selectedEyeAnimation);
+      console.log('🔍 Filtering by eye animation:', selectedEyeAnimation);
+      console.log('🔍 Available eye animations in gifs:', gifs.map(g => g.eyeAnimation));
+      filtered = filtered.filter(gif => {
+        const matches = gif.eyeAnimation === selectedEyeAnimation;
+        console.log(`🔍 GIF "${gif.title}" has eyeAnimation "${gif.eyeAnimation}", matches "${selectedEyeAnimation}": ${matches}`);
+        return matches;
+      });
+      console.log('🔄 After eye animation filter:', filtered.length);
     }
     
-    setFilteredGifs(filtered);
-  };
-
-  // Get unique trait values for filter options
-  const getUniqueTraits = () => {
-    const noggleColors = [...new Set(gifs.map(gif => gif.noggleColor).filter(color => color && color !== 'unknown'))];
-    const eyeAnimations = [...new Set(gifs.map(gif => gif.eyeAnimation).filter(animation => animation && animation !== 'unknown'))];
+    // Sort GIFs based on selected option
+    console.log('🔄 Sorting by:', sortBy);
+    switch (sortBy) {
+      case 'most-votes':
+        filtered = filtered.sort((a, b) => {
+          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
+          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
+          console.log('🔄 Comparing votes for most-votes:', { 
+            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, netVotes: aVotes },
+            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, netVotes: bVotes }
+          });
+          return bVotes - aVotes; // Most votes first (descending)
+        });
+        break;
+      case 'least-votes':
+        filtered = filtered.sort((a, b) => {
+          const aVotes = (a.upvotes || 0) - (a.downvotes || 0);
+          const bVotes = (b.upvotes || 0) - (b.downvotes || 0);
+          console.log('🔄 Comparing votes for least-votes:', { 
+            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, netVotes: aVotes },
+            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, netVotes: bVotes }
+          });
+          return aVotes - bVotes; // Least votes first (ascending)
+        });
+        break;
+      case 'newest':
+        filtered = filtered.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        break;
+      case 'oldest':
+        filtered = filtered.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        break;
+      default:
+        // Default to newest
+        filtered = filtered.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+    }
     
-    return { noggleColors, eyeAnimations };
-  };
+    console.log('🔄 Final filtered gifs:', filtered.length);
+    console.log('🔄 First few gifs after sorting:', filtered.slice(0, 5).map(gif => ({
+      title: gif.title,
+      noggleColor: gif.noggleColor,
+      eyeAnimation: gif.eyeAnimation,
+      upvotes: gif.upvotes,
+      downvotes: gif.downvotes,
+      netVotes: (gif.upvotes || 0) - (gif.downvotes || 0),
+      created_at: gif.created_at
+    })));
+    
+    setFilteredGifs(filtered);
+  }, [selectedNoggleColor, selectedEyeAnimation, sortBy, gifs]);
+
+  // All available noggle colors from ImagePreview component
+  const ALL_NOGGLE_COLORS = [
+    { name: "Blue", value: "blue" },
+    { name: "Deep Teal", value: "deep-teal" },
+    { name: "Gomita", value: "gomita" },
+    { name: "Grass", value: "grass" },
+    { name: "Green Blue", value: "green-blue" },
+    { name: "Grey Light", value: "grey-light" },
+    { name: "Guava", value: "guava" },
+    { name: "Hip Rose", value: "hip-rose" },
+    { name: "Honey", value: "honey" },
+    { name: "Hyper", value: "hyper" },
+    { name: "Hyperliquid", value: "hyperliquid" },
+    { name: "Lavender", value: "lavender" },
+    { name: "Magenta", value: "magenta" },
+    { name: "Orange", value: "orange" },
+    { name: "Pink Purple", value: "pink-purple" },
+    { name: "Purple", value: "purple" },
+    { name: "Red", value: "red" },
+    { name: "Smoke", value: "smoke" },
+    { name: "Teal", value: "teal" },
+    { name: "Watermelon", value: "watermelon" },
+    { name: "Yellow Orange", value: "yellow-orange" },
+    { name: "Yellow", value: "yellow" },
+  ];
+
+  // All available eye animations from ImagePreview component
+  const ALL_EYE_ANIMATIONS = [
+    { name: "Nouns", value: "nouns" },
+    { name: "Ojos Nouns", value: "ojos-nouns" },
+    { name: "Ojos Pepepunk", value: "ojos-pepepunk" },
+    { name: "Ojos Pepepunk En Medio", value: "ojos-pepepunk-en-medio" },
+    { name: "Arriba", value: "arriba" },
+    { name: "Arriba Derecha", value: "arriba-derecha" },
+    { name: "Arriba Izquierda", value: "arriba-izquierda" },
+    { name: "Abajo", value: "abajo" },
+    { name: "Abajo Derecha", value: "abajo-derecha" },
+    { name: "Abajo Izquierda", value: "abajo-izquierda" },
+    { name: "Viscos", value: "viscos" },
+    { name: "Viscos Derecha", value: "viscos-derecha" },
+    { name: "Viscos Izquierda", value: "viscos-izquierda" },
+    { name: "Locos", value: "locos" },
+    { name: "Serpiente", value: "serpiente" },
+    { name: "Vampiro", value: "vampiro" },
+  ];
 
   useEffect(() => {
     filterGifs();
-  }, [selectedNoggleColor, selectedEyeAnimation, gifs]);
+  }, [filterGifs]);
 
   if (loading) {
     return (
@@ -225,46 +393,56 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
           All GIFs from Supabase Storage ({filteredGifs.length} of {gifs.length} total)
         </p>
 
-        {/* Filter Controls */}
+        {/* Filter and Sort Controls */}
         <div className="flex flex-wrap gap-2 mb-4 justify-center">
           <select
             value={selectedNoggleColor}
-            onChange={(e) => setSelectedNoggleColor(e.target.value)}
+            onChange={async (e) => {
+              console.log('🔥 DROPDOWN CHANGED - Noggle Color:', e.target.value);
+              await selectionChanged();
+              setSelectedNoggleColor(e.target.value);
+            }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="all">All Noggle Colors</option>
-            {getUniqueTraits().noggleColors.map(color => (
-              <option key={color} value={color}>{color}</option>
+            {ALL_NOGGLE_COLORS.map(color => (
+              <option key={color.value} value={color.value}>{color.name}</option>
             ))}
           </select>
           
           <select
             value={selectedEyeAnimation}
-            onChange={(e) => setSelectedEyeAnimation(e.target.value)}
+            onChange={async (e) => {
+              console.log('🔥 DROPDOWN CHANGED - Eye Animation:', e.target.value);
+              await selectionChanged();
+              setSelectedEyeAnimation(e.target.value);
+            }}
             className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           >
             <option value="all">All Eye Animations</option>
-            {getUniqueTraits().eyeAnimations.map(animation => (
-              <option key={animation} value={animation}>{animation}</option>
+            {ALL_EYE_ANIMATIONS.map(animation => (
+              <option key={animation.value} value={animation.value}>{animation.name}</option>
             ))}
+          </select>
+          
+          <select
+            value={sortBy}
+            onChange={async (e) => {
+              await selectionChanged();
+              setSortBy(e.target.value);
+            }}
+            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="most-votes">Most Votes</option>
+            <option value="least-votes">Least Votes</option>
           </select>
           
           <Button
             onClick={handleRefresh}
             variant="outline"
             size="sm"
-            icon={<Icon name="refresh" size="sm" />}
-          >
-            Refresh
-          </Button>
-        </div>
-
-        {/* Refresh Button */}
-        <div className="flex justify-end mb-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
             icon={<Icon name="refresh" size="sm" />}
           >
             Refresh
@@ -288,22 +466,6 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              
-              {/* Creator info overlay */}
-              {gif.creator && (
-                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs p-1 rounded">
-                  <div className="flex items-center gap-1">
-                    <img
-                      src={gif.creator.pfp}
-                      alt={gif.creator.username}
-                      className="w-4 h-4 rounded-full"
-                    />
-                    <span className="truncate">@{gif.creator.username}</span>
-                  </div>
-                </div>
-              )}
-
-
             </div>
 
             {/* GIF Details */}
@@ -317,7 +479,7 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
                     className="w-4 h-4 rounded-full"
                   />
                   <span className="text-xs text-gray-500 dark:text-gray-500">
-                    {gif.creator.username}
+                    {gif.creator.wallet ? `${gif.creator.wallet.slice(0, 6)}...${gif.creator.wallet.slice(-4)}` : gif.creator.username}
                   </span>
                 </div>
               )}
