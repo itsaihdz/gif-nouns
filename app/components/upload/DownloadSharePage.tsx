@@ -5,6 +5,8 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Icon } from "../icons";
 import { downloadGif } from "@/lib/utils";
+import { useComposeCast } from '@coinbase/onchainkit/minikit';
+import { useHaptics } from "@/app/hooks/useHaptics";
 
 interface DownloadSharePageProps {
   gifUrl: string; // Generated GIF URL for preview/download
@@ -40,16 +42,24 @@ export function DownloadSharePage({
   console.log('🔄 GIF URL value:', gifUrl);
   const [isSharing, setIsSharing] = useState(false);
   const [, setShareDialogUrl] = useState<string | null>(null);
+  
+  // Initialize hooks
+  const { composeCast } = useComposeCast();
+  const { selectionChanged, notificationOccurred } = useHaptics();
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    await selectionChanged(); // Haptic feedback
     if (gifUrl) {
       const filename = `animated-noun-${Date.now()}.gif`;
       downloadGif(gifUrl, filename);
+      await notificationOccurred('success');
     }
   };
 
   const handleShareToFarcaster = async () => {
     setIsSharing(true);
+    await selectionChanged(); // Haptic feedback
+    
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
@@ -57,15 +67,32 @@ export function DownloadSharePage({
       console.log('🔄 Share URL available:', !!shareUrl);
       console.log('🔄 Fallback to GIF URL:', !shareUrl);
       
-      const shareText = `🎨 Just created an animated Noun with ${noggleColor} noggles and ${eyeAnimation} eyes! Check it out: ${shareGifUrl}`;
+      // Use the same text template from FarcasterShare component
+      const shareText = `Check out my animated Noun "${title}"! 🎨✨
+
+Created with #NounsRemixStudio
+
+${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
+
+Vote for it in the gallery! 🗳️`;
       
-      // Create Farcaster share URL
-      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
-      
-      setShareDialogUrl(farcasterUrl);
-      window.open(farcasterUrl, '_blank');
+      // Use the native Farcaster composeCast if available, otherwise fallback
+      if (typeof composeCast === 'function') {
+        await composeCast({
+          text: shareText,
+          embeds: [shareGifUrl], // Include GIF as embed
+        });
+        await notificationOccurred('success');
+      } else {
+        // Fallback to external link
+        const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+        setShareDialogUrl(farcasterUrl);
+        window.open(farcasterUrl, '_blank');
+        await notificationOccurred('warning'); // Different feedback for fallback
+      }
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
+      await notificationOccurred('error');
     } finally {
       setIsSharing(false);
     }
@@ -73,6 +100,8 @@ export function DownloadSharePage({
 
   const handleShareToTwitter = async () => {
     setIsSharing(true);
+    await selectionChanged(); // Haptic feedback
+    
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
@@ -87,8 +116,10 @@ export function DownloadSharePage({
       
       setShareDialogUrl(twitterUrl);
       window.open(twitterUrl, '_blank');
+      await notificationOccurred('success');
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
+      await notificationOccurred('error');
     } finally {
       setIsSharing(false);
     }
@@ -96,6 +127,8 @@ export function DownloadSharePage({
 
   const handleCopyLink = async () => {
     try {
+      await selectionChanged(); // Haptic feedback
+      
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
       console.log('🔄 Copying link to clipboard:', shareGifUrl);
@@ -103,10 +136,11 @@ export function DownloadSharePage({
       console.log('🔄 Fallback to GIF URL:', !shareUrl);
       
       await navigator.clipboard.writeText(shareGifUrl);
-      // You could add a toast notification here
+      await notificationOccurred('success');
       console.log('Link copied to clipboard');
     } catch (error) {
       console.error('Failed to copy link:', error);
+      await notificationOccurred('error');
     }
   };
 
@@ -177,7 +211,7 @@ export function DownloadSharePage({
               disabled={isSharing}
               icon={<Icon name="share" size="sm" />}
             >
-              Share on Farcaster
+              {typeof composeCast === 'function' ? "Cast to Farcaster" : "Share on Farcaster"}
             </Button>
             <Button
               variant="outline"
