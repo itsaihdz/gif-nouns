@@ -71,7 +71,7 @@ export function Header({ className = "" }: HeaderProps) {
                 >
                   <div className="flex items-center space-x-1.5 sm:space-x-2">
                     <Avatar className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
-                    <Name className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white hidden sm:inline-block max-w-20 lg:max-w-none truncate">
+                    <Name className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white hidden sm:inline-block">
                       <Badge />
                     </Name>
                   </div>
