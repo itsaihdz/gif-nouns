@@ -22,8 +22,8 @@ export async function GET() {
     },
     frame: withValidProperties({
       version: "1",
-      name: "GifNouns",
-      subtitle: "Create animated GifNouns",
+      name: "GifNouns.",
+      subtitle: "Create animated Nouns",
       description: "Upload your Noun PFP, customize with noggle colors and animated eyes, then export as GIF. Join the community gallery!",
       screenshotUrls: [],
       iconUrl: `${URL}/icon.png`,
@@ -34,9 +34,9 @@ export async function GET() {
       primaryCategory: "art-creativity",
       tags: ["gifnouns", "nouns", "gif", "animation", "pfp", "community"],
       heroImageUrl: `${URL}/hero.png`,
-      tagline: "Animate your GifNouns",
+      tagline: "Animate your Nouns",
       ogTitle: "GifNouns",
-      ogDescription: "Create animated GifNouns with custom noggles and eye animations",
+      ogDescription: "Create animated Nouns with custom noggles and eye animations",
       ogImageUrl: `${URL}/hero.png`,
     }),
   });
