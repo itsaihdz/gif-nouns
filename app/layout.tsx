@@ -31,11 +31,11 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [`${URL}/hero.png`],
     },
     other: {
-      "fc:frame": `${URL}`,
+      "fc:frame": URL,
       "fc:frame:image": `${URL}/hero.png`,
       "fc:frame:button:1": "Create GifNoun",
       "fc:frame:button:2": "View Gallery",
-      "fc:frame:post_url": `${URL}`,
+      "fc:frame:post_url": URL,
       "fc:miniapp": JSON.stringify({
         version: "1",
         name: "GifNouns",
@@ -68,9 +68,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        {/* Farcaster Mini App meta tags are handled in generateMetadata() */}
-      </head>
       <body className="font-montserrat antialiased">
         <Providers>{children}</Providers>
       </body>
