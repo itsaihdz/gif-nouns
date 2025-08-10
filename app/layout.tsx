@@ -18,7 +18,24 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "GifNouns",
     description: "Create animated Nouns with custom noggles and eye animations",
+    openGraph: {
+      title: "GifNouns",
+      description: "Create animated Nouns with custom noggles and eye animations",
+      images: [`${URL}/hero.png`],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "GifNouns",
+      description: "Create animated Nouns with custom noggles and eye animations",
+      images: [`${URL}/hero.png`],
+    },
     other: {
+      "fc:frame": `${URL}`,
+      "fc:frame:image": `${URL}/hero.png`,
+      "fc:frame:button:1": "Create GifNoun",
+      "fc:frame:button:2": "View Gallery",
+      "fc:frame:post_url": `${URL}`,
       "fc:miniapp": JSON.stringify({
         version: "1",
         name: "GifNouns",
