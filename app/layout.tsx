@@ -19,19 +19,26 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "GifNouns",
     description: "Create animated Nouns with custom noggles and eye animations",
     other: {
-      "fc:frame": JSON.stringify({
-        version: "next",
-        imageUrl: `${URL}/hero.png`,
-        button: {
-          title: "Launch GifNouns",
-          action: {
-            type: "launch_frame",
-            name: "GifNouns",
-            url: URL,
-            splashImageUrl: `${URL}/splash.png`,
-            splashBackgroundColor: "#8B5CF6",
-          },
-        },
+      "fc:miniapp": JSON.stringify({
+        version: "1",
+        name: "GifNouns",
+        iconUrl: `${URL}/icon.png`,
+        homeUrl: URL,
+        splashImageUrl: `${URL}/splash.png`,
+        splashBackgroundColor: "#8B5CF6",
+        subtitle: "Animate your Nouns PFP",
+        description: "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
+        screenshotUrls: [`${URL}/screenshot.png`],
+        primaryCategory: "art-creativity",
+        tags: ["nouns", "animation", "pfp", "gif", "art"],
+        heroImageUrl: `${URL}/hero.png`,
+        tagline: "Bring your Nouns to life",
+        ogTitle: "GifNouns",
+        ogDescription: "Create animated Nouns with custom noggles and eye animations",
+        ogImageUrl: `${URL}/hero.png`,
+        requiredChains: ["eip155:1", "eip155:8453"],
+        requiredCapabilities: ["wallet.getEthereumProvider", "actions.signIn"],
+        noindex: false,
       }),
     },
   };
@@ -45,9 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="farcaster:app:icon" content="https://gifnouns.freezerverse.com/icon.png" />
-        <meta name="farcaster:app:url" content="https://gifnouns.freezerverse.com" />
-        <meta name="fc:miniapp" content="https://gifnouns.freezerverse.com" />
+        {/* Farcaster Mini App meta tags are handled in generateMetadata() */}
       </head>
       <body className="font-montserrat antialiased">
         <Providers>{children}</Providers>
