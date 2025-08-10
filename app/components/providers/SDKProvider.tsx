@@ -8,6 +8,7 @@ interface SDKContextType {
   sdkError: string | null;
   sdk: typeof sdk;
   initializeSDK: () => Promise<void>;
+  callReady: () => Promise<void>;
 }
 
 const SDKContext = createContext<SDKContextType | undefined>(undefined);
@@ -28,10 +29,11 @@ export function SDKProvider({ children }: SDKProviderProps) {
   const [isSDKReady, setIsSDKReady] = useState(false);
   const [sdkError, setSDKError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const initializeSDK = async () => {
-    if (isInitializing || isSDKReady) {
-      console.log('🔄 SDK already initializing or ready, skipping...');
+    if (isInitializing || isInitialized) {
+      console.log('🔄 SDK already initializing or initialized, skipping...');
       return;
     }
 
@@ -58,16 +60,14 @@ export function SDKProvider({ children }: SDKProviderProps) {
         // Still try to initialize but expect limited functionality
       }
 
-      // Call sdk.actions.ready() to initialize the SDK
-      console.log('📞 Calling sdk.actions.ready()...');
-      await sdk.actions.ready();
-      
-      console.log('✅ Farcaster MiniApp SDK ready!');
-      setIsSDKReady(true);
+      // Just mark as initialized, don't call ready() yet
+      console.log('✅ Farcaster MiniApp SDK initialized (ready() will be called later)');
+      setIsInitialized(true);
       setSDKError(null);
       
       // Log available SDK actions for debugging
       console.log('🔧 Available SDK actions:', {
+        ready: typeof sdk.actions.ready,
         composeCast: typeof sdk.actions.composeCast,
         openUrl: typeof sdk.actions.openUrl,
         haptics: {
@@ -76,11 +76,45 @@ export function SDKProvider({ children }: SDKProviderProps) {
           selectionChanged: typeof sdk.haptics.selectionChanged,
         }
       });
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize Farcaster MiniApp SDK:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setSDKError(errorMessage);
+      setIsInitialized(false);
+      
+      // Still allow the app to function without SDK
+      console.warn('⚠️ App will continue without Farcaster SDK functionality');
+      console.warn('⚠️ This is normal when testing outside of Farcaster environment');
+    } finally {
+      setIsInitializing(false);
+    }
+  };
 
-      // Test basic SDK functionality
+  // Separate function to call ready() - this should be called after app is fully loaded
+  const callReady = async () => {
+    if (!isInitialized) {
+      console.log('⚠️ SDK not initialized yet, cannot call ready()');
+      return;
+    }
+
+    if (isSDKReady) {
+      console.log('✅ SDK already ready, skipping ready() call');
+      return;
+    }
+
+    try {
+      console.log('📞 Calling sdk.actions.ready() to display app...');
+      await sdk.actions.ready();
+      
+      console.log('✅ sdk.actions.ready() called successfully!');
+      setIsSDKReady(true);
+      setSDKError(null);
+      
+      // Test basic SDK functionality after ready
       try {
         if (typeof sdk.haptics.impactOccurred === 'function') {
-          console.log('🧪 Testing haptics...');
+          console.log('🧪 Testing haptics after ready...');
           await sdk.haptics.impactOccurred('light');
           console.log('✅ Haptics test successful');
         }
@@ -89,16 +123,10 @@ export function SDKProvider({ children }: SDKProviderProps) {
       }
       
     } catch (error) {
-      console.error('❌ Failed to initialize Farcaster MiniApp SDK:', error);
+      console.error('❌ Failed to call sdk.actions.ready():', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setSDKError(errorMessage);
       setIsSDKReady(false);
-      
-      // Still allow the app to function without SDK
-      console.warn('⚠️ App will continue without Farcaster SDK functionality');
-      console.warn('⚠️ This is normal when testing outside of Farcaster environment');
-    } finally {
-      setIsInitializing(false);
     }
   };
 
@@ -117,6 +145,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
     sdkError,
     sdk,
     initializeSDK,
+    callReady,
   };
 
   return (
