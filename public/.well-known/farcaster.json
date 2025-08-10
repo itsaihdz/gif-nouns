@@ -26,9 +26,11 @@
     ],
     "heroImageUrl": "https://gifnouns.freezerverse.com/hero.png",
     "tagline": "Bring your Nouns to life",
-    "ogTitle": "GifNouns",
-    "ogDescription": "Create animated Nouns with custom noggles and eye animations",
+    "ogTitle": "GifNouns - Animated Nouns",
+    "ogDescription": "Create animated Nouns with custom noggles and eyes animations",
     "ogImageUrl": "https://gifnouns.freezerverse.com/hero.png",
+    "imageUrl": "https://gifnouns.freezerverse.com/hero.png",
+    "buttonTitle": "Animate your nouns ⌐◨-◨",
     "requiredChains": [
       "eip155:1",
       "eip155:8453"
