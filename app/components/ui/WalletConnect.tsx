@@ -1,11 +1,11 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { ConnectWallet, WalletDropdown } from "@coinbase/onchainkit/wallet";
+import { useAccount, useDisconnect } from "wagmi";
+import { WalletDropdown, ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { Button } from "./Button";
 import { Icon } from "../icons";
-import { Loading } from "./Loading";
 import { useTracking } from "../analytics/Tracking";
+import { useEffect, useState } from "react";
 
 interface WalletConnectProps {
   variant?: "button" | "dropdown";
@@ -17,10 +17,29 @@ export function WalletConnect({
   variant = "button", 
   className = "" 
 }: WalletConnectProps) {
-  const { address, isConnected, isConnecting } = useAccount();
-  const { error } = useConnect();
+  const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const tracking = useTracking();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Debug logging
+  useEffect(() => {
+    if (isMounted) {
+      console.log('🔍 WalletConnect: useEffect triggered');
+      console.log('🔍 WalletConnect: isConnected:', isConnected);
+      console.log('🔍 WalletConnect: address:', address);
+    }
+  }, [isConnected, address, isMounted]);
+
+  // Log render state
+  if (isMounted) {
+    console.log('🔍 WalletConnect: RENDER - isConnected:', isConnected, 'address:', address);
+  }
 
   const handleDisconnect = () => {
     try {
@@ -31,10 +50,6 @@ export function WalletConnect({
     }
   };
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
-
   if (variant === "dropdown") {
     return (
       <div className={className}>
@@ -43,17 +58,20 @@ export function WalletConnect({
     );
   }
 
-  return (
-    <div className={className}>
-      {isConnected ? (
+  // Don't render anything until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <div className={className}>
+        <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+      </div>
+    );
+  }
+
+  // If connected, show disconnect button
+  if (isConnected && address) {
+    return (
+      <div className={className}>
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-green-700 dark:text-green-300">
-              Connected
-            </span>
-          </div>
-          
           <Button
             variant="outline"
             size="sm"
@@ -63,26 +81,14 @@ export function WalletConnect({
             Disconnect
           </Button>
         </div>
-      ) : isConnecting ? (
-        <div className="flex items-center space-x-2">
-          <Loading variant="dots" size="sm" />
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            Connecting...
-          </span>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <ConnectWallet />
-          {error && (
-            <div className="flex items-center space-x-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <Icon name="close" size="sm" className="text-red-500" />
-              <span className="text-sm text-red-700 dark:text-red-300">
-                {error.message || "Failed to connect wallet"}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
+      </div>
+    );
+  }
+
+  // If not connected, show connect button
+  return (
+    <div className={className}>
+      <ConnectWallet />
     </div>
   );
 } 

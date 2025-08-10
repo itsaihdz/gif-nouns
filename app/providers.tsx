@@ -8,6 +8,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http } from "wagmi";
 import { coinbaseWallet, injected } from "wagmi/connectors";
+import { useEffect } from "react";
 
 // Create a query client
 const queryClient = new QueryClient();
@@ -27,8 +28,13 @@ const config = createConfig({
 export function Providers(props: { children: ReactNode }) {
   const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
   
-  console.log('🔧 Providers: OnchainKit API Key:', apiKey ? `${apiKey.slice(0, 8)}...` : 'NOT SET');
-  console.log('🔧 Providers: Environment:', process.env.NODE_ENV);
+  // Only log on client side to prevent hydration mismatch
+  useEffect(() => {
+    console.log('🔧 Providers: OnchainKit API Key:', apiKey ? `${apiKey.slice(0, 8)}...` : 'NOT SET');
+    console.log('🔧 Providers: Environment:', process.env.NODE_ENV);
+    console.log('🔧 Providers: Wagmi config:', config);
+    console.log('🔧 Providers: Base chain ID:', base.id);
+  }, [apiKey]);
   
   return (
     <WagmiProvider config={config}>

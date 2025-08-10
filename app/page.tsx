@@ -39,22 +39,28 @@ export default function HomePage() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [storageGifCount, setStorageGifCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const { isConnected } = useAccount();
   
   // Always call useMiniKit hook (required by React rules)
   const miniKitHook = useMiniKit();
   const { setFrameReady, isFrameReady } = miniKitHook || { setFrameReady: null, isFrameReady: false };
 
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Initialize MiniKit frame readiness (only in browser environment)
   useEffect(() => {
-    if (typeof window !== 'undefined' && !isFrameReady && setFrameReady) {
+    if (isMounted && typeof window !== 'undefined' && !isFrameReady && setFrameReady) {
       try {
         setFrameReady();
       } catch (error) {
         console.warn('Failed to set frame ready:', error);
       }
     }
-  }, [setFrameReady, isFrameReady]);
+  }, [setFrameReady, isFrameReady, isMounted]);
 
   // Fetch gallery items from Supabase
   const fetchGalleryItems = async () => {
@@ -95,19 +101,19 @@ export default function HomePage() {
     }
   };
 
-
-
   useEffect(() => {
-    fetchGalleryItems();
-    fetchStorageGifCount();
-  }, []);
+    if (isMounted) {
+      fetchGalleryItems();
+      fetchStorageGifCount();
+    }
+  }, [isMounted]);
 
   // Refresh gallery when switching to gallery view
   useEffect(() => {
-    if (currentView === "gallery") {
+    if (isMounted && currentView === "gallery") {
       fetchGalleryItems();
     }
-  }, [currentView]);
+  }, [currentView, isMounted]);
 
   const handleGifCreated = async (gifData: { 
     gifUrl: string; 
@@ -131,6 +137,22 @@ export default function HomePage() {
     // Refresh gallery items to show the new GIF
     await fetchGalleryItems();
   };
+
+  // Don't render anything until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <UserProvider>
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+          <Header />
+          <main className="max-w-sm mx-auto px-3 py-3 sm:max-w-md sm:px-4 sm:py-4 md:max-w-2xl lg:max-w-7xl lg:px-8">
+            <div className="text-center">
+              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"></div>
+            </div>
+          </main>
+        </div>
+      </UserProvider>
+    );
+  }
 
   // Show wallet connection screen if not connected
   if (!isConnected) {

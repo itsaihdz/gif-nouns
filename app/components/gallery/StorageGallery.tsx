@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { Icon } from "../icons";
@@ -269,92 +269,55 @@ ${gif.url}`;
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Fetching GIFs from storage...');
-      const response = await fetch('/api/gallery/storage');
+      console.log('🔄 Fetching GIFs with metadata directly from database...');
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Fetch all GIF metadata directly from the database
+      const metadataResponse = await fetch('/api/gallery/metadata');
+      
+      if (!metadataResponse.ok) {
+        throw new Error(`HTTP error! status: ${metadataResponse.status}`);
       }
       
-      const result = await response.json();
+      const metadataResult = await metadataResponse.json();
       
-      if (result.success) {
-        console.log(`✅ Fetched ${result.count} GIFs from storage`);
+      if (metadataResult.success) {
+        console.log(`✅ Fetched ${metadataResult.count} GIF metadata records from database`);
         
-        // Fetch creator info for each GIF from database and Neynar
-        const gifsWithCreatorInfo = await Promise.all(
-          result.data.map(async (gif: StorageGif) => {
-            try {
-              // First get creator info from database
-              const creatorResponse = await fetch(`/api/gallery/storage/creator?gifUrl=${encodeURIComponent(gif.url)}`);
-              if (creatorResponse.ok) {
-                const creatorResult = await creatorResponse.json();
-                if (creatorResult.success) {
-                  console.log('✅ Found creator info:', creatorResult.data);
-                  
-                  // Try to get wallet address (new schema) or username (old schema)
-                  const walletAddress = creatorResult.data.creator_wallet;
-                  let username = creatorResult.data.creator_username;
-                  
-                  // For wallet addresses, OnchainKit Identity will handle ENS resolution
-                  // Only use Neynar for additional Farcaster-specific data if needed
-                  if (walletAddress && !username) {
-                    try {
-                      const neynarResponse = await fetch(`/api/gallery/creator-info?wallet=${encodeURIComponent(walletAddress)}`);
-                      if (neynarResponse.ok) {
-                        const neynarResult = await neynarResponse.json();
-                        // Only override if we don't have data and Neynar has it
-                        username = username || neynarResult.username;
-                      }
-                    } catch {
-                      console.log('Neynar lookup failed, OnchainKit Identity will handle wallet resolution');
-                    }
-                  }
-                  
-                  return {
-                    ...gif,
-                    creator: {
-                      username: username || (walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Unknown Creator'),
-                      wallet: walletAddress || 'unknown',
-                    },
-                    title: creatorResult.data.title || gif.path,
-                    noggleColor: creatorResult.data.noggle_color || 'unknown',
-                    eyeAnimation: creatorResult.data.eye_animation || 'unknown',
-                    upvotes: creatorResult.data.upvotes || 0,
-                    downvotes: creatorResult.data.downvotes || 0,
-                    hasCreatorInfo: true
-                  };
-                }
-              }
-            } catch (error) {
-              console.error('Error fetching creator info for:', gif.url, error);
-            }
-            
-            // Fallback for GIFs without creator info
-            return {
-              ...gif,
-              creator: {
-                username: 'Unknown Creator',
-                wallet: 'unknown',
-              },
-              title: gif.path,
-              noggleColor: 'unknown',
-              eyeAnimation: 'unknown',
-              upvotes: 0,
-              downvotes: 0,
-              hasCreatorInfo: false
-            };
-          })
-        );
+        // Transform the metadata into the format expected by the component
+        const gifsWithMetadata = metadataResult.data.map((item: any) => ({
+          url: item.gifUrl,
+          path: item.title || 'Untitled GIF',
+          size: 0, // Not available from metadata
+          contentType: 'image/gif',
+          created_at: new Date().toISOString(), // Not available from metadata
+          creator: {
+            username: item.creatorWallet ? `${item.creatorWallet.slice(0, 6)}...${item.creatorWallet.slice(-4)}` : 'Unknown Creator',
+            wallet: item.creatorWallet || 'unknown',
+          },
+          title: item.title || 'Untitled GIF',
+          noggleColor: item.noggleColor || 'unknown',
+          eyeAnimation: item.eyeAnimation || 'unknown',
+          upvotes: item.upvotes || 0,
+          downvotes: item.downvotes || 0,
+          hasCreatorInfo: true
+        }));
         
-        setGifs(gifsWithCreatorInfo);
-        setFilteredGifs(gifsWithCreatorInfo);
+        console.log('🔥 FINAL PROCESSED GIFS WITH METADATA:', gifsWithMetadata.map((g: any) => ({
+          title: g.title,
+          noggleColor: g.noggleColor,
+          eyeAnimation: g.eyeAnimation,
+          upvotes: g.upvotes,
+          downvotes: g.downvotes
+        })));
+        
+        setGifs(gifsWithMetadata);
+        setFilteredGifs(gifsWithMetadata);
       } else {
-        throw new Error(result.error || 'Failed to fetch GIFs');
+        throw new Error(metadataResult.error || 'Failed to fetch GIF metadata');
       }
     } catch (err) {
-      console.error('❌ Error fetching GIFs from storage:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch GIFs');
+      console.error('❌ Error fetching GIF metadata:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch GIF metadata');
     } finally {
       setLoading(false);
     }
@@ -365,152 +328,126 @@ ${gif.url}`;
   }, []);
 
   const handleRefresh = () => {
+    setError(null);
     fetchGifsFromStorage();
   };
 
-  // Filter and sort GIFs based on selected traits and sort option
-  const filterGifs = useCallback(() => {
-    console.log('🔄 filterGifs called with:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
-    console.log('🔄 Total gifs before filtering:', gifs.length);
-    console.log('🔄 All GIFs with their traits:', gifs.map(g => ({ 
-      title: g.title, 
-      noggleColor: g.noggleColor, 
-      eyeAnimation: g.eyeAnimation 
-    })));
+  // Get available noggle colors from actual data (excluding 'unknown')
+  const getAvailableNoggleColors = () => {
+    const availableColors = new Set<string>();
+    const unknownCount = { noggle: 0, eye: 0 };
     
-    let filtered = gifs;
+    gifs.forEach(gif => {
+      if (gif.noggleColor && gif.noggleColor !== 'unknown') {
+        availableColors.add(gif.noggleColor);
+      } else if (gif.noggleColor === 'unknown') {
+        unknownCount.noggle++;
+      }
+      
+      if (gif.eyeAnimation && gif.eyeAnimation !== 'unknown') {
+        // Track eye animations too
+      } else if (gif.eyeAnimation === 'unknown') {
+        unknownCount.eye++;
+      }
+    });
     
-    if (selectedNoggleColor !== 'all') {
-      console.log('🔍 Filtering by noggle color:', selectedNoggleColor);
-      console.log('🔍 Available noggle colors in gifs:', [...new Set(gifs.map(g => g.noggleColor))]);
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(gif => {
-        // Make comparison case-insensitive and handle undefined/null values
-        const gifColor = (gif.noggleColor || '').toLowerCase().trim();
-        const selectedColor = selectedNoggleColor.toLowerCase().trim();
-        const matches = gifColor === selectedColor;
-        console.log(`🔍 GIF "${gif.title}" has noggleColor "${gif.noggleColor}" (normalized: "${gifColor}"), matches "${selectedNoggleColor}" (normalized: "${selectedColor}"): ${matches}`);
-        return matches;
-      });
-      console.log(`🔄 After noggle color filter: ${filtered.length}/${beforeFilter} (filtered out ${beforeFilter - filtered.length})`);
-    }
+    console.log('🎨 Available noggle colors from data:', Array.from(availableColors));
+    console.log('⚠️ GIFs with unknown noggle colors:', unknownCount.noggle);
+    console.log('⚠️ GIFs with unknown eye animations:', unknownCount.eye);
     
-    if (selectedEyeAnimation !== 'all') {
-      console.log('🔍 Filtering by eye animation:', selectedEyeAnimation);
-      console.log('🔍 Available eye animations in gifs:', [...new Set(gifs.map(g => g.eyeAnimation))]);
-      const beforeFilter = filtered.length;
-      filtered = filtered.filter(gif => {
-        // Make comparison case-insensitive and handle undefined/null values
-        const gifAnimation = (gif.eyeAnimation || '').toLowerCase().trim();
-        const selectedAnimation = selectedEyeAnimation.toLowerCase().trim();
-        const matches = gifAnimation === selectedAnimation;
-        console.log(`🔍 GIF "${gif.title}" has eyeAnimation "${gif.eyeAnimation}" (normalized: "${gifAnimation}"), matches "${selectedEyeAnimation}" (normalized: "${selectedAnimation}"): ${matches}`);
-        return matches;
-      });
-      console.log(`🔄 After eye animation filter: ${filtered.length}/${beforeFilter} (filtered out ${beforeFilter - filtered.length})`);
-    }
+    // Convert to array format for the dropdown
+    const colorOptions = [
+      { name: "All Noggle Colors", value: "all" },
+      ...Array.from(availableColors).sort().map(color => ({
+        name: color.charAt(0).toUpperCase() + color.slice(1).replace(/-/g, ' '),
+        value: color
+      }))
+    ];
     
-    // Sort GIFs based on selected option
-    console.log('🔄 Sorting by:', sortBy);
-    switch (sortBy) {
-      case 'most-votes':
-        filtered = filtered.sort((a, b) => {
-          const aTotalVotes = (a.upvotes || 0) + (a.downvotes || 0);
-          const bTotalVotes = (b.upvotes || 0) + (b.downvotes || 0);
-          console.log('🔄 Comparing total votes for most-votes:', { 
-            a: { title: a.title, upvotes: a.upvotes, downvotes: a.downvotes, totalVotes: aTotalVotes },
-            b: { title: b.title, upvotes: b.upvotes, downvotes: b.downvotes, totalVotes: bTotalVotes }
-          });
-          return bTotalVotes - aTotalVotes; // Most total votes first (descending)
-        });
-        break;
-      case 'least-votes':
-        filtered = filtered.sort((a, b) => {
-          const aTotalVotes = (a.upvotes || 0) + (a.downvotes || 0);
-          const bTotalVotes = (b.upvotes || 0) + (b.downvotes || 0);
-          return aTotalVotes - bTotalVotes; // Least total votes first (ascending)
-        });
-        break;
-      case 'newest':
-        filtered = filtered.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        break;
-      case 'oldest':
-        filtered = filtered.sort((a, b) => 
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-        break;
-      default:
-        // Default to newest
-        filtered = filtered.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-    }
-    
-    console.log('🔄 Final filtered gifs:', filtered.length);
-    console.log('🔄 First few gifs after sorting:', filtered.slice(0, 5).map(gif => ({
-      title: gif.title,
-      noggleColor: gif.noggleColor,
-      eyeAnimation: gif.eyeAnimation,
-      upvotes: gif.upvotes,
-      downvotes: gif.downvotes,
-      totalVotes: (gif.upvotes || 0) + (gif.downvotes || 0),
-      created_at: gif.created_at
-    })));
-    
-    setFilteredGifs(filtered);
-  }, [selectedNoggleColor, selectedEyeAnimation, sortBy, gifs]);
+    return colorOptions;
+  };
 
-  // All available noggle colors from ImagePreview component
-  const ALL_NOGGLE_COLORS = [
-    { name: "Blue", value: "blue" },
-    { name: "Deep Teal", value: "deep-teal" },
-    { name: "Gomita", value: "gomita" },
-    { name: "Grass", value: "grass" },
-    { name: "Green Blue", value: "green-blue" },
-    { name: "Grey Light", value: "grey-light" },
-    { name: "Guava", value: "guava" },
-    { name: "Hip Rose", value: "hip-rose" },
-    { name: "Honey", value: "honey" },
-    { name: "Hyper", value: "hyper" },
-    { name: "Hyperliquid", value: "hyperliquid" },
-    { name: "Lavender", value: "lavender" },
-    { name: "Magenta", value: "magenta" },
-    { name: "Orange", value: "orange" },
-    { name: "Pink Purple", value: "pink-purple" },
-    { name: "Purple", value: "purple" },
-    { name: "Red", value: "red" },
-    { name: "Smoke", value: "smoke" },
-    { name: "Teal", value: "teal" },
-    { name: "Watermelon", value: "watermelon" },
-    { name: "Yellow Orange", value: "yellow-orange" },
-    { name: "Yellow", value: "yellow" },
-  ];
+  // Get available eye animations from actual data (excluding 'unknown')
+  const getAvailableEyeAnimations = () => {
+    const availableAnimations = new Set<string>();
+    gifs.forEach(gif => {
+      if (gif.eyeAnimation && gif.eyeAnimation !== 'unknown') {
+        availableAnimations.add(gif.eyeAnimation);
+      }
+    });
+    
+    // Convert to array format for the dropdown
+    const animationOptions = [
+      { name: "All Eye Animations", value: "all" },
+      ...Array.from(availableAnimations).sort().map(animation => ({
+        name: animation.charAt(0).toUpperCase() + animation.slice(1).replace(/-/g, ' '),
+        value: animation
+      }))
+    ];
+    
+    console.log('👁️ Available eye animations from data:', animationOptions);
+    return animationOptions;
+  };
 
-  // All available eye animations from ImagePreview component
-  const ALL_EYE_ANIMATIONS = [
-    { name: "Nouns", value: "nouns" },
-    { name: "Ojos Nouns", value: "ojos-nouns" },
-    { name: "Ojos Pepepunk", value: "ojos-pepepunk" },
-    { name: "Ojos Pepepunk En Medio", value: "ojos-pepepunk-en-medio" },
-    { name: "Arriba", value: "arriba" },
-    { name: "Arriba Derecha", value: "arriba-derecha" },
-    { name: "Arriba Izquierda", value: "arriba-izquierda" },
-    { name: "Abajo", value: "abajo" },
-    { name: "Abajo Derecha", value: "abajo-derecha" },
-    { name: "Abajo Izquierda", value: "abajo-izquierda" },
-    { name: "Viscos", value: "viscos" },
-    { name: "Viscos Derecha", value: "viscos-derecha" },
-    { name: "Viscos Izquierda", value: "viscos-izquierda" },
-    { name: "Locos", value: "locos" },
-    { name: "Serpiente", value: "serpiente" },
-    { name: "Vampiro", value: "vampiro" },
-  ];
-
+  // Run filter whenever filter states or gifs change
   useEffect(() => {
-    filterGifs();
-  }, [filterGifs]);
+    console.log('🔄 useEffect triggered - running filterGifs');
+    console.log('🔥 Current filter state:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
+    console.log('🔥 Available GIFs:', gifs.map(g => ({ title: g.title, noggleColor: g.noggleColor, eyeAnimation: g.eyeAnimation })));
+    console.log('🔥 Looking for noggle color:', selectedNoggleColor);
+    console.log('🔥 Looking for eye animation:', selectedEyeAnimation);
+    
+    if (gifs.length > 0) {
+      // Call filterGifs directly instead of including it in dependencies
+      const filtered = gifs.filter(gif => {
+        console.log('🔄 Filtering GIF:', { title: gif.title, noggleColor: gif.noggleColor, eyeAnimation: gif.eyeAnimation });
+        
+        // Filter by noggle color
+        if (selectedNoggleColor !== 'all' && gif.noggleColor !== selectedNoggleColor) {
+          console.log('❌ Filtered out by noggle color:', gif.noggleColor, '!==', selectedNoggleColor);
+          console.log('❌ GIF title:', gif.title, 'has noggle color:', gif.noggleColor, 'but filter wants:', selectedNoggleColor);
+          
+          // Skip GIFs with unknown noggle color when filtering by specific color
+          if (gif.noggleColor === 'unknown') {
+            console.log('⚠️ Skipping GIF with unknown noggle color:', gif.title);
+            return false;
+          }
+          
+          return false;
+        }
+        
+        // Filter by eye animation
+        if (selectedEyeAnimation !== 'all' && gif.eyeAnimation !== selectedEyeAnimation) {
+          console.log('❌ Filtered out by eye animation:', gif.eyeAnimation, '!==', selectedEyeAnimation);
+          return false;
+        }
+        
+        console.log('✅ GIF passed filters:', gif.title);
+        return true;
+      });
+      
+      console.log('🔥 Filtered results:', filtered.length, 'out of', gifs.length);
+      
+      // Sort the filtered results
+      const sorted = [...filtered].sort((a, b) => {
+        switch (sortBy) {
+          case 'newest':
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          case 'oldest':
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          case 'most-upvotes':
+            return (b.upvotes || 0) - (a.upvotes || 0);
+          case 'most-downvotes':
+            return (b.downvotes || 0) - (a.downvotes || 0);
+          default:
+            return 0;
+        }
+      });
+      
+      setFilteredGifs(sorted);
+      console.log('✅ Filtered and sorted GIFs:', sorted.length);
+    }
+  }, [selectedNoggleColor, selectedEyeAnimation, sortBy, gifs]);
 
   if (loading) {
     return (
@@ -559,13 +496,7 @@ ${gif.url}`;
           Community Gallery
         </h2>
         <div className="text-center mb-4 sm:mb-6 px-2">
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400">
-            All GIFs from Supabase Storage
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {filteredGifs.length} of {gifs.length} total
-            </span>
+          <div className="flex items-center justify-center gap-2">
             {(selectedNoggleColor !== 'all' || selectedEyeAnimation !== 'all') && (
               <span className="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
                 Filtered
@@ -573,7 +504,10 @@ ${gif.url}`;
             )}
             {sortBy !== 'newest' && (
               <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
-                Sorted: {sortBy.replace('-', ' ')}
+                Sorted: {sortBy === 'most-upvotes' ? 'More Upvotes' : 
+                         sortBy === 'most-downvotes' ? 'More Downvotes' : 
+                         sortBy === 'oldest' ? 'Oldest First' : 
+                         sortBy.replace('-', ' ')}
               </span>
             )}
           </div>
@@ -581,31 +515,39 @@ ${gif.url}`;
 
         {/* Filter and Sort Controls */}
         <div className="space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-3 mb-4 sm:mb-6 sm:justify-center">
-          <select
-            value={selectedNoggleColor}
-            onChange={async (e) => {
-              console.log('🔥 DROPDOWN CHANGED - Noggle Color:', e.target.value);
-              await selectionChanged();
-              setSelectedNoggleColor(e.target.value);
-            }}
-            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-              selectedNoggleColor !== 'all' 
-                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium' 
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
-            }`}
-          >
-            <option value="all">All Noggle Colors</option>
-            {ALL_NOGGLE_COLORS.map(color => (
-              <option key={color.value} value={color.value}>{color.name}</option>
-            ))}
-          </select>
+          
+          {/* Warning about unknown metadata */}
+
+                  <select
+          value={selectedNoggleColor}
+          onChange={async (e) => {
+            const newValue = e.target.value;
+            console.log('🔥 DROPDOWN CHANGED - Noggle Color:', newValue, 'Previous:', selectedNoggleColor);
+            console.log('🔥 Available GIFs with noggle colors:', gifs.map(g => ({ title: g.title, noggleColor: g.noggleColor })));
+            console.log('🔥 Looking for noggle color:', newValue);
+            await selectionChanged();
+            setSelectedNoggleColor(newValue);
+            console.log('🔥 State updated to:', newValue);
+          }}
+          className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+            selectedNoggleColor !== 'all' 
+              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium' 
+              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+          }`}
+        >
+          {getAvailableNoggleColors().map(color => (
+            <option key={color.value} value={color.value}>{color.name}</option>
+          ))}
+        </select>
           
           <select
             value={selectedEyeAnimation}
             onChange={async (e) => {
-              console.log('🔥 DROPDOWN CHANGED - Eye Animation:', e.target.value);
+              const newValue = e.target.value;
+              console.log('🔥 DROPDOWN CHANGED - Eye Animation:', newValue, 'Previous:', selectedEyeAnimation);
               await selectionChanged();
-              setSelectedEyeAnimation(e.target.value);
+              setSelectedEyeAnimation(newValue);
+              console.log('🔥 State updated to:', newValue);
             }}
             className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
               selectedEyeAnimation !== 'all' 
@@ -613,17 +555,19 @@ ${gif.url}`;
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
             }`}
           >
-            <option value="all">All Eye Animations</option>
-            {ALL_EYE_ANIMATIONS.map(animation => (
-              <option key={animation.value} value={animation.value}>{animation.name}</option>
-            ))}
+                      {getAvailableEyeAnimations().map(animation => (
+            <option key={animation.value} value={animation.value}>{animation.name}</option>
+          ))}
           </select>
           
           <select
             value={sortBy}
             onChange={async (e) => {
+              const newValue = e.target.value;
+              console.log('🔥 DROPDOWN CHANGED - Sort By:', newValue, 'Previous:', sortBy);
               await selectionChanged();
-              setSortBy(e.target.value);
+              setSortBy(newValue);
+              console.log('🔥 State updated to:', newValue);
             }}
             className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
               sortBy !== 'newest' 
@@ -633,8 +577,8 @@ ${gif.url}`;
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
-                            <option value="most-votes">Most Total Votes</option>
-                <option value="least-votes">Least Total Votes</option>
+            <option value="most-upvotes">More Upvotes</option>
+            <option value="most-downvotes">More Downvotes</option>
           </select>
           
           <Button
@@ -743,19 +687,7 @@ ${gif.url}`;
                 </div>
               )}
 
-              {/* Traits Info */}
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {gif.noggleColor && gif.noggleColor !== 'unknown' && (
-                  <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
-                    {gif.noggleColor}
-                  </span>
-                )}
-                {gif.eyeAnimation && gif.eyeAnimation !== 'unknown' && (
-                  <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
-                    {gif.eyeAnimation}
-                  </span>
-                )}
-              </div>
+
 
               {/* Voting */}
               <div className="flex items-center gap-2">
