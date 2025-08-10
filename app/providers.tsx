@@ -2,6 +2,7 @@
 
 import { type ReactNode } from "react";
 import { base } from "wagmi/chains";
+import { type Chain } from "wagmi/chains";
 import { MiniKitProvider } from "@coinbase/onchainkit/minikit";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { WagmiProvider } from "wagmi";
@@ -9,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http } from "wagmi";
 import { coinbaseWallet, injected } from "wagmi/connectors";
 import { useEffect } from "react";
+import { SDKProvider } from "./components/providers/SDKProvider";
 
 // Create a query client
 const queryClient = new QueryClient();
@@ -39,15 +41,11 @@ export function Providers(props: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <OnchainKitProvider
-          apiKey={apiKey || "placeholder"} // Required for ENS resolution
-          chain={base}
-        >
-          <MiniKitProvider
-            apiKey={apiKey || "placeholder"} // Use placeholder if no API key to avoid build errors
-            chain={base}
-          >
-            {props.children}
+        <OnchainKitProvider chain={base as Chain}>
+          <MiniKitProvider chain={base as Chain}>
+            <SDKProvider>
+              {props.children}
+            </SDKProvider>
           </MiniKitProvider>
         </OnchainKitProvider>
       </QueryClientProvider>

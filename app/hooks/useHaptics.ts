@@ -1,6 +1,6 @@
 "use client";
 
-import { sdk } from '@farcaster/miniapp-sdk';
+import { useSDK } from '../components/providers/SDKProvider';
 
 type ImpactStyle = 'light' | 'medium' | 'heavy';
 type NotificationStyle = 'success' | 'warning' | 'error';
@@ -9,7 +9,14 @@ type NotificationStyle = 'success' | 'warning' | 'error';
  * Hook for providing haptic feedback using Farcaster MiniApp SDK
  */
 export function useHaptics() {
+  const { sdk, isSDKReady } = useSDK();
+
   const impactOccurred = async (style: ImpactStyle = 'medium') => {
+    if (!isSDKReady) {
+      console.debug('Haptics not available - SDK not ready');
+      return;
+    }
+
     try {
       await sdk.haptics.impactOccurred(style);
     } catch (error) {
@@ -19,6 +26,11 @@ export function useHaptics() {
   };
 
   const notificationOccurred = async (style: NotificationStyle) => {
+    if (!isSDKReady) {
+      console.debug('Haptics not available - SDK not ready');
+      return;
+    }
+
     try {
       await sdk.haptics.notificationOccurred(style);
     } catch (error) {
@@ -28,6 +40,11 @@ export function useHaptics() {
   };
 
   const selectionChanged = async () => {
+    if (!isSDKReady) {
+      console.debug('Haptics not available - SDK not ready');
+      return;
+    }
+
     try {
       await sdk.haptics.selectionChanged();
     } catch (error) {
@@ -40,5 +57,6 @@ export function useHaptics() {
     impactOccurred,
     notificationOccurred,
     selectionChanged,
+    isReady: isSDKReady,
   };
 }
