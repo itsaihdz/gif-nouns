@@ -11,6 +11,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useSDK } from "./components/providers/SDKProvider";
 
 interface GalleryItem {
   id: string;
@@ -45,6 +46,9 @@ export default function HomePage() {
   // Always call useMiniKit hook (required by React rules)
   const miniKitHook = useMiniKit();
   const { setFrameReady, isFrameReady } = miniKitHook || { setFrameReady: null, isFrameReady: false };
+
+  // Get SDK status
+  const { isSDKReady, sdkError, initializeSDK } = useSDK();
 
   // Prevent hydration mismatch by only rendering after mount
   useEffect(() => {
@@ -236,9 +240,40 @@ export default function HomePage() {
   // Show full app when wallet is connected
   return (
     <UserProvider>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <Header />
-        <main className="max-w-sm mx-auto px-3 py-3 sm:max-w-md sm:px-4 sm:py-4 md:max-w-2xl lg:max-w-7xl lg:px-8">
+        
+        {/* SDK Debug Section */}
+        {isMounted && (
+          <div className="bg-yellow-50 border-b border-yellow-200 p-4">
+            <div className="max-w-7xl mx-auto">
+              <h3 className="text-sm font-medium text-yellow-800 mb-2">🔧 SDK Debug Info</h3>
+              <div className="flex items-center gap-4 text-sm">
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  isSDKReady ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  SDK: {isSDKReady ? 'Ready ✅' : 'Not Ready ❌'}
+                </span>
+                {sdkError && (
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                    Error: {sdkError}
+                  </span>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={initializeSDK}
+                  disabled={isSDKReady}
+                  className="text-xs"
+                >
+                  {isSDKReady ? 'SDK Ready' : 'Initialize SDK'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Mini App Header */}
           <div className="text-center mb-4 sm:mb-6">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2 sm:mb-3">
