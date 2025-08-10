@@ -300,23 +300,7 @@ export default function HomePage() {
             </Button>
           </div>
 
-          {/* SDK Status Indicator */}
-          {isMounted && (
-            <div className="flex justify-center mb-4">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
-                isSDKReady 
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                  : sdkError 
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-              }`}>
-                <span className={`w-2 h-2 rounded-full ${
-                  isSDKReady ? 'bg-green-500' : sdkError ? 'bg-red-500' : 'bg-yellow-500'
-                }`}></span>
-                SDK: {isSDKReady ? 'Ready ✅' : sdkError ? `Error: ${sdkError}` : isLoading ? 'Loading...' : 'Initialized, calling ready...'}
-              </div>
-            </div>
-          )}
+
 
           {/* Quick Stats */}
           <div className="flex justify-center gap-2 mb-2">
