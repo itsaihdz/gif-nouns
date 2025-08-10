@@ -33,7 +33,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       await selectionChanged(); // Haptic feedback
       
       // Create share text with GIF URL
-      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns #AnimatedNouns #Farcaster`;
+      const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
       
       // Use native composeCast if available, otherwise fallback
       if (typeof composeCast === 'function') {
@@ -75,11 +75,11 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       // Use consistent text template like Farcaster sharing
       const shareText = `Check out my animated Noun "${title}"! 🎨✨
 
-Created with #NounsRemixStudio
+Created with GifNouns
 
 ${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
 
-Vote for it in the gallery! 🗳️
+Vote for it in the gallery! https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${gifUrl}`;
       
