@@ -11,6 +11,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useSDK } from "./components/providers/SDKProvider";
 
 
 interface GalleryItem {
@@ -47,7 +48,8 @@ export default function HomePage() {
   const miniKitHook = useMiniKit();
   const { setFrameReady, isFrameReady } = miniKitHook || { setFrameReady: null, isFrameReady: false };
 
-
+  // Initialize Farcaster SDK
+  const { isSDKReady, sdkError, initializeSDK, callReady } = useSDK();
 
   // Prevent hydration mismatch by only rendering after mount
   useEffect(() => {
@@ -64,6 +66,31 @@ export default function HomePage() {
       }
     }
   }, [setFrameReady, isFrameReady, isMounted]);
+
+  // Initialize Farcaster SDK when component mounts
+  useEffect(() => {
+    if (isMounted && !isSDKReady && !sdkError) {
+      console.log('🔄 Main page: Initializing Farcaster SDK...');
+      initializeSDK();
+    }
+  }, [isMounted, isSDKReady, sdkError, initializeSDK]);
+
+  // Call sdk.actions.ready() after app is fully loaded and ready to display
+  useEffect(() => {
+    if (isMounted && !isLoading && !isSDKReady) {
+      // Wait a bit to ensure all components are rendered
+      const timer = setTimeout(async () => {
+        console.log('🔄 Main page: App fully loaded, calling sdk.actions.ready()...');
+        try {
+          await callReady();
+        } catch (error) {
+          console.error('Failed to call sdk.actions.ready():', error);
+        }
+      }, 1000); // Wait 1 second after loading completes
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMounted, isLoading, isSDKReady, callReady]);
 
   // Fetch gallery items from Supabase
   const fetchGalleryItems = async () => {
@@ -271,8 +298,9 @@ export default function HomePage() {
             >
               Gallery
             </Button>
-
           </div>
+
+
 
           {/* Quick Stats */}
           <div className="flex justify-center gap-2 mb-2">
