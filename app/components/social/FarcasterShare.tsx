@@ -19,7 +19,7 @@ export function FarcasterShare({ gifUrl, title, noggleColor, eyeAnimation, onSha
   const [shareText, setShareText] = useState("");
 
   const generateShareText = () => {
-    return `Check out my animated Noun "${title}"! 🎨✨\n\nCreated with #NounsRemixStudio\n\n${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟\n\nVote for it in the gallery! 🗳️`;
+    return `Check out my animated Noun "${title}"! 🎨✨\n\nCreated with GifNouns\n\n${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟\n\nVote for it in the gallery! https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
   };
 
   useState(() => {
