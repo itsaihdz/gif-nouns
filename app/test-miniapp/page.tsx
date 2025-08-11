@@ -3,6 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useSDK } from '../components/providers/SDKProvider';
 
+// Test SDK import directly
+let sdkImportTest = 'Not tested';
+try {
+  const { sdk } = require('@farcaster/miniapp-sdk');
+  sdkImportTest = `✅ SDK imported successfully. Actions: ${sdk?.actions ? Object.keys(sdk.actions).join(', ') : 'none'}`;
+} catch (error) {
+  sdkImportTest = `❌ SDK import failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+}
+
 export default function TestMiniAppPage() {
   const { isSDKReady, sdkError, sdk, initializeSDK, callReady } = useSDK();
   const [testResults, setTestResults] = useState<string[]>([]);
@@ -14,6 +23,10 @@ export default function TestMiniAppPage() {
 
   useEffect(() => {
     addTestResult('Page loaded');
+    addTestResult(`SDK Import Test: ${sdkImportTest}`);
+    
+    // Log SDK state immediately
+    addTestResult(`SDK state - isSDKReady: ${isSDKReady}, sdkError: ${sdkError}`);
     
     if (!isSDKReady && !sdkError) {
       addTestResult('Initializing SDK...');
@@ -29,6 +42,11 @@ export default function TestMiniAppPage() {
     if (sdkError) {
       addTestResult(`❌ SDK error: ${sdkError}`);
     }
+  }, [isSDKReady, sdkError]);
+
+  // Monitor SDK state changes
+  useEffect(() => {
+    addTestResult(`🔄 SDK state changed - isSDKReady: ${isSDKReady}, sdkError: ${sdkError}`);
   }, [isSDKReady, sdkError]);
 
   const testSDKFunctionality = async () => {
@@ -75,6 +93,16 @@ export default function TestMiniAppPage() {
     }
   };
 
+  const forceSDKInit = async () => {
+    try {
+      addTestResult('🔄 Force initializing SDK...');
+      await initializeSDK();
+      addTestResult('✅ Force SDK init completed');
+    } catch (error) {
+      addTestResult(`❌ Force SDK init failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -108,31 +136,47 @@ export default function TestMiniAppPage() {
                     (window.location.hostname.includes('warpcast.com') || 
                      window.location.hostname.includes('farcaster.xyz') ||
                      window.navigator.userAgent.includes('Farcaster') ? 'Farcaster' : 'Non-Farcaster') : 
-                    'Server'
-                  }
+                    'Server'}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="font-medium">SDK Import:</span>
+                <span className="ml-2 px-2 py-1 rounded text-sm bg-yellow-100 text-yellow-800 text-xs">
+                  {sdkImportTest.length > 50 ? sdkImportTest.substring(0, 50) + '...' : sdkImportTest}
                 </span>
               </div>
             </div>
-            
             <div className="mt-4 space-y-2">
-              <button
+              <button 
+                onClick={forceSDKInit}
+                className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+              >
+                Force SDK Init
+              </button>
+              <button 
                 onClick={testSDKFunctionality}
-                disabled={isTesting || !isSDKReady}
+                disabled={!isSDKReady || isTesting}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isTesting ? 'Testing...' : 'Test SDK Functionality'}
               </button>
-              
-              <button
+              <button 
                 onClick={testReadyCall}
-                disabled={!isSDKReady}
+                disabled={!isSDKReady || isTesting}
                 className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Test Ready() Call
               </button>
+              <button 
+                onClick={testReadyCall}
+                disabled={isTesting}
+                className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Force Ready() Call (Debug)
+              </button>
             </div>
           </div>
-          
+
           {/* Test Results */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Test Results</h2>
@@ -142,14 +186,14 @@ export default function TestMiniAppPage() {
               ) : (
                 <div className="space-y-1">
                   {testResults.map((result, index) => (
-                    <div key={index} className="text-sm font-mono">
+                    <div key={index} className="text-sm font-mono text-gray-700">
                       {result}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            <button
+            <button 
               onClick={() => setTestResults([])}
               className="mt-2 text-sm text-gray-600 hover:text-gray-800"
             >
@@ -157,8 +201,8 @@ export default function TestMiniAppPage() {
             </button>
           </div>
         </div>
-        
-        {/* SDK Info */}
+
+        {/* SDK Information */}
         <div className="mt-8 bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">SDK Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -167,7 +211,9 @@ export default function TestMiniAppPage() {
               <ul className="text-sm text-gray-600 space-y-1">
                 {sdk?.actions ? Object.keys(sdk.actions).map(action => (
                   <li key={action} className="font-mono">• {action}</li>
-                )) : <li>No actions available</li>}
+                )) : (
+                  <li className="text-red-500">No actions available</li>
+                )}
               </ul>
             </div>
             <div>
@@ -175,7 +221,9 @@ export default function TestMiniAppPage() {
               <ul className="text-sm text-gray-600 space-y-1">
                 {sdk?.haptics ? Object.keys(sdk.haptics).map(haptic => (
                   <li key={haptic} className="font-mono">• {haptic}</li>
-                )) : <li>No haptics available</li>}
+                )) : (
+                  <li className="text-red-500">No haptics available</li>
+                )}
               </ul>
             </div>
           </div>

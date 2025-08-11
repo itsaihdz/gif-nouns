@@ -85,6 +85,17 @@ export function SDKProvider({ children }: SDKProviderProps) {
           selectionChanged: typeof sdk.haptics.selectionChanged,
         }
       });
+
+      // If we're in a Farcaster environment, automatically call ready()
+      if (isFarcasterEnv) {
+        console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
+        try {
+          await callReady();
+        } catch (readyError) {
+          console.warn('⚠️ Auto-ready() call failed:', readyError);
+          // Don't fail initialization if ready() fails
+        }
+      }
       
     } catch (error) {
       console.error('❌ Failed to initialize Farcaster MiniApp SDK:', error);
@@ -120,7 +131,12 @@ export function SDKProvider({ children }: SDKProviderProps) {
       
       // Ensure we're calling ready() correctly
       if (typeof sdk.actions.ready === 'function') {
-        await sdk.actions.ready();
+        console.log('🚀 Executing sdk.actions.ready()...');
+        
+        // Call ready() with disableNativeGestures option to prevent conflicts
+        // as recommended in Base documentation for apps with gesture interactions
+        await sdk.actions.ready({ disableNativeGestures: true });
+        
         console.log('✅ sdk.actions.ready() called successfully!');
         setIsSDKReady(true);
         setSdkError(null);
@@ -136,6 +152,8 @@ export function SDKProvider({ children }: SDKProviderProps) {
           console.warn('⚠️ Haptics test failed (expected in non-Farcaster environments):', hapticError);
         }
       } else {
+        console.error('❌ sdk.actions.ready is not a function');
+        console.error('🔧 Available actions:', sdk.actions ? Object.keys(sdk.actions) : 'none');
         throw new Error('sdk.actions.ready is not a function');
       }
       
@@ -144,6 +162,16 @@ export function SDKProvider({ children }: SDKProviderProps) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setSdkError(errorMessage);
       setIsSDKReady(false);
+      
+      // Log additional debugging info
+      console.error('🔧 Debug info:', {
+        sdkExists: !!sdk,
+        actionsExist: !!sdk?.actions,
+        readyExists: !!sdk?.actions?.ready,
+        readyType: typeof sdk?.actions?.ready,
+        sdkKeys: sdk ? Object.keys(sdk) : 'none',
+        actionKeys: sdk?.actions ? Object.keys(sdk.actions) : 'none'
+      });
     }
   };
 
@@ -160,18 +188,33 @@ export function SDKProvider({ children }: SDKProviderProps) {
   // Auto-call ready() when SDK is initialized and we're in a Farcaster environment
   useEffect(() => {
     if (isInitialized && !isSDKReady && typeof window !== 'undefined') {
-      const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
-                             window.location.hostname.includes('farcaster.xyz') ||
-                             window.navigator.userAgent.includes('Farcaster');
+      // Enhanced Farcaster environment detection
+      const isFarcasterEnv = 
+        window.location.hostname.includes('warpcast.com') || 
+        window.location.hostname.includes('farcaster.xyz') ||
+        window.location.hostname.includes('farcaster.app') ||
+        window.navigator.userAgent.includes('Farcaster') ||
+        window.navigator.userAgent.includes('Warpcast') ||
+        // Check for Farcaster-specific context
+        (window as any).farcaster ||
+        (window as any).warpcast;
+      
+      console.log('🔍 Environment check:', {
+        hostname: window.location.hostname,
+        userAgent: window.navigator.userAgent,
+        hasFarcasterContext: !!(window as any).farcaster,
+        hasWarpcastContext: !!(window as any).warpcast,
+        isFarcasterEnv
+      });
       
       if (isFarcasterEnv) {
         console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
-        // Small delay to ensure everything is loaded
-        const timer = setTimeout(() => {
-          callReady();
-        }, 500);
-        
-        return () => clearTimeout(timer);
+        // Call ready() immediately for Farcaster environments
+        callReady();
+      } else {
+        console.log('ℹ️ Not in Farcaster environment, but still calling ready() for compatibility...');
+        // Call ready() even in non-Farcaster environments as it's required by the SDK
+        callReady();
       }
     }
   }, [isInitialized, isSDKReady]);
