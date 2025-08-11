@@ -75,22 +75,33 @@ export default function HomePage() {
     }
   }, [isMounted, isSDKReady, sdkError, initializeSDK]);
 
-  // Call sdk.actions.ready() after app is fully loaded and ready to display
+  // Call sdk.actions.ready() as soon as SDK is initialized
   useEffect(() => {
-    if (isMounted && !isLoading && !isSDKReady) {
-      // Wait a bit to ensure all components are rendered
-      const timer = setTimeout(async () => {
-        console.log('🔄 Main page: App fully loaded, calling sdk.actions.ready()...');
-        try {
-          await callReady();
-        } catch (error) {
-          console.error('Failed to call sdk.actions.ready():', error);
-        }
-      }, 1000); // Wait 1 second after loading completes
-
-      return () => clearTimeout(timer);
+    if (isMounted && isSDKReady === false && !sdkError && typeof window !== 'undefined') {
+      // Check if we're in a Farcaster environment
+      const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
+                             window.location.hostname.includes('farcaster.xyz') ||
+                             window.navigator.userAgent.includes('Farcaster');
+      
+      if (isFarcasterEnv) {
+        console.log('🔄 Main page: In Farcaster environment, calling sdk.actions.ready()...');
+        // Call ready() directly after a short delay to ensure everything is loaded
+        const timer = setTimeout(async () => {
+          try {
+            await callReady();
+          } catch (error) {
+            console.error('Failed to call sdk.actions.ready():', error);
+          }
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        console.log('ℹ️ Main page: Not in Farcaster environment, skipping ready() call');
+      }
     }
-  }, [isMounted, isLoading, isSDKReady, callReady]);
+  }, [isMounted, isSDKReady, sdkError, callReady]);
+
+
 
   // Fetch gallery items from Supabase
   const fetchGalleryItems = async () => {
@@ -317,6 +328,8 @@ export default function HomePage() {
               <div className="text-sm text-gray-600 dark:text-gray-400">Total Votes</div>
             </div>
           </div>
+
+
 
           {/* Main Content */}
           {currentView === "create" ? (
