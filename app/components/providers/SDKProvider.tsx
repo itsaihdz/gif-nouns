@@ -3,6 +3,15 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { sdk } from '@farcaster/miniapp-sdk';
 
+// Debug SDK import
+console.log('🔧 SDK import check:', {
+  sdk: !!sdk,
+  sdkType: typeof sdk,
+  sdkKeys: sdk ? Object.keys(sdk) : 'undefined',
+  actions: sdk?.actions ? Object.keys(sdk.actions) : 'undefined',
+  haptics: sdk?.haptics ? Object.keys(sdk.haptics) : 'undefined'
+});
+
 interface SDKContextType {
   isSDKReady: boolean;
   sdkError: string | null;
@@ -60,8 +69,8 @@ export function SDKProvider({ children }: SDKProviderProps) {
         // Still try to initialize but expect limited functionality
       }
 
-      // Just mark as initialized, don't call ready() yet
-      console.log('✅ Farcaster MiniApp SDK initialized (ready() will be called later)');
+      // Mark as initialized
+      console.log('✅ Farcaster MiniApp SDK initialized');
       setIsInitialized(true);
       setSDKError(null);
       
@@ -91,7 +100,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
     }
   };
 
-  // Separate function to call ready() - this should be called after app is fully loaded
+  // Function to call ready() - simplified logic
   const callReady = async () => {
     if (!isInitialized) {
       console.log('⚠️ SDK not initialized yet, cannot call ready()');
@@ -105,6 +114,10 @@ export function SDKProvider({ children }: SDKProviderProps) {
 
     try {
       console.log('📞 Calling sdk.actions.ready() to display app...');
+      console.log('🔧 SDK object available:', !!sdk);
+      console.log('🔧 SDK actions available:', !!sdk.actions);
+      console.log('🔧 SDK ready function available:', typeof sdk.actions.ready);
+      
       await sdk.actions.ready();
       
       console.log('✅ sdk.actions.ready() called successfully!');
