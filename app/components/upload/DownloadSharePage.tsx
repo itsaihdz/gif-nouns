@@ -81,22 +81,32 @@ ${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
 
 Vote for it in the gallery! 🗳️
 
-https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
+https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
+
+${shareGifUrl}`;
       
-      // Use the native Farcaster composeCast if available, otherwise fallback
-      // if (typeof composeCast === 'function') { // Removed as per edit hint
-      //   await composeCast({
-      //     text: shareText,
-      //     embeds: [shareGifUrl], // Include GIF as embed
-      //   });
-      //   await notificationOccurred('success');
-      // } else { // Removed as per edit hint
-        // Fallback to external link
+      // Try to use MiniApp SDK if available, otherwise use fallback
+      if (typeof sdk?.actions?.openUrl === 'function') {
+        try {
+          const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+          await sdk.actions.openUrl(farcasterUrl);
+          await notificationOccurred('success');
+        } catch (sdkError) {
+          console.log('SDK openUrl failed, using fallback:', sdkError);
+          // Fallback to regular window.open
+          const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+          setShareDialogUrl(farcasterUrl);
+          window.open(farcasterUrl, '_blank');
+          await notificationOccurred('success');
+        }
+      } else {
+        // Fallback to regular window.open for non-Farcaster environments
+        console.log('MiniApp SDK not available, using window.open fallback');
         const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
         setShareDialogUrl(farcasterUrl);
         window.open(farcasterUrl, '_blank');
-        await notificationOccurred('warning'); // Different feedback for fallback
-      // } // Removed as per edit hint
+        await notificationOccurred('success');
+      }
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
       await notificationOccurred('error');
@@ -129,28 +139,36 @@ https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${shareGifUrl}`;
       
-      // Try Twitter deep link first (for mobile apps)
-      const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
-      const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-      
-      // Try opening with MiniApp SDK openUrl if available, otherwise use fallback
+      // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.openUrl === 'function') {
         try {
-          // Try deep link first
+          // Try Twitter deep link first (for mobile apps)
+          const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
           await sdk.actions.openUrl(twitterDeepLink);
           await notificationOccurred('success');
         } catch (deepLinkError) {
           console.log('Deep link failed, trying web URL:', deepLinkError);
-          // Fallback to web URL
-          await sdk.actions.openUrl(twitterWebUrl);
-          await notificationOccurred('success');
+          try {
+            // Fallback to web URL via SDK
+            const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            await sdk.actions.openUrl(twitterWebUrl);
+            await notificationOccurred('success');
+          } catch (sdkError) {
+            console.log('SDK openUrl failed, using fallback:', sdkError);
+            // Final fallback to regular window.open
+            const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            setShareDialogUrl(twitterWebUrl);
+            window.open(twitterWebUrl, '_blank');
+            await notificationOccurred('success');
+          }
         }
       } else {
-        // Fallback to regular window.open
-        console.log('MiniApp SDK not available, using window.open');
+        // Fallback to regular window.open for non-Farcaster environments
+        console.log('MiniApp SDK not available, using window.open fallback');
+        const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
         setShareDialogUrl(twitterWebUrl);
         window.open(twitterWebUrl, '_blank');
-        await notificationOccurred('warning'); // Different feedback for fallback
+        await notificationOccurred('success');
       }
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
@@ -191,7 +209,7 @@ ${shareGifUrl}`;
             GIF Created Successfully!
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Your animated Noun has been uploaded and added to the gallery
+            Your Animated Noun has been created, tap and hold to download it.
           </p>
         </div>
 
@@ -215,10 +233,7 @@ ${shareGifUrl}`;
         </div>
 
         {/* Creator Info */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-medium">
-            {creator.username.charAt(0).toUpperCase()}
-          </div>
+        <div className="flex items-center justify-center mb-4">
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Created by @{creator.username}
           </span>
