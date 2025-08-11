@@ -53,7 +53,9 @@ export function WalletConnect({
   if (variant === "dropdown") {
     return (
       <div className={className}>
-        <WalletDropdown />
+        <WalletDropdown>
+          <div>Wallet Options</div>
+        </WalletDropdown>
       </div>
     );
   }

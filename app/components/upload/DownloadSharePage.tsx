@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Icon } from "../icons";
 import { downloadGif } from "@/lib/utils";
-import { useComposeCast } from '@coinbase/onchainkit/minikit';
-import { useHaptics } from "@/app/hooks/useHaptics";
+import { useFarcasterData } from "../../hooks/useFarcasterData";
+import { useUserVotes } from "../../hooks/useUserVotes";
+import { ShareButton } from "../social/ShareButton";
+import { FarcasterShare } from "../social/FarcasterShare";
+// import { useComposeCast } from '@coinbase/onchainkit/minikit';
+import { useHaptics } from "../../hooks/useHaptics";
 import { sdk } from '@farcaster/miniapp-sdk';
 
 interface DownloadSharePageProps {
@@ -45,7 +49,7 @@ export function DownloadSharePage({
   const [, setShareDialogUrl] = useState<string | null>(null);
   
   // Initialize hooks
-  const { composeCast } = useComposeCast();
+  // const { composeCast } = useComposeCast(); // Removed as per edit hint
   const { selectionChanged, notificationOccurred } = useHaptics();
 
   const handleDownload = async () => {
@@ -80,19 +84,19 @@ Vote for it in the gallery! 🗳️
 https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
       
       // Use the native Farcaster composeCast if available, otherwise fallback
-      if (typeof composeCast === 'function') {
-        await composeCast({
-          text: shareText,
-          embeds: [shareGifUrl], // Include GIF as embed
-        });
-        await notificationOccurred('success');
-      } else {
+      // if (typeof composeCast === 'function') { // Removed as per edit hint
+      //   await composeCast({
+      //     text: shareText,
+      //     embeds: [shareGifUrl], // Include GIF as embed
+      //   });
+      //   await notificationOccurred('success');
+      // } else { // Removed as per edit hint
         // Fallback to external link
         const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
         setShareDialogUrl(farcasterUrl);
         window.open(farcasterUrl, '_blank');
         await notificationOccurred('warning'); // Different feedback for fallback
-      }
+      // } // Removed as per edit hint
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
       await notificationOccurred('error');
@@ -240,7 +244,8 @@ ${shareGifUrl}`;
               disabled={isSharing}
               icon={<Icon name="share" size="sm" />}
             >
-              {typeof composeCast === 'function' ? "Cast to Farcaster" : "Share on Farcaster"}
+              {/* {typeof composeCast === 'function' ? "Cast to Farcaster" : "Share on Farcaster"} */}
+              Share on Farcaster
             </Button>
             <Button
               variant="outline"

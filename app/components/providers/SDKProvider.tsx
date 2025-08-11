@@ -1,21 +1,68 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { sdk } from '@farcaster/miniapp-sdk';
 
-// Debug SDK import
-console.log('🔧 SDK import check:', {
-  sdk: !!sdk,
-  sdkType: typeof sdk,
-  sdkKeys: sdk ? Object.keys(sdk) : 'undefined',
-  actions: sdk?.actions ? Object.keys(sdk.actions) : 'undefined',
-  haptics: sdk?.haptics ? Object.keys(sdk.haptics) : 'undefined'
-});
+// Only import SDK in Farcaster environments to prevent Chrome extension errors
+let sdk: any = null;
+let sdkImportError: string | null = null;
+
+// Check if we're in a Farcaster environment before importing SDK
+const isFarcasterEnvironment = () => {
+  if (typeof window === 'undefined') return false;
+  
+  return (
+    window.location.hostname.includes('warpcast.com') || 
+    window.location.hostname.includes('farcaster.xyz') ||
+    window.location.hostname.includes('farcaster.app') ||
+    window.navigator.userAgent.includes('Farcaster') ||
+    window.navigator.userAgent.includes('Warpcast') ||
+    // Check for Farcaster-specific context
+    !!(window as any).farcaster ||
+    !!(window as any).warpcast ||
+    // Check for Mini App specific context
+    !!(window as any).farcasterMiniApp ||
+    !!(window as any).farcasterFrame
+  );
+};
+
+// Lazy import SDK only when needed
+const importSDK = async () => {
+  if (sdk) return sdk; // Already imported
+  
+  try {
+    if (isFarcasterEnvironment()) {
+      console.log('🔧 Importing Farcaster MiniApp SDK...');
+      const { sdk: importedSDK } = await import('@farcaster/miniapp-sdk');
+      sdk = importedSDK;
+      
+      // Debug SDK import
+      console.log('🔧 SDK import check:', {
+        sdk: !!sdk,
+        sdkType: typeof sdk,
+        sdkKeys: sdk ? Object.keys(sdk) : 'undefined',
+        actions: sdk?.actions ? Object.keys(sdk.actions) : 'undefined',
+        haptics: sdk?.haptics ? Object.keys(sdk.haptics) : 'undefined'
+      });
+      
+      return sdk;
+    } else {
+      console.log('ℹ️ Not in Farcaster environment, skipping SDK import to prevent Chrome extension errors');
+      sdk = null;
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Failed to import Farcaster MiniApp SDK:', error);
+    sdkImportError = error instanceof Error ? error.message : 'Unknown error';
+    sdk = null;
+    return null;
+  }
+};
 
 interface SDKContextType {
   isSDKReady: boolean;
   sdkError: string | null;
-  sdk: typeof sdk;
+  sdk: any;
+  isFarcasterEnv: boolean;
   initializeSDK: () => Promise<void>;
   callReady: () => Promise<void>;
 }
@@ -39,6 +86,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isFarcasterEnv, setIsFarcasterEnv] = useState(false);
 
   const initializeSDK = async () => {
     if (isInitializing || isInitialized) {
@@ -52,21 +100,27 @@ export function SDKProvider({ children }: SDKProviderProps) {
     try {
       console.log('🔄 Initializing Farcaster MiniApp SDK...');
       
-      // Check if we're in a Farcaster environment
-      const isFarcasterEnv = typeof window !== 'undefined' && 
-        (window.location.hostname.includes('warpcast.com') || 
-         window.location.hostname.includes('farcaster.xyz') ||
-         window.navigator.userAgent.includes('Farcaster'));
+      // Check environment first
+      const envCheck = isFarcasterEnvironment();
+      setIsFarcasterEnv(envCheck);
       
       console.log('🔍 Environment check:', {
-        isFarcasterEnv,
+        isFarcasterEnv: envCheck,
         hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
         userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server'
       });
 
-      if (!isFarcasterEnv) {
-        console.log('ℹ️ Not in Farcaster environment, SDK will be limited');
-        // Still try to initialize but expect limited functionality
+      if (!envCheck) {
+        console.log('ℹ️ Not in Farcaster environment, SDK will not be imported');
+        console.log('ℹ️ This prevents Chrome extension errors during local testing');
+        setIsInitialized(true);
+        return;
+      }
+
+      // Import SDK only in Farcaster environments
+      const importedSDK = await importSDK();
+      if (!importedSDK) {
+        throw new Error('Failed to import SDK');
       }
 
       // Mark as initialized
@@ -76,25 +130,23 @@ export function SDKProvider({ children }: SDKProviderProps) {
       
       // Log available SDK actions for debugging
       console.log('🔧 Available SDK actions:', {
-        ready: typeof sdk.actions.ready,
-        composeCast: typeof sdk.actions.composeCast,
-        openUrl: typeof sdk.actions.openUrl,
+        ready: typeof importedSDK.actions.ready,
+        composeCast: typeof importedSDK.actions.composeCast,
+        openUrl: typeof importedSDK.actions.openUrl,
         haptics: {
-          impactOccurred: typeof sdk.haptics.impactOccurred,
-          notificationOccurred: typeof sdk.haptics.notificationOccurred,
-          selectionChanged: typeof sdk.haptics.selectionChanged,
+          impactOccurred: typeof importedSDK.haptics.impactOccurred,
+          notificationOccurred: typeof importedSDK.haptics.notificationOccurred,
+          selectionChanged: typeof importedSDK.haptics.selectionChanged,
         }
       });
 
-      // If we're in a Farcaster environment, automatically call ready()
-      if (isFarcasterEnv) {
-        console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
-        try {
-          await callReady();
-        } catch (readyError) {
-          console.warn('⚠️ Auto-ready() call failed:', readyError);
-          // Don't fail initialization if ready() fails
-        }
+      // Automatically call ready() in Farcaster environments
+      console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
+      try {
+        await callReady();
+      } catch (readyError) {
+        console.warn('⚠️ Auto-ready() call failed:', readyError);
+        // Don't fail initialization if ready() fails
       }
       
     } catch (error) {
@@ -111,15 +163,20 @@ export function SDKProvider({ children }: SDKProviderProps) {
     }
   };
 
-  // Function to call ready() - simplified logic
+  // Function to call ready() - only works in Farcaster environments
   const callReady = async () => {
-    if (!isInitialized) {
-      console.log('⚠️ SDK not initialized yet, cannot call ready()');
+    if (!isInitialized || !isFarcasterEnv) {
+      console.log('⚠️ SDK not initialized or not in Farcaster environment, cannot call ready()');
       return;
     }
 
     if (isSDKReady) {
       console.log('✅ SDK already ready, skipping ready() call');
+      return;
+    }
+
+    if (!sdk) {
+      console.log('⚠️ SDK not available, cannot call ready()');
       return;
     }
 
@@ -149,7 +206,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
             console.log('✅ Haptics test successful');
           }
         } catch (hapticError) {
-          console.warn('⚠️ Haptics test failed (expected in non-Farcaster environments):', hapticError);
+          console.warn('⚠️ Haptics test failed:', hapticError);
         }
       } else {
         console.error('❌ sdk.actions.ready is not a function');
@@ -178,51 +235,18 @@ export function SDKProvider({ children }: SDKProviderProps) {
   useEffect(() => {
     // Only initialize in browser environment
     if (typeof window !== 'undefined') {
-      console.log('🌐 Browser environment detected, initializing SDK...');
+      console.log('🌐 Browser environment detected, checking for Farcaster environment...');
       initializeSDK();
     } else {
       console.log('🖥️ Server environment, skipping SDK initialization');
     }
   }, []);
 
-  // Auto-call ready() when SDK is initialized and we're in a Farcaster environment
-  useEffect(() => {
-    if (isInitialized && !isSDKReady && typeof window !== 'undefined') {
-      // Enhanced Farcaster environment detection
-      const isFarcasterEnv = 
-        window.location.hostname.includes('warpcast.com') || 
-        window.location.hostname.includes('farcaster.xyz') ||
-        window.location.hostname.includes('farcaster.app') ||
-        window.navigator.userAgent.includes('Farcaster') ||
-        window.navigator.userAgent.includes('Warpcast') ||
-        // Check for Farcaster-specific context
-        (window as any).farcaster ||
-        (window as any).warpcast;
-      
-      console.log('🔍 Environment check:', {
-        hostname: window.location.hostname,
-        userAgent: window.navigator.userAgent,
-        hasFarcasterContext: !!(window as any).farcaster,
-        hasWarpcastContext: !!(window as any).warpcast,
-        isFarcasterEnv
-      });
-      
-      if (isFarcasterEnv) {
-        console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
-        // Call ready() immediately for Farcaster environments
-        callReady();
-      } else {
-        console.log('ℹ️ Not in Farcaster environment, but still calling ready() for compatibility...');
-        // Call ready() even in non-Farcaster environments as it's required by the SDK
-        callReady();
-      }
-    }
-  }, [isInitialized, isSDKReady]);
-
   const value: SDKContextType = {
     isSDKReady,
     sdkError,
     sdk,
+    isFarcasterEnv,
     initializeSDK,
     callReady,
   };
