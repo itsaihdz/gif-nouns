@@ -7,7 +7,7 @@ export async function GET() {
       "payload": "eyJkb21haW4iOiJnaWZub3Vucy5mcmVlemVydmVyc2UuY29tIn0",
       "signature": "MHg5Yzg0YjgzNjQxMTUxOTI3OTBhM2E2ZmRkYjViMDE3MjY5YWUwZDc0Y2E4NjgxNzBmZGMxMzMyNmRmODBmZmRlNzFjZGU2MjMwNTJlYjJmNDg3ZDc3NTVlYjJjZDczZTI4MDg0NzJkZmI1Y2FiMmJlNjZlMDE4YTQ0NzQ5YjE5MTFi"
     },
-    "miniapp": {
+    "frame": {
       "version": "1",
       "name": "GifNouns",
       "iconUrl": "https://gifnouns.freezerverse.com/icon.png",
