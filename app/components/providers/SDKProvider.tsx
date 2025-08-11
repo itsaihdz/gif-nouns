@@ -36,7 +36,7 @@ interface SDKProviderProps {
 
 export function SDKProvider({ children }: SDKProviderProps) {
   const [isSDKReady, setIsSDKReady] = useState(false);
-  const [sdkError, setSDKError] = useState<string | null>(null);
+  const [sdkError, setSdkError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -47,7 +47,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
     }
 
     setIsInitializing(true);
-    setSDKError(null);
+    setSdkError(null);
 
     try {
       console.log('🔄 Initializing Farcaster MiniApp SDK...');
@@ -72,7 +72,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
       // Mark as initialized
       console.log('✅ Farcaster MiniApp SDK initialized');
       setIsInitialized(true);
-      setSDKError(null);
+      setSdkError(null);
       
       // Log available SDK actions for debugging
       console.log('🔧 Available SDK actions:', {
@@ -89,7 +89,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
     } catch (error) {
       console.error('❌ Failed to initialize Farcaster MiniApp SDK:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setSDKError(errorMessage);
+      setSdkError(errorMessage);
       setIsInitialized(false);
       
       // Still allow the app to function without SDK
@@ -118,27 +118,31 @@ export function SDKProvider({ children }: SDKProviderProps) {
       console.log('🔧 SDK actions available:', !!sdk.actions);
       console.log('🔧 SDK ready function available:', typeof sdk.actions.ready);
       
-      await sdk.actions.ready();
-      
-      console.log('✅ sdk.actions.ready() called successfully!');
-      setIsSDKReady(true);
-      setSDKError(null);
-      
-      // Test basic SDK functionality after ready
-      try {
-        if (typeof sdk.haptics.impactOccurred === 'function') {
-          console.log('🧪 Testing haptics after ready...');
-          await sdk.haptics.impactOccurred('light');
-          console.log('✅ Haptics test successful');
+      // Ensure we're calling ready() correctly
+      if (typeof sdk.actions.ready === 'function') {
+        await sdk.actions.ready();
+        console.log('✅ sdk.actions.ready() called successfully!');
+        setIsSDKReady(true);
+        setSdkError(null);
+        
+        // Test basic SDK functionality after ready
+        try {
+          if (typeof sdk.haptics.impactOccurred === 'function') {
+            console.log('🧪 Testing haptics after ready...');
+            await sdk.haptics.impactOccurred('light');
+            console.log('✅ Haptics test successful');
+          }
+        } catch (hapticError) {
+          console.warn('⚠️ Haptics test failed (expected in non-Farcaster environments):', hapticError);
         }
-      } catch (hapticError) {
-        console.warn('⚠️ Haptics test failed (expected in non-Farcaster environments):', hapticError);
+      } else {
+        throw new Error('sdk.actions.ready is not a function');
       }
       
     } catch (error) {
       console.error('❌ Failed to call sdk.actions.ready():', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setSDKError(errorMessage);
+      setSdkError(errorMessage);
       setIsSDKReady(false);
     }
   };
@@ -152,6 +156,25 @@ export function SDKProvider({ children }: SDKProviderProps) {
       console.log('🖥️ Server environment, skipping SDK initialization');
     }
   }, []);
+
+  // Auto-call ready() when SDK is initialized and we're in a Farcaster environment
+  useEffect(() => {
+    if (isInitialized && !isSDKReady && typeof window !== 'undefined') {
+      const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
+                             window.location.hostname.includes('farcaster.xyz') ||
+                             window.navigator.userAgent.includes('Farcaster');
+      
+      if (isFarcasterEnv) {
+        console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
+        // Small delay to ensure everything is loaded
+        const timer = setTimeout(() => {
+          callReady();
+        }, 500);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isInitialized, isSDKReady]);
 
   const value: SDKContextType = {
     isSDKReady,
