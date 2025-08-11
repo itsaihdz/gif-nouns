@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "../ui/Card";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { Icon } from "../icons";
+import { useFarcasterData } from "../../hooks/useFarcasterData";
+import { useUserVotes } from "../../hooks/useUserVotes";
 import { useHaptics } from "../../hooks/useHaptics";
-import { useComposeCast } from '@coinbase/onchainkit/minikit';
 import { sdk } from '@farcaster/miniapp-sdk';
 import { Avatar, Identity, Name, Badge } from '@coinbase/onchainkit/identity';
-import { useUserVotes } from "../../hooks/useUserVotes";
 import { useAccount } from "wagmi";
 
 interface StorageGif {
@@ -42,7 +42,6 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const [selectedEyeAnimation, setSelectedEyeAnimation] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
   const { selectionChanged, notificationOccurred } = useHaptics();
-  const { composeCast } = useComposeCast();
   const { addVote, removeVote, getUserVote } = useUserVotes();
   const { address, isConnected } = useAccount();
 
@@ -144,7 +143,6 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     try {
       console.log('🔄 handleShareToFarcaster called with:', gif.title);
       console.log('🔄 Available MiniKit functions:', { 
-        composeCast: typeof composeCast, 
         sdk: typeof sdk,
         sdkActions: typeof sdk?.actions,
         sdkComposeCast: typeof sdk?.actions?.composeCast,
@@ -164,22 +162,13 @@ Vote for it in the gallery! 🗳️
 https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
       
       // Try native Farcaster composeCast first
-      if (typeof composeCast === 'function') {
+      if (typeof sdk?.actions?.composeCast === 'function') {
         console.log('🎯 Using native composeCast function');
-        await composeCast({
+        await sdk.actions.composeCast({
           text: shareText,
           embeds: [gif.url], // Include GIF as embed
         });
         console.log('✅ Native composeCast completed');
-        await notificationOccurred('success');
-      } else if (typeof sdk?.actions?.composeCast === 'function') {
-        console.log('🎯 Using MiniApp SDK composeCast');
-        // Fallback to Farcaster MiniApp SDK
-        await sdk.actions.composeCast({ 
-          text: shareText,
-          embeds: [gif.url]
-        });
-        console.log('✅ SDK composeCast completed');
         await notificationOccurred('success');
       } else {
         console.log('🎯 Using fallback web URL');

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from 'react';
-import { Button } from '../ui/Button';
-import { Icon } from '../icons';
-import { useComposeCast } from '@coinbase/onchainkit/minikit';
-import { useHaptics } from "@/app/hooks/useHaptics";
+import { useState } from "react";
+import { Button } from "../ui/Button";
+import { Icon } from "../icons";
+// import { useComposeCast } from '@coinbase/onchainkit/minikit';
+import { useHaptics } from "../../hooks/useHaptics";
 import { sdk } from '@farcaster/miniapp-sdk';
 
 declare global {
@@ -24,7 +24,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
   const [shareUrl, setShareUrl] = useState('');
   
   // Initialize hooks
-  const { composeCast } = useComposeCast();
+  // const { composeCast } = useComposeCast();
   const { selectionChanged, notificationOccurred } = useHaptics();
 
   const shareToFarcaster = async () => {
@@ -36,19 +36,19 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
       
       // Use native composeCast if available, otherwise fallback
-      if (typeof composeCast === 'function') {
-        await composeCast({
-          text: shareText,
-          embeds: [gifUrl],
-        });
-        await notificationOccurred('success');
-      } else {
+      // if (typeof composeCast === 'function') {
+      //   await composeCast({
+      //     text: shareText,
+      //     embeds: [gifUrl],
+      //   });
+      //   await notificationOccurred('success');
+      // } else {
         // Fallback to URL
         const encodedText = encodeURIComponent(shareText);
         const url = `https://warpcast.com/~/compose?text=${encodedText}`;
         setShareUrl(url);
         await notificationOccurred('warning'); // Different feedback for fallback
-      }
+      // }
       
       // Track share event
       if (typeof gtag !== 'undefined') {
@@ -176,7 +176,7 @@ ${gifUrl}`;
         icon={<Icon name="farcaster" size="sm" />}
         className="flex-1"
       >
-        {isSharing ? 'Sharing...' : (typeof composeCast === 'function' ? 'Cast to Farcaster' : 'Share to Farcaster')}
+        {isSharing ? 'Sharing...' : (typeof sdk?.actions?.openUrl === 'function' ? 'Cast to Farcaster' : 'Share to Farcaster')}
       </Button>
       
       <Button

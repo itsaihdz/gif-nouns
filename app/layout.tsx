@@ -31,6 +31,38 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [`${URL}/hero.png`],
     },
     other: {
+      // Required fc:frame meta tag for proper embed rendering
+      "fc:frame": JSON.stringify({
+        version: "1",
+        name: "GifNouns",
+        iconUrl: `${URL}/icon.png`,
+        homeUrl: URL,
+        splashImageUrl: `${URL}/splash.png`,
+        splashBackgroundColor: "#8B5CF6",
+        subtitle: "Animate your Nouns PFP",
+        description: "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
+        screenshotUrls: [`${URL}/screenshot.png`],
+        primaryCategory: "art-creativity",
+        tags: ["nouns", "animation", "pfp", "gif", "art"],
+        heroImageUrl: `${URL}/hero.png`,
+        tagline: "Bring your Nouns to life",
+        ogTitle: "GifNouns",
+        ogDescription: "Create animated Nouns with custom noggles and eye animations",
+        ogImageUrl: `${URL}/hero.png`,
+        // Required fields for embed schema
+        imageUrl: `${URL}/hero.png`,
+        button: {
+          title: "Animate your nouns ⌐◨-◨",
+          action: {
+            type: "post_redirect",
+            url: URL
+          }
+        },
+        requiredChains: ["eip155:1", "eip155:8453"],
+        requiredCapabilities: ["wallet.getEthereumProvider", "actions.signIn"],
+        noindex: false,
+      }),
+      // Keep existing fc:miniapp for backward compatibility
       "fc:miniapp": JSON.stringify({
         version: "1",
         name: "GifNouns",
