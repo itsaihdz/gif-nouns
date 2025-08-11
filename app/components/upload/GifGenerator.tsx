@@ -22,6 +22,8 @@ const EYE_ANIMATION_FILES: Record<string, string> = {
   "ojos-nouns": "ojos nouns.gif",
   "ojos-pepepunk": "ojos pepepunk.gif",
   "ojos-pepepunk-en-medio": "ojos pepepunk en medio.gif",
+  "ojos-pepepunk-abajo-lado": "ojos pepepunk abajo lado.gif",
+  "sus-lado": "sus lado.gif",
   "arriba": "arriba.gif",
   "arriba-derecha": "arriba derecha.gif",
   "arriba-izquierda": "arriba izquierda.gif",
@@ -37,6 +39,7 @@ const EYE_ANIMATION_FILES: Record<string, string> = {
 };
 
 const NOGGLE_COLOR_FILES: Record<string, string> = {
+  "black": "black.png",
   "blue": "blue.png",
   "deep-teal": "deep teal.png",
   "gomita": "gomita.png",

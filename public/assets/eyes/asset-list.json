@@ -1,82 +1,92 @@
 [
   {
-    "name": "normal",
-    "file": "normal.gif",
-    "status": "missing"
+    "name": "nouns",
+    "file": "nouns.gif",
+    "status": "available"
   },
   {
-    "name": "blink",
-    "file": "blink.gif",
-    "status": "missing"
+    "name": "ojos-nouns",
+    "file": "ojos nouns.gif",
+    "status": "available"
   },
   {
-    "name": "wink",
-    "file": "wink.gif",
-    "status": "missing"
+    "name": "ojos-pepepunk",
+    "file": "ojos pepepunk.gif",
+    "status": "available"
   },
   {
-    "name": "glow",
-    "file": "glow.gif",
-    "status": "missing"
+    "name": "ojos-pepepunk-en-medio",
+    "file": "ojos pepepunk en medio.gif",
+    "status": "available"
   },
   {
-    "name": "rainbow",
-    "file": "rainbow.gif",
-    "status": "missing"
+    "name": "arriba",
+    "file": "arriba.gif",
+    "status": "available"
   },
   {
-    "name": "laser",
-    "file": "laser.gif",
-    "status": "missing"
+    "name": "arriba-derecha",
+    "file": "arriba derecha.gif",
+    "status": "available"
   },
   {
-    "name": "fire",
-    "file": "fire.gif",
-    "status": "missing"
+    "name": "arriba-izquierda",
+    "file": "arriba izquierda.gif",
+    "status": "available"
   },
   {
-    "name": "ice",
-    "file": "ice.gif",
-    "status": "missing"
+    "name": "abajo",
+    "file": "abajo.gif",
+    "status": "available"
   },
   {
-    "name": "electric",
-    "file": "electric.gif",
-    "status": "missing"
+    "name": "abajo-derecha",
+    "file": "abajo derecha.gif",
+    "status": "available"
   },
   {
-    "name": "cosmic",
-    "file": "cosmic.gif",
-    "status": "missing"
+    "name": "abajo-izquierda",
+    "file": "abajo izquierda.gif",
+    "status": "available"
   },
   {
-    "name": "neon",
-    "file": "neon.gif",
-    "status": "missing"
+    "name": "viscos",
+    "file": "viscos.gif",
+    "status": "available"
   },
   {
-    "name": "holographic",
-    "file": "holographic.gif",
-    "status": "missing"
+    "name": "viscos-derecha",
+    "file": "viscos derecha.gif",
+    "status": "available"
   },
   {
-    "name": "matrix",
-    "file": "matrix.gif",
-    "status": "missing"
+    "name": "viscos-izquierda",
+    "file": "viscos izquierda.gif",
+    "status": "available"
   },
   {
-    "name": "galaxy",
-    "file": "galaxy.gif",
-    "status": "missing"
+    "name": "locos",
+    "file": "locos.gif",
+    "status": "available"
   },
   {
-    "name": "sunset",
-    "file": "sunset.gif",
-    "status": "missing"
+    "name": "serpiente",
+    "file": "serpiente.gif",
+    "status": "available"
   },
   {
-    "name": "ocean",
-    "file": "ocean.gif",
-    "status": "missing"
+    "name": "vampiro",
+    "file": "vampiro.gif",
+    "status": "available"
+  },
+  {
+    "name": "ojos-pepepunk-abajo-lado",
+    "file": "ojos pepepunk abajo lado.gif",
+    "status": "available"
+  },
+  {
+    "name": "sus-lado",
+    "file": "sus lado.gif",
+    "status": "available"
   }
 ]

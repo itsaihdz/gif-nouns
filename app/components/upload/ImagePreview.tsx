@@ -61,6 +61,7 @@ interface ImagePreviewProps {
 // Color palettes for noggles - these correspond to PNG files in /public/assets/noggles/
 // Updated to match actual asset files from GitHub repository
 const NOGGLE_COLORS = [
+  { name: "Black", value: "black", class: "bg-black", file: "black.png" },
   { name: "Blue", value: "blue", class: "bg-blue-400", file: "blue.png" },
   { name: "Deep Teal", value: "deep-teal", class: "bg-teal-600", file: "deep teal.png" },
   { name: "Gomita", value: "gomita", class: "bg-pink-300", file: "gomita.png" },
@@ -92,6 +93,8 @@ const EYE_ANIMATIONS = [
   { name: "Ojos Nouns", value: "ojos-nouns", icon: "eye", file: "ojos nouns.gif" },
   { name: "Ojos Pepepunk", value: "ojos-pepepunk", icon: "eye", file: "ojos pepepunk.gif" },
   { name: "Ojos Pepepunk En Medio", value: "ojos-pepepunk-en-medio", icon: "eye", file: "ojos pepepunk en medio.gif" },
+  { name: "Ojos Pepepunk Abajo Lado", value: "ojos-pepepunk-abajo-lado", icon: "eye", file: "ojos pepepunk abajo lado.gif" },
+  { name: "Sus Lado", value: "sus-lado", icon: "eye", file: "sus lado.gif" },
   { name: "Arriba", value: "arriba", icon: "eye", file: "arriba.gif" },
   { name: "Arriba Derecha", value: "arriba-derecha", icon: "eye", file: "arriba derecha.gif" },
   { name: "Arriba Izquierda", value: "arriba-izquierda", icon: "eye", file: "arriba izquierda.gif" },

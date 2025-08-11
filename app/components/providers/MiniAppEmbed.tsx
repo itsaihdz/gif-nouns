@@ -41,13 +41,13 @@ export function MiniAppEmbed({ children }: MiniAppEmbedProps) {
         
         return () => clearTimeout(timer);
       } else {
-        console.log('ℹ️ MiniAppEmbed: Not in Farcaster environment, marking as ready');
+        console.log('ℹ️ MiniAppEmbed: Development mode, marking as ready');
         setIsEmbedReady(true);
       }
     }
   }, [isSDKReady, isEmbedReady, callReady]);
 
-  // Show loading state while initializing
+  // Show loading state only in Farcaster environments
   if (!isEmbedReady && typeof window !== 'undefined') {
     const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
                            window.location.hostname.includes('farcaster.xyz') ||
@@ -66,5 +66,6 @@ export function MiniAppEmbed({ children }: MiniAppEmbedProps) {
     }
   }
 
+  // In development mode, show children immediately
   return <>{children}</>;
 }

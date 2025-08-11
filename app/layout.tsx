@@ -15,42 +15,47 @@ export const viewport = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const URL = process.env.NEXT_PUBLIC_URL || "https://gifnouns.freezerverse.com";
+  const HERO_IMAGE_URL = "https://gifnouns.freezerverse.com/hero.png";
+  const ICON_URL = "https://gifnouns.freezerverse.com/icon.png";
+  const SPLASH_URL = "https://gifnouns.freezerverse.com/splash.png";
+  const SCREENSHOT_URL = "https://gifnouns.freezerverse.com/screenshot.png";
+  
   return {
     title: "GifNouns",
     description: "Create animated Nouns with custom noggles and eye animations",
     openGraph: {
       title: "GifNouns",
       description: "Create animated Nouns with custom noggles and eye animations",
-      images: [`${URL}/hero.png`],
+      images: [HERO_IMAGE_URL],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
       title: "GifNouns",
       description: "Create animated Nouns with custom noggles and eye animations",
-      images: [`${URL}/hero.png`],
+      images: [HERO_IMAGE_URL],
     },
     other: {
       // Required fc:frame meta tag for proper embed rendering
       "fc:frame": JSON.stringify({
         version: "1",
         name: "GifNouns",
-        iconUrl: `${URL}/icon.png`,
+        iconUrl: ICON_URL,
         homeUrl: URL,
-        splashImageUrl: `${URL}/splash.png`,
+        splashImageUrl: SPLASH_URL,
         splashBackgroundColor: "#8B5CF6",
         subtitle: "Animate your Nouns PFP",
         description: "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
-        screenshotUrls: [`${URL}/screenshot.png`],
+        screenshotUrls: [SCREENSHOT_URL],
         primaryCategory: "art-creativity",
         tags: ["nouns", "animation", "pfp", "gif", "art"],
-        heroImageUrl: `${URL}/hero.png`,
+        heroImageUrl: HERO_IMAGE_URL,
         tagline: "Bring your Nouns to life",
         ogTitle: "GifNouns",
         ogDescription: "Create animated Nouns with custom noggles and eye animations",
-        ogImageUrl: `${URL}/hero.png`,
+        ogImageUrl: HERO_IMAGE_URL,
         // Required fields for embed schema
-        imageUrl: `${URL}/hero.png`,
+        imageUrl: HERO_IMAGE_URL,
         button: {
           title: "Animate your nouns ⌐◨-◨",
           action: {
@@ -66,22 +71,22 @@ export async function generateMetadata(): Promise<Metadata> {
       "fc:miniapp": JSON.stringify({
         version: "1",
         name: "GifNouns",
-        iconUrl: `${URL}/icon.png`,
+        iconUrl: ICON_URL,
         homeUrl: URL,
-        splashImageUrl: `${URL}/splash.png`,
+        splashImageUrl: SPLASH_URL,
         splashBackgroundColor: "#8B5CF6",
         subtitle: "Animate your Nouns PFP",
         description: "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
-        screenshotUrls: [`${URL}/screenshot.png`],
+        screenshotUrls: [SCREENSHOT_URL],
         primaryCategory: "art-creativity",
         tags: ["nouns", "animation", "pfp", "gif", "art"],
-        heroImageUrl: `${URL}/hero.png`,
+        heroImageUrl: HERO_IMAGE_URL,
         tagline: "Bring your Nouns to life",
         ogTitle: "GifNouns",
         ogDescription: "Create animated Nouns with custom noggles and eye animations",
-        ogImageUrl: `${URL}/hero.png`,
+        ogImageUrl: HERO_IMAGE_URL,
         // Required fields for embed schema
-        imageUrl: `${URL}/hero.png`,
+        imageUrl: HERO_IMAGE_URL,
         button: {
           title: "Animate your nouns ⌐◨-◨",
           action: {

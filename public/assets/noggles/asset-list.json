@@ -1,122 +1,117 @@
 [
   {
-    "name": "original",
-    "file": "original.png",
-    "status": "missing"
-  },
-  {
     "name": "blue",
     "file": "blue.png",
-    "status": "missing"
+    "status": "available"
   },
   {
-    "name": "green",
-    "file": "green.png",
-    "status": "missing"
+    "name": "deep-teal",
+    "file": "deep teal.png",
+    "status": "available"
   },
   {
-    "name": "red",
-    "file": "red.png",
-    "status": "missing"
+    "name": "gomita",
+    "file": "gomita.png",
+    "status": "available"
   },
   {
-    "name": "yellow",
-    "file": "yellow.png",
-    "status": "missing"
+    "name": "grass",
+    "file": "grass.png",
+    "status": "available"
   },
   {
-    "name": "purple",
-    "file": "purple.png",
-    "status": "missing"
+    "name": "green-blue",
+    "file": "green blue.png",
+    "status": "available"
   },
   {
-    "name": "orange",
-    "file": "orange.png",
-    "status": "missing"
+    "name": "grey-light",
+    "file": "grey light.png",
+    "status": "available"
   },
   {
-    "name": "pink",
-    "file": "pink.png",
-    "status": "missing"
+    "name": "guava",
+    "file": "guava.png",
+    "status": "available"
   },
   {
-    "name": "cyan",
-    "file": "cyan.png",
-    "status": "missing"
+    "name": "hip-rose",
+    "file": "hip rose.png",
+    "status": "available"
+  },
+  {
+    "name": "honey",
+    "file": "honey.png",
+    "status": "available"
+  },
+  {
+    "name": "hyper",
+    "file": "hyper.png",
+    "status": "available"
+  },
+  {
+    "name": "hyperliquid",
+    "file": "hyperliquid.png",
+    "status": "available"
+  },
+  {
+    "name": "lavender",
+    "file": "lavender.png",
+    "status": "available"
   },
   {
     "name": "magenta",
     "file": "magenta.png",
-    "status": "missing"
+    "status": "available"
   },
   {
-    "name": "lime",
-    "file": "lime.png",
-    "status": "missing"
+    "name": "orange",
+    "file": "orange.png",
+    "status": "available"
+  },
+  {
+    "name": "pink-purple",
+    "file": "pink purple.png",
+    "status": "available"
+  },
+  {
+    "name": "purple",
+    "file": "purple.png",
+    "status": "available"
+  },
+  {
+    "name": "red",
+    "file": "red.png",
+    "status": "available"
+  },
+  {
+    "name": "smoke",
+    "file": "smoke.png",
+    "status": "available"
   },
   {
     "name": "teal",
     "file": "teal.png",
-    "status": "missing"
+    "status": "available"
   },
   {
-    "name": "indigo",
-    "file": "indigo.png",
-    "status": "missing"
+    "name": "watermelon",
+    "file": "watermelon.png",
+    "status": "available"
   },
   {
-    "name": "violet",
-    "file": "violet.png",
-    "status": "missing"
+    "name": "yellow-orange",
+    "file": "yellow orange.png",
+    "status": "available"
   },
   {
-    "name": "rose",
-    "file": "rose.png",
-    "status": "missing"
+    "name": "yellow",
+    "file": "yellow.png",
+    "status": "available"
   },
   {
-    "name": "amber",
-    "file": "amber.png",
-    "status": "missing"
-  },
-  {
-    "name": "emerald",
-    "file": "emerald.png",
-    "status": "missing"
-  },
-  {
-    "name": "sky",
-    "file": "sky.png",
-    "status": "missing"
-  },
-  {
-    "name": "fuchsia",
-    "file": "fuchsia.png",
-    "status": "missing"
-  },
-  {
-    "name": "slate",
-    "file": "slate.png",
-    "status": "missing"
-  },
-  {
-    "name": "zinc",
-    "file": "zinc.png",
-    "status": "missing"
-  },
-  {
-    "name": "stone",
-    "file": "stone.png",
-    "status": "missing"
-  },
-  {
-    "name": "gray",
-    "file": "gray.png",
-    "status": "missing"
-  },
-  {
-    "name": "neutral",
-    "file": "neutral.png",
-    "status": "missing"
+    "name": "black",
+    "file": "black.png",
+    "status": "available"
   }
 ]
