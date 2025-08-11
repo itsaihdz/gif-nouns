@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [`${URL}/hero.png`],
     },
     other: {
-      "fc:miniapp": JSON.stringify({
+      "fc:frame": JSON.stringify({
         version: "1",
         name: "GifNouns",
         iconUrl: `${URL}/icon.png`,
