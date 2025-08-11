@@ -159,31 +159,80 @@ ${gif.noggleColor || 'custom'} noggle + ${gif.eyeAnimation || 'custom'} eyes = p
 
 Vote for it in the gallery! 🗳️
 
-https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
+https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
+
+${gif.url}`;
       
-      // Try native Farcaster composeCast first
+      // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.composeCast === 'function') {
         console.log('🎯 Using native composeCast function');
-        await sdk.actions.composeCast({
-          text: shareText,
-          embeds: [gif.url], // Include GIF as embed
-        });
-        console.log('✅ Native composeCast completed');
-        await notificationOccurred('success');
+        try {
+          // Set a timeout to detect if composeCast actually opens the interface
+          const composeTimeout = setTimeout(() => {
+            console.log('⏰ composeCast timeout - falling back to web URL');
+            // Force fallback if composeCast doesn't open interface within 1 second
+            const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+            window.open(farcasterUrl, '_blank');
+            notificationOccurred('success');
+          }, 1000);
+          
+          await sdk.actions.composeCast({
+            text: shareText,
+            embeds: [gif.url], // Include GIF as embed
+          });
+          
+          // Clear timeout if composeCast actually worked
+          clearTimeout(composeTimeout);
+          console.log('✅ Native composeCast completed');
+          
+          // Force fallback to web URL since composeCast might not actually open the interface
+          console.log('🔄 composeCast completed but forcing web fallback for reliability');
+          const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+          window.open(farcasterUrl, '_blank');
+          
+          await notificationOccurred('success');
+        } catch (sdkError) {
+          console.log('SDK composeCast failed, using fallback:', sdkError);
+          // Fallback to web URL
+          const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+          console.log('🔗 Farcaster URL:', farcasterUrl);
+          if (typeof sdk?.actions?.openUrl === 'function') {
+            try {
+              console.log('🎯 Using SDK openUrl');
+              await sdk.actions.openUrl(farcasterUrl);
+              await notificationOccurred('success');
+            } catch (openUrlError) {
+              console.log('SDK openUrl failed, using window.open:', openUrlError);
+              window.open(farcasterUrl, '_blank');
+              await notificationOccurred('success');
+            }
+          } else {
+            console.log('🎯 Using window.open fallback');
+            window.open(farcasterUrl, '_blank');
+            await notificationOccurred('success');
+          }
+        }
+      } else if (typeof sdk?.actions?.openUrl === 'function') {
+        console.log('🎯 Using SDK openUrl fallback');
+        try {
+          const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+          console.log('🔗 Farcaster URL:', farcasterUrl);
+          await sdk.actions.openUrl(farcasterUrl);
+          await notificationOccurred('success');
+        } catch (sdkError) {
+          console.log('SDK openUrl failed, using window.open:', sdkError);
+          const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
+          window.open(farcasterUrl, '_blank');
+          await notificationOccurred('success');
+        }
       } else {
-        console.log('🎯 Using fallback web URL');
-        // Fallback to external link
+        console.log('🎯 MiniApp SDK not available, using window.open fallback');
+        // Fallback to external link for non-Farcaster environments
         const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
         console.log('🔗 Farcaster URL:', farcasterUrl);
-        if (typeof sdk?.actions?.openUrl === 'function') {
-          console.log('🎯 Using SDK openUrl');
-          await sdk.actions.openUrl(farcasterUrl);
-        } else {
-          console.log('🎯 Using window.open fallback');
-          window.open(farcasterUrl, '_blank');
-        }
+        window.open(farcasterUrl, '_blank');
         console.log('✅ Fallback sharing completed');
-        await notificationOccurred('warning'); // Different feedback for fallback
+        await notificationOccurred('success');
       }
       
     } catch (error) {
@@ -219,33 +268,52 @@ https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${gif.url}`;
       
-      // Try Twitter deep link first (for mobile apps)
-      const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
-      const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-      
-      // Try opening with MiniApp SDK openUrl if available, otherwise use fallback
+      // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.openUrl === 'function') {
         try {
-          console.log('🎯 Trying Twitter deep link:', twitterDeepLink);
-          // Try deep link first
+          console.log('🎯 Trying Twitter deep link with SDK');
+          // Try Twitter deep link first (for mobile apps)
+          const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
           await sdk.actions.openUrl(twitterDeepLink);
           console.log('✅ Twitter deep link completed');
+          
+          // Force fallback to web URL since SDK might not actually open the interface
+          console.log('🔄 Twitter deep link completed but forcing web fallback for reliability');
+          const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+          window.open(twitterWebUrl, '_blank');
+          
           await notificationOccurred('success');
         } catch (deepLinkError) {
           console.log('🔄 Deep link failed, trying web URL:', deepLinkError);
-          console.log('🎯 Trying Twitter web URL:', twitterWebUrl);
-          // Fallback to web URL
-          await sdk.actions.openUrl(twitterWebUrl);
-          console.log('✅ Twitter web URL completed');
-          await notificationOccurred('success');
+          try {
+            console.log('🎯 Trying Twitter web URL with SDK');
+            // Fallback to web URL via SDK
+            const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            await sdk.actions.openUrl(twitterWebUrl);
+            console.log('✅ Twitter web URL completed');
+            
+            // Force fallback to web URL since SDK might not actually open the interface
+            console.log('🔄 Twitter web URL via SDK completed but forcing window.open fallback for reliability');
+            window.open(twitterWebUrl, '_blank');
+            
+            await notificationOccurred('success');
+          } catch (sdkError) {
+            console.log('SDK openUrl failed, using window.open:', sdkError);
+            // Final fallback to regular window.open
+            const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            console.log('🎯 Using window.open fallback');
+            window.open(twitterWebUrl, '_blank');
+            await notificationOccurred('success');
+          }
         }
       } else {
-        // Fallback to regular window.open
-        console.log('🎯 MiniApp SDK not available, using window.open');
+        // Fallback to regular window.open for non-Farcaster environments
+        console.log('🎯 MiniApp SDK not available, using window.open fallback');
+        const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
         console.log('🔗 Opening Twitter URL:', twitterWebUrl);
         window.open(twitterWebUrl, '_blank');
         console.log('✅ window.open completed');
-        await notificationOccurred('warning'); // Different feedback for fallback
+        await notificationOccurred('success');
       }
     } catch (error) {
       console.error('❌ Error sharing to Twitter:', error);
@@ -517,7 +585,7 @@ ${gif.url}`;
             const newValue = e.target.value;
             console.log('🔥 DROPDOWN CHANGED - Noggle Color:', newValue, 'Previous:', selectedNoggleColor);
             console.log('🔥 Available GIFs with noggle colors:', gifs.map(g => ({ title: g.title, noggleColor: g.noggleColor })));
-            console.log('🔥 Looking for noggle color:', newValue);
+            console.log('�� Looking for noggle color:', newValue);
             await selectionChanged();
             setSelectedNoggleColor(newValue);
             console.log('🔥 State updated to:', newValue);
@@ -605,21 +673,22 @@ ${gif.url}`;
 
             {/* GIF Details */}
             <div className="p-3 sm:p-4">
-              {/* Creator Info */}
+              {/* Creator Info - Moved to align with left margin */}
               {gif.creator && gif.creator.wallet && gif.creator.wallet !== 'unknown' && (
-                <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center gap-1.5 mb-2 -ml-3 sm:-ml-4">
                   <Identity
                     address={gif.creator.wallet as `0x${string}`}
                     schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
+                    className="bg-transparent"
                   >
-                    <Avatar className="w-5 h-5 sm:w-4 sm:h-4" />
-                    <Name className="text-xs text-gray-500 dark:text-gray-500">
-                      <Badge />
+                    <Avatar className="w-5 h-5 sm:w-4 sm:h-4 bg-transparent" />
+                    <Name className="text-xs text-white dark:text-white bg-transparent">
+                      <Badge className="bg-transparent" />
                     </Name>
                   </Identity>
                   
-                  {/* Share Buttons - positioned at right */}
-                  <div className="ml-auto flex gap-1.5">
+                  {/* Share Buttons - positioned at right, aligned with GIF right margin */}
+                  <div className="ml-auto flex gap-1.5 -mr-3 sm:-mr-4">
                     <button
                       onClick={() => {
                         console.log('🔥 FARCASTER BUTTON CLICKED! (OnchainKit)', gif.title);
@@ -644,9 +713,9 @@ ${gif.url}`;
                 </div>
               )}
               
-              {/* Fallback for GIFs without valid wallet info */}
+              {/* Fallback for GIFs without valid wallet info - Also aligned with left margin */}
               {gif.creator && (!gif.creator.wallet || gif.creator.wallet === 'unknown') && (
-                <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center gap-1.5 mb-2 -ml-3 sm:-ml-4">
                   <div className="w-5 h-5 sm:w-4 sm:h-4 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                     <Icon name="user" size="sm" className="text-gray-500 dark:text-gray-400" />
                   </div>
@@ -654,8 +723,8 @@ ${gif.url}`;
                     {gif.creator.username || 'Unknown Creator'}
                   </span>
                   
-                  {/* Share Buttons - positioned at right */}
-                  <div className="ml-auto flex gap-1">
+                  {/* Share Buttons - positioned at right, aligned with GIF right margin */}
+                  <div className="ml-auto flex gap-1 -mr-3 sm:-mr-4">
                     <button
                       onClick={() => {
                         console.log('🔥 FARCASTER BUTTON CLICKED! (Fallback)', gif.title);

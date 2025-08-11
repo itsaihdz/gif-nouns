@@ -22,50 +22,38 @@ export function MiniAppEmbed({ children }: MiniAppEmbedProps) {
   useEffect(() => {
     // Auto-call ready() when SDK is available
     if (isSDKReady && !isEmbedReady && typeof window !== 'undefined') {
-      const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
-                             window.location.hostname.includes('farcaster.xyz') ||
-                             window.navigator.userAgent.includes('Farcaster');
+      console.log('🔄 MiniAppEmbed: SDK is ready, ensuring ready() is called...');
       
-      if (isFarcasterEnv) {
-        console.log('🔄 MiniAppEmbed: In Farcaster environment, ensuring ready() is called...');
-        // Double-check that ready() was called
-        const timer = setTimeout(async () => {
-          try {
-            await callReady();
-            setIsEmbedReady(true);
-            console.log('✅ MiniAppEmbed: Ready state confirmed');
-          } catch (error) {
-            console.error('❌ MiniAppEmbed: Failed to confirm ready state:', error);
-          }
-        }, 500);
-        
-        return () => clearTimeout(timer);
-      } else {
-        console.log('ℹ️ MiniAppEmbed: Development mode, marking as ready');
-        setIsEmbedReady(true);
-      }
+      // Always call ready() regardless of environment
+      const timer = setTimeout(async () => {
+        try {
+          await callReady();
+          setIsEmbedReady(true);
+          console.log('✅ MiniAppEmbed: Ready state confirmed');
+        } catch (error) {
+          console.error('❌ MiniAppEmbed: Failed to confirm ready state:', error);
+          // Still mark as ready to prevent splash screen persistence
+          setIsEmbedReady(true);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
   }, [isSDKReady, isEmbedReady, callReady]);
 
-  // Show loading state only in Farcaster environments
+  // Show loading state while initializing
   if (!isEmbedReady && typeof window !== 'undefined') {
-    const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
-                           window.location.hostname.includes('farcaster.xyz') ||
-                           window.navigator.userAgent.includes('Farcaster');
-    
-    if (isFarcasterEnv) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-purple-600">
-          <div className="text-center text-white">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
-            <h1 className="text-2xl font-bold mb-2">GifNouns</h1>
-            <p className="text-lg">Loading your animated Nouns experience...</p>
-          </div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-purple-600">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold mb-2">GifNouns</h1>
+          <p className="text-lg">Loading your animated Nouns experience...</p>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
-  // In development mode, show children immediately
+  // Show children when ready
   return <>{children}</>;
 }

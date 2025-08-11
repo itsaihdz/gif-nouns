@@ -107,14 +107,8 @@ export function SDKProvider({ children }: SDKProviderProps) {
         userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server'
       });
 
-      if (!envCheck) {
-        console.log('ℹ️ Not in Farcaster environment, SDK will not be imported');
-        console.log('ℹ️ This prevents Chrome extension errors during local testing');
-        setIsInitialized(true);
-        return;
-      }
-
-      // Import SDK only in Farcaster environments
+      // Always import SDK regardless of environment
+      console.log('📦 Importing Farcaster MiniApp SDK...');
       const importedSDK = await importSDK();
       if (!importedSDK) {
         throw new Error('Failed to import SDK');
@@ -137,8 +131,8 @@ export function SDKProvider({ children }: SDKProviderProps) {
         }
       });
 
-      // Automatically call ready() in Farcaster environments
-      console.log('🔄 Auto-calling sdk.actions.ready() for Farcaster environment...');
+      // Always call ready() regardless of environment
+      console.log('🔄 Auto-calling sdk.actions.ready() for all environments...');
       try {
         await callReady();
       } catch (readyError) {
@@ -160,7 +154,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
     }
   };
 
-  // Function to call ready() - works in both Farcaster and development environments
+  // Function to call ready() - works in all environments
   const callReady = async () => {
     if (!isInitialized) {
       console.log('⚠️ SDK not initialized yet, cannot call ready()');
@@ -228,12 +222,10 @@ export function SDKProvider({ children }: SDKProviderProps) {
         actionKeys: sdk?.actions ? Object.keys(sdk.actions) : 'none'
       });
       
-      // In development mode, we can still mark as ready even if ready() fails
-      if (!isFarcasterEnv) {
-        console.log('ℹ️ Development mode: Marking as ready despite ready() failure');
-        setIsSDKReady(true);
-        setSdkError(null);
-      }
+      // Always attempt to mark as ready even if ready() fails
+      console.log('ℹ️ Marking as ready despite ready() failure to prevent splash screen persistence');
+      setIsSDKReady(true);
+      setSdkError(null);
     }
   };
 
