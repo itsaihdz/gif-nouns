@@ -11,6 +11,7 @@ import { createConfig, http } from "wagmi";
 import { coinbaseWallet, injected } from "wagmi/connectors";
 import { useEffect } from "react";
 import { SDKProvider } from "./components/providers/SDKProvider";
+import { MiniAppEmbed } from "./components/providers/MiniAppEmbed";
 
 // Create a query client
 const queryClient = new QueryClient();
@@ -44,7 +45,9 @@ export function Providers(props: { children: ReactNode }) {
         <OnchainKitProvider chain={base as Chain}>
           <MiniKitProvider chain={base as Chain}>
             <SDKProvider>
-              {props.children}
+              <MiniAppEmbed>
+                {props.children}
+              </MiniAppEmbed>
             </SDKProvider>
           </MiniKitProvider>
         </OnchainKitProvider>

@@ -48,6 +48,15 @@ export async function generateMetadata(): Promise<Metadata> {
         ogTitle: "GifNouns",
         ogDescription: "Create animated Nouns with custom noggles and eye animations",
         ogImageUrl: `${URL}/hero.png`,
+        // Required fields for embed schema
+        imageUrl: `${URL}/hero.png`,
+        button: {
+          title: "Animate your nouns ⌐◨-◨",
+          action: {
+            type: "post_redirect",
+            url: URL
+          }
+        },
         requiredChains: ["eip155:1", "eip155:8453"],
         requiredCapabilities: ["wallet.getEthereumProvider", "actions.signIn"],
         noindex: false,

@@ -77,7 +77,7 @@ export default function HomePage() {
 
   // Call sdk.actions.ready() as soon as SDK is initialized
   useEffect(() => {
-    if (isMounted && isSDKReady === false && !sdkError && typeof window !== 'undefined') {
+    if (isMounted && isSDKReady && !sdkError && typeof window !== 'undefined') {
       // Check if we're in a Farcaster environment
       const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
                              window.location.hostname.includes('farcaster.xyz') ||
@@ -96,7 +96,17 @@ export default function HomePage() {
         
         return () => clearTimeout(timer);
       } else {
-        console.log('ℹ️ Main page: Not in Farcaster environment, skipping ready() call');
+        console.log('ℹ️ Main page: Not in Farcaster environment, but still calling ready() for compatibility...');
+        // Call ready() even in non-Farcaster environments as it's required by the SDK
+        const timer = setTimeout(async () => {
+          try {
+            await callReady();
+          } catch (error) {
+            console.error('Failed to call sdk.actions.ready():', error);
+          }
+        }, 1000);
+        
+        return () => clearTimeout(timer);
       }
     }
   }, [isMounted, isSDKReady, sdkError, callReady]);

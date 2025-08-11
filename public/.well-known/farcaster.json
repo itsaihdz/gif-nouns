@@ -30,6 +30,13 @@
     "ogDescription": "Create animated Nouns with custom noggles and eyes animations",
     "ogImageUrl": "https://gifnouns.freezerverse.com/hero.png",
     "imageUrl": "https://gifnouns.freezerverse.com/hero.png",
+    "button": {
+      "title": "Animate your nouns ⌐◨-◨",
+      "action": {
+        "type": "post_redirect",
+        "url": "https://gifnouns.freezerverse.com"
+      }
+    },
     "buttonTitle": "Animate your nouns ⌐◨-◨",
     "requiredChains": [
       "eip155:1",

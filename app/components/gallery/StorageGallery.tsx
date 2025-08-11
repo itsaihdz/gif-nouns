@@ -723,7 +723,7 @@ ${gif.url}`;
 
       {/* Summary */}
       <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        Showing {filteredGifs.length} of {gifs.length} GIFs from Supabase Storage
+        
       </div>
     </div>
   );
