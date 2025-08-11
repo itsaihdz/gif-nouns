@@ -155,11 +155,13 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       // Use consistent text template from other sharing components
       const shareText = `Check out this animated Noun "${gif.title || 'GIF'}"! 🎨✨
 
-Created with #NounsRemixStudio
+Created with GifNouns
 
 ${gif.noggleColor || 'custom'} noggle + ${gif.eyeAnimation || 'custom'} eyes = pure magic! 🌟
 
-Vote for it in the gallery! 🗳️`;
+Vote for it in the gallery! 🗳️
+
+https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
       
       // Try native Farcaster composeCast first
       if (typeof composeCast === 'function') {
@@ -218,11 +220,13 @@ Vote for it in the gallery! 🗳️`;
       // Use consistent text template from other sharing components
       const shareText = `Check out this animated Noun "${gif.title || 'GIF'}"! 🎨✨
 
-Created with #NounsRemixStudio
+Created with GifNouns
 
 ${gif.noggleColor || 'custom'} noggle + ${gif.eyeAnimation || 'custom'} eyes = pure magic! 🌟
 
 Vote for it in the gallery! 🗳️
+
+https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${gif.url}`;
       

@@ -71,11 +71,13 @@ export function DownloadSharePage({
       // Use the same text template from FarcasterShare component
       const shareText = `Check out my animated Noun "${title}"! 🎨✨
 
-Created with #NounsRemixStudio
+Created with GifNouns
 
 ${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
 
-Vote for it in the gallery! 🗳️`;
+Vote for it in the gallery! 🗳️
+
+https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
       
       // Use the native Farcaster composeCast if available, otherwise fallback
       if (typeof composeCast === 'function') {
@@ -113,11 +115,13 @@ Vote for it in the gallery! 🗳️`;
       // Use the same text template as Farcaster sharing for consistency
       const shareText = `Check out my animated Noun "${title}"! 🎨✨
 
-Created with #NounsRemixStudio
+Created with GifNouns
 
 ${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
 
 Vote for it in the gallery! 🗳️
+
+https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${shareGifUrl}`;
       
