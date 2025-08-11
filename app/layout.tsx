@@ -36,68 +36,20 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [HERO_IMAGE_URL],
     },
     other: {
-      // Required fc:frame meta tag for proper embed rendering
-      "fc:frame": JSON.stringify({
-        version: "1",
-        name: "GifNouns",
-        iconUrl: ICON_URL,
-        homeUrl: URL,
-        splashImageUrl: SPLASH_URL,
-        splashBackgroundColor: "#8B5CF6",
-        subtitle: "Animate your Nouns PFP",
-        description: "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
-        screenshotUrls: [SCREENSHOT_URL],
-        primaryCategory: "art-creativity",
-        tags: ["nouns", "animation", "pfp", "gif", "art"],
-        heroImageUrl: HERO_IMAGE_URL,
-        tagline: "Bring your Nouns to life",
-        ogTitle: "GifNouns",
-        ogDescription: "Create animated Nouns with custom noggles and eye animations",
-        ogImageUrl: HERO_IMAGE_URL,
-        // Required fields for embed schema
-        imageUrl: HERO_IMAGE_URL,
-        button: {
-          title: "Animate your nouns ⌐◨-◨",
-          action: {
-            type: "post_redirect",
-            url: URL
-          }
-        },
-        requiredChains: ["eip155:1", "eip155:8453"],
-        requiredCapabilities: ["wallet.getEthereumProvider", "actions.signIn"],
-        noindex: false,
-      }),
-      // Keep existing fc:miniapp for backward compatibility
-      "fc:miniapp": JSON.stringify({
-        version: "1",
-        name: "GifNouns",
-        iconUrl: ICON_URL,
-        homeUrl: URL,
-        splashImageUrl: SPLASH_URL,
-        splashBackgroundColor: "#8B5CF6",
-        subtitle: "Animate your Nouns PFP",
-        description: "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eye movements.",
-        screenshotUrls: [SCREENSHOT_URL],
-        primaryCategory: "art-creativity",
-        tags: ["nouns", "animation", "pfp", "gif", "art"],
-        heroImageUrl: HERO_IMAGE_URL,
-        tagline: "Bring your Nouns to life",
-        ogTitle: "GifNouns",
-        ogDescription: "Create animated Nouns with custom noggles and eye animations",
-        ogImageUrl: HERO_IMAGE_URL,
-        // Required fields for embed schema
-        imageUrl: HERO_IMAGE_URL,
-        button: {
-          title: "Animate your nouns ⌐◨-◨",
-          action: {
-            type: "post_redirect",
-            url: URL
-          }
-        },
-        requiredChains: ["eip155:1", "eip155:8453"],
-        requiredCapabilities: ["wallet.getEthereumProvider", "actions.signIn"],
-        noindex: false,
-      }),
+      // Farcaster Frame metadata - using proper format to avoid HTML escaping
+      "fc:frame": "1",
+      "fc:frame:image": HERO_IMAGE_URL,
+      "fc:frame:button:1": "Animate your nouns ⌐◨-◨",
+      "fc:frame:post_url": URL,
+      
+      // Farcaster Mini App metadata - using proper format to avoid HTML escaping
+      "fc:miniapp": "1",
+      "fc:miniapp:name": "GifNouns",
+      "fc:miniapp:icon": ICON_URL,
+      "fc:miniapp:home": URL,
+      "fc:miniapp:splash": SPLASH_URL,
+      "fc:miniapp:image": HERO_IMAGE_URL,
+      "fc:miniapp:description": "Create animated Nouns with custom noggles and eye animations",
     },
   };
 }
