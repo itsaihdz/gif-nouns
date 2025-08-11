@@ -30,26 +30,23 @@ const importSDK = async () => {
   if (sdk) return sdk; // Already imported
   
   try {
-    if (isFarcasterEnvironment()) {
-      console.log('🔧 Importing Farcaster MiniApp SDK...');
-      const { sdk: importedSDK } = await import('@farcaster/miniapp-sdk');
-      sdk = importedSDK;
-      
-      // Debug SDK import
-      console.log('🔧 SDK import check:', {
-        sdk: !!sdk,
-        sdkType: typeof sdk,
-        sdkKeys: sdk ? Object.keys(sdk) : 'undefined',
-        actions: sdk?.actions ? Object.keys(sdk.actions) : 'undefined',
-        haptics: sdk?.haptics ? Object.keys(sdk.haptics) : 'undefined'
-      });
-      
-      return sdk;
-    } else {
-      console.log('ℹ️ Not in Farcaster environment, skipping SDK import to prevent Chrome extension errors');
-      sdk = null;
-      return null;
-    }
+    // Always import SDK for development/testing, but log environment
+    const envCheck = isFarcasterEnvironment();
+    console.log('🔧 Importing Farcaster MiniApp SDK...', { isFarcasterEnv: envCheck });
+    
+    const { sdk: importedSDK } = await import('@farcaster/miniapp-sdk');
+    sdk = importedSDK;
+    
+    // Debug SDK import
+    console.log('🔧 SDK import check:', {
+      sdk: !!sdk,
+      sdkType: typeof sdk,
+      sdkKeys: sdk ? Object.keys(sdk) : 'undefined',
+      actions: sdk?.actions ? Object.keys(sdk.actions) : 'undefined',
+      haptics: sdk?.haptics ? Object.keys(sdk.haptics) : 'undefined'
+    });
+    
+    return sdk;
   } catch (error) {
     console.error('❌ Failed to import Farcaster MiniApp SDK:', error);
     sdkImportError = error instanceof Error ? error.message : 'Unknown error';
@@ -163,10 +160,10 @@ export function SDKProvider({ children }: SDKProviderProps) {
     }
   };
 
-  // Function to call ready() - only works in Farcaster environments
+  // Function to call ready() - works in both Farcaster and development environments
   const callReady = async () => {
-    if (!isInitialized || !isFarcasterEnv) {
-      console.log('⚠️ SDK not initialized or not in Farcaster environment, cannot call ready()');
+    if (!isInitialized) {
+      console.log('⚠️ SDK not initialized yet, cannot call ready()');
       return;
     }
 
@@ -185,6 +182,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
       console.log('🔧 SDK object available:', !!sdk);
       console.log('🔧 SDK actions available:', !!sdk.actions);
       console.log('🔧 SDK ready function available:', typeof sdk.actions.ready);
+      console.log('🔧 Environment:', { isFarcasterEnv, hostname: typeof window !== 'undefined' ? window.location.hostname : 'server' });
       
       // Ensure we're calling ready() correctly
       if (typeof sdk.actions.ready === 'function') {
@@ -206,7 +204,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
             console.log('✅ Haptics test successful');
           }
         } catch (hapticError) {
-          console.warn('⚠️ Haptics test failed:', hapticError);
+          console.warn('⚠️ Haptics test failed (expected in non-Farcaster environments):', hapticError);
         }
       } else {
         console.error('❌ sdk.actions.ready is not a function');
@@ -229,6 +227,13 @@ export function SDKProvider({ children }: SDKProviderProps) {
         sdkKeys: sdk ? Object.keys(sdk) : 'none',
         actionKeys: sdk?.actions ? Object.keys(sdk.actions) : 'none'
       });
+      
+      // In development mode, we can still mark as ready even if ready() fails
+      if (!isFarcasterEnv) {
+        console.log('ℹ️ Development mode: Marking as ready despite ready() failure');
+        setIsSDKReady(true);
+        setSdkError(null);
+      }
     }
   };
 
@@ -241,6 +246,19 @@ export function SDKProvider({ children }: SDKProviderProps) {
       console.log('🖥️ Server environment, skipping SDK initialization');
     }
   }, []);
+
+  // Auto-call ready() when SDK is initialized
+  useEffect(() => {
+    if (isInitialized && !isSDKReady && sdk && typeof window !== 'undefined') {
+      console.log('🔄 Auto-calling sdk.actions.ready() after SDK initialization...');
+      // Small delay to ensure everything is loaded
+      const timer = setTimeout(() => {
+        callReady();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialized, isSDKReady, sdk, callReady]);
 
   const value: SDKContextType = {
     isSDKReady,
