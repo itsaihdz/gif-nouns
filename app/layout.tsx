@@ -50,6 +50,12 @@ export async function generateMetadata(): Promise<Metadata> {
       "fc:miniapp:splash": SPLASH_URL,
       "fc:miniapp:image": HERO_IMAGE_URL,
       "fc:miniapp:description": "Create animated Nouns with custom noggles and eye animations",
+      
+      // Additional required embed fields
+      "fc:frame:version": "1",
+      "fc:frame:imageUrl": HERO_IMAGE_URL,
+      "fc:frame:aspectRatio": "1.91:1",
+      "fc:frame:button": "Animate your nouns ⌐◨-◨",
     },
   };
 }

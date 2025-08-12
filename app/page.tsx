@@ -78,38 +78,37 @@ export default function HomePage() {
   // Call sdk.actions.ready() as soon as SDK is initialized
   useEffect(() => {
     if (isMounted && isSDKReady && !sdkError && typeof window !== 'undefined') {
+      console.log('🔄 Main page: SDK ready, calling sdk.actions.ready() immediately...');
+      // Call ready() immediately without delay
+      callReady().catch(error => {
+        console.error('Failed to call sdk.actions.ready():', error);
+      });
+    }
+  }, [isMounted, isSDKReady, sdkError, callReady]);
+
+  // Additional immediate ready call for Farcaster environments
+  useEffect(() => {
+    if (isMounted && typeof window !== 'undefined') {
       // Check if we're in a Farcaster environment
       const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
                              window.location.hostname.includes('farcaster.xyz') ||
                              window.navigator.userAgent.includes('Farcaster');
       
       if (isFarcasterEnv) {
-        console.log('🔄 Main page: In Farcaster environment, calling sdk.actions.ready()...');
-        // Call ready() directly after a short delay to ensure everything is loaded
-        const timer = setTimeout(async () => {
-          try {
-            await callReady();
-          } catch (error) {
-            console.error('Failed to call sdk.actions.ready():', error);
-          }
-        }, 1000);
-        
-        return () => clearTimeout(timer);
+        console.log('🔄 Main page: In Farcaster environment, calling sdk.actions.ready() immediately...');
+        // Call ready() immediately for Farcaster environments
+        callReady().catch(error => {
+          console.error('Failed to call sdk.actions.ready():', error);
+        });
       } else {
         console.log('ℹ️ Main page: Not in Farcaster environment, but still calling ready() for compatibility...');
         // Call ready() even in non-Farcaster environments as it's required by the SDK
-        const timer = setTimeout(async () => {
-          try {
-            await callReady();
-          } catch (error) {
-            console.error('Failed to call sdk.actions.ready():', error);
-          }
-        }, 1000);
-        
-        return () => clearTimeout(timer);
+        callReady().catch(error => {
+          console.error('Failed to call sdk.actions.ready():', error);
+        });
       }
     }
-  }, [isMounted, isSDKReady, sdkError, callReady]);
+  }, [isMounted, callReady]);
 
 
 
