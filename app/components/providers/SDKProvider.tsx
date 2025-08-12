@@ -10,7 +10,8 @@ let sdkImportError: string | null = null;
 const isFarcasterEnvironment = () => {
   if (typeof window === 'undefined') return false;
   
-  return (
+  // More permissive environment detection
+  const isFarcaster = (
     window.location.hostname.includes('warpcast.com') || 
     window.location.hostname.includes('farcaster.xyz') ||
     window.location.hostname.includes('farcaster.app') ||
@@ -23,6 +24,21 @@ const isFarcasterEnvironment = () => {
     !!(window as any).farcasterMiniApp ||
     !!(window as any).farcasterFrame
   );
+  
+  // For development, also consider localhost as potential Farcaster environment
+  const isLocalhost = window.location.hostname.includes('localhost') || 
+                      window.location.hostname.includes('127.0.0.1');
+  
+  console.log('🔍 Environment detection:', {
+    hostname: window.location.hostname,
+    userAgent: window.navigator.userAgent,
+    isFarcaster,
+    isLocalhost,
+    farcaster: !!(window as any).farcaster,
+    warpcast: !!(window as any).warpcast
+  });
+  
+  return isFarcaster || isLocalhost;
 };
 
 // Lazy import SDK only when needed
@@ -45,6 +61,25 @@ const importSDK = async () => {
       actions: sdk?.actions ? Object.keys(sdk.actions) : 'undefined',
       haptics: sdk?.haptics ? Object.keys(sdk.haptics) : 'undefined'
     });
+    
+    // Additional detailed debugging
+    if (sdk && sdk.actions) {
+      console.log('🔧 SDK actions detailed check:', {
+        ready: {
+          exists: !!sdk.actions.ready,
+          type: typeof sdk.actions.ready,
+          isFunction: typeof sdk.actions.ready === 'function'
+        },
+        composeCast: {
+          exists: !!sdk.actions.composeCast,
+          type: typeof sdk.actions.composeCast
+        },
+        openUrl: {
+          exists: !!sdk.actions.openUrl,
+          type: typeof sdk.actions.openUrl
+        }
+      });
+    }
     
     return sdk;
   } catch (error) {
@@ -131,6 +166,21 @@ export function SDKProvider({ children }: SDKProviderProps) {
         }
       });
 
+      // Immediate test call to sdk.actions.ready() to verify it works
+      console.log('🧪 Testing sdk.actions.ready() immediately after import...');
+      try {
+        if (typeof importedSDK.actions.ready === 'function') {
+          console.log('🚀 Immediate ready() test call...');
+          await importedSDK.actions.ready({ disableNativeGestures: true });
+          console.log('✅ Immediate ready() test call successful!');
+          setIsSDKReady(true);
+        } else {
+          console.error('❌ Immediate ready() test failed - function not available');
+        }
+      } catch (immediateError) {
+        console.error('❌ Immediate ready() test failed with error:', immediateError);
+      }
+
       // Always call ready() regardless of environment
       console.log('🔄 Auto-calling sdk.actions.ready() for all environments...');
       try {
@@ -155,15 +205,15 @@ export function SDKProvider({ children }: SDKProviderProps) {
   };
 
   // Function to call ready() - works in all environments
-  const callReady = async () => {
+  const callReady = async (force: boolean = false) => {
     if (!isInitialized) {
       console.log('⚠️ SDK not initialized yet, cannot call ready()');
       return;
     }
 
-    if (isSDKReady) {
-      console.log('✅ SDK already ready, skipping ready() call');
-      return;
+    if (isSDKReady && !force) {
+      console.log('✅ SDK already ready, but forcing ready() call for Farcaster client...');
+      // Force the call even if already ready to ensure Farcaster client recognizes it
     }
 
     if (!sdk) {
@@ -251,6 +301,50 @@ export function SDKProvider({ children }: SDKProviderProps) {
       return () => clearTimeout(timer);
     }
   }, [isInitialized, isSDKReady, sdk, callReady]);
+
+  // Additional aggressive ready() calls for reliability
+  useEffect(() => {
+    if (isInitialized && sdk && typeof window !== 'undefined') {
+      console.log('🔄 Setting up aggressive ready() calls for maximum reliability...');
+      
+      // Call ready() multiple times with different delays
+      const timers = [
+        setTimeout(() => {
+          console.log('🔄 Aggressive ready() call #1 (500ms)');
+          callReady(true); // Force call
+        }, 500),
+        setTimeout(() => {
+          console.log('🔄 Aggressive ready() call #2 (1000ms)');
+          callReady(true); // Force call
+        }, 1000),
+        setTimeout(() => {
+          console.log('🔄 Aggressive ready() call #3 (2000ms)');
+          callReady(true); // Force call
+        }, 2000),
+        setTimeout(() => {
+          console.log('🔄 Aggressive ready() call #4 (5000ms)');
+          callReady(true); // Force call
+        }, 5000)
+      ];
+      
+      return () => timers.forEach(timer => clearTimeout(timer));
+    }
+  }, [isInitialized, sdk, callReady]);
+
+  // Periodic ready() calls to ensure Farcaster client always recognizes the ready state
+  useEffect(() => {
+    if (isInitialized && sdk && typeof window !== 'undefined') {
+      console.log('🔄 Setting up periodic ready() calls for persistent Farcaster client recognition...');
+      
+      // Call ready() every 10 seconds to ensure Farcaster client recognizes it
+      const interval = setInterval(() => {
+        console.log('🔄 Periodic ready() call for Farcaster client recognition...');
+        callReady(true); // Force call
+      }, 10000); // Every 10 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [isInitialized, sdk, callReady]);
 
   const value: SDKContextType = {
     isSDKReady,

@@ -41,18 +41,9 @@ export function Header({ className = "" }: HeaderProps) {
           </div>
 
           {/* Wallet Indicator */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            {isMounted && isConnected && address ? (
-              // Show wallet address when connected (simplified for testing)
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {address.slice(0, 6)}...{address.slice(-4)}
-                </div>
-              </div>
-            ) : (
-              // Show connect wallet button
-              <WalletConnect variant="button" size="sm" />
-            )}
+          <div className="flex items-center py-4 space-x-2 sm:space-x-3">
+            {/* Always use WalletConnect component for proper functionality */}
+            <WalletConnect variant="button" size="sm" className="h-8 w-auto sm:h-10 lg:h-12" />
           </div>
         </div>
       </div>

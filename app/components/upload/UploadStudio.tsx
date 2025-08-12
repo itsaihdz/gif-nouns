@@ -215,9 +215,6 @@ export function UploadStudio({ className = "", onGifCreated }: UploadStudioProps
       <div className="max-w-sm mx-auto px-3 py-3 sm:max-w-md sm:px-4 sm:py-4 md:max-w-2xl lg:max-w-7xl lg:px-8">
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
-            GifNouns
-          </h1>
         </div>
 
         {/* Progress Steps */}

@@ -350,7 +350,7 @@ ${gif.url}`;
           path: item.title || 'Untitled GIF',
           size: 0, // Not available from metadata
           contentType: 'image/gif',
-          created_at: new Date().toISOString(), // Not available from metadata
+          created_at: item.created_at || new Date().toISOString(), // Use actual created_at from database
           creator: {
             username: item.creatorWallet ? `${item.creatorWallet.slice(0, 6)}...${item.creatorWallet.slice(-4)}` : 'Unknown Creator',
             wallet: item.creatorWallet || 'unknown',

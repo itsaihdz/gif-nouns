@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     // Fetch all GIF metadata from the gallery_items table
     const { data, error } = await supabase
       .from('gallery_items')
-      .select('gif_url, title, noggle_color, eye_animation, upvotes, downvotes, creator_wallet')
+      .select('gif_url, title, noggle_color, eye_animation, upvotes, downvotes, creator_wallet, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
       eyeAnimation: item.eye_animation,
       upvotes: item.upvotes || 0,
       downvotes: item.downvotes || 0,
-      creatorWallet: item.creator_wallet
+      creatorWallet: item.creator_wallet,
+      created_at: item.created_at
     }));
 
     return NextResponse.json({
