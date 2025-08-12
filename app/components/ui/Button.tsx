@@ -50,10 +50,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   };
 
   const sizeClasses = {
-    sm: "text-sm px-3 py-1.5 rounded-lg",
-    md: "text-base px-4 py-2 rounded-lg",
-    lg: "text-lg px-6 py-3 rounded-xl",
-    xl: "text-xl px-8 py-4 rounded-xl",
+    sm: "text-xs px-2 py-1 rounded-md",
+    md: "text-sm px-3 py-1.5 rounded-lg",
+    lg: "text-base px-4 py-2 rounded-lg",
+    xl: "text-lg px-6 py-3 rounded-xl",
   };
 
   const content = (

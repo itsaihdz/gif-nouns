@@ -127,7 +127,6 @@ export function FileUpload({
             {/* Tips */}
             <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
               <p>💡 Tip: Use a square image for best results</p>
-              <p>🔍 We&apos;ll automatically detect your Noun&apos;s traits</p>
             </div>
           </div>
         )}

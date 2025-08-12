@@ -1,11 +1,12 @@
 "use client";
 
-import { useAccount, useDisconnect } from "wagmi";
+import { useAccount, useDisconnect, useConnect } from "wagmi";
 import { WalletDropdown, ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { Button } from "./Button";
 import { Icon } from "../icons";
 import { useTracking } from "../analytics/Tracking";
 import { useEffect, useState } from "react";
+import { Identity, Name, Badge } from "@coinbase/onchainkit/identity";
 
 interface WalletConnectProps {
   variant?: "button" | "dropdown";
@@ -15,10 +16,12 @@ interface WalletConnectProps {
 
 export function WalletConnect({ 
   variant = "button", 
+  size = "md",
   className = "" 
 }: WalletConnectProps) {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+  const { connect, connectors } = useConnect();
   const tracking = useTracking();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -62,25 +65,40 @@ export function WalletConnect({
 
   // Don't render anything until mounted to prevent hydration mismatch
   if (!isMounted) {
+    const skeletonSizes = {
+      sm: "h-6 w-16",
+      md: "h-8 w-20", 
+      lg: "h-10 w-24",
+      xl: "h-12 w-28"
+    };
+    
     return (
       <div className={className}>
-        <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+        <div className={`${skeletonSizes[size]} bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse`}></div>
       </div>
     );
   }
 
-  // If connected, show disconnect button
+  // If connected, show disconnect button with identity info
   if (isConnected && address) {
     return (
       <div className={className}>
         <div className="flex items-center space-x-3">
           <Button
             variant="outline"
-            size="sm"
+            size={size}
             onClick={handleDisconnect}
             icon={<Icon name="close" size="sm" />}
           >
-            Disconnect
+            <Identity
+              address={address as `0x${string}`}
+              schemaId="0xf8b05c79f090979bf4a80270aba232dff11a10d9ca55c4f88de95317970f0de9"
+              className="bg-transparent"
+            >
+              <Name className="text-xs sm:text-sm lg:text-base font-medium bg-transparent">
+                <Badge className="bg-transparent" />
+              </Name>
+            </Identity>
           </Button>
         </div>
       </div>
@@ -90,7 +108,19 @@ export function WalletConnect({
   // If not connected, show connect button
   return (
     <div className={className}>
-      <ConnectWallet />
+      <Button
+        variant="primary"
+        size={size}
+        onClick={() => {
+          const connector = connectors[0];
+          if (connector) {
+            connect({ connector });
+          }
+        }}
+        className="min-w-0"
+      >
+        Connect Wallet
+      </Button>
     </div>
   );
 } 
