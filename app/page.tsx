@@ -67,12 +67,6 @@ export default function HomePage() {
     }
   }, [setFrameReady, isFrameReady, isMounted]);
 
-  // SDK status logging (no aggressive calls)
-  useEffect(() => {
-    if (isMounted) {
-      console.log('📊 SDK Status:', { isSDKReady, sdkError });
-    }
-  }, [isMounted, isSDKReady, sdkError]);
 
 
 
