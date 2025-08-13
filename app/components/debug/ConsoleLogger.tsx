@@ -7,7 +7,7 @@ export function ConsoleLogger() {
     // Only run in browser environment
     if (typeof window === 'undefined') return;
 
-    const ENDPOINT = "https://webhook.site/a1d4c769-2f20-4f74-9d40-6bd5ed303577";
+    const ENDPOINT = "/api/debug-logs";
     const LEVELS = ["log", "info", "warn", "error"];
     const original: Record<string, (...args: any[]) => void> = {};
     const sessionId = crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
