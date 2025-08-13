@@ -17,18 +17,8 @@ export async function GET() {
       homeUrl: SITE_CONFIG.BASE_URL,
       splashImageUrl: SITE_CONFIG.SPLASH_URL,
       splashBackgroundColor: '#8B5CF6',
-      subtitle: 'Animate your Nouns PFP',
       description:
-        'Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eyes.',
-      screenshotUrls: [SITE_CONFIG.SCREENSHOT_URL],
-      primaryCategory: 'art-creativity',
-      tags: ['nouns', 'animation', 'pfp', 'gif', 'art'],
-      heroImageUrl: SITE_CONFIG.HERO_IMAGE_URL,
-      tagline: 'Bring your Nouns to life',
-      ogTitle: 'GifNouns - Animated Nouns',
-      ogDescription:
-        'Create animated Nouns with custom noggles and eyes animations',
-      ogImageUrl: SITE_CONFIG.HERO_IMAGE_URL,
+        'Create animated Nouns with custom noggles and eye animations',
       imageUrl: SITE_CONFIG.HERO_IMAGE_URL,
       button: {
         title: 'Animate your nouns ⌐◨-◨',
@@ -37,10 +27,6 @@ export async function GET() {
           url: SITE_CONFIG.BASE_URL,
         },
       },
-      buttonTitle: 'Animate your nouns ⌐◨-◨',
-      requiredChains: ['eip155:1', 'eip155:8453'],
-      requiredCapabilities: ['wallet.getEthereumProvider', 'actions.signIn'],
-      noindex: false,
     },
   };
 
@@ -50,9 +36,6 @@ export async function GET() {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-      'Cache-Control': 'no-cache, no-store, max-age=0, must-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
     },
   });
 }
