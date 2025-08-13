@@ -3,6 +3,7 @@ import "@coinbase/onchainkit/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ConsoleLogger } from "./components/debug/ConsoleLogger";
 // import { ErrorBoundary } from "./components/ui/ErrorBoundary"; // Unused import
 // import { Analytics } from "@vercel/analytics/react"; // Unused import
 
@@ -68,6 +69,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-montserrat antialiased">
+        <ConsoleLogger />
         <Providers>{children}</Providers>
       </body>
     </html>
