@@ -99,13 +99,13 @@ export default function TestMiniAppPage() {
       }
 
       // Test haptics
-      // if (sdk && typeof sdk.haptics?.impactOccurred === 'function') {
-      //   addTestResult('🧪 Testing haptics...');
-      //   await sdk.haptics.impactOccurred('light');
-      //   addTestResult('✅ Haptics test successful');
-      // } else {
-      addTestResult('⚠️ Haptics not available');
-      // }
+      if (sdk && typeof sdk.haptics?.impactOccurred === 'function') {
+        addTestResult('🧪 Testing haptics...');
+        await sdk.haptics.impactOccurred('light');
+        addTestResult('✅ Haptics test successful');
+      } else {
+        addTestResult('⚠️ Haptics not available');
+      }
 
       addTestResult(`🌍 Environment: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
 

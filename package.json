@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@coinbase/onchainkit": "^0.37.0",
-    "@farcaster/frame-sdk": "0.0.50",
+    "@farcaster/frame-sdk": "^0.1.8",
     "@lighthouse-web3/sdk": "^0.4.0",
     "@neynar/nodejs-sdk": "^3.30.0",
     "@supabase/supabase-js": "^2.53.0",
@@ -76,6 +76,6 @@
     "typescript": "^5"
   },
   "overrides": {
-    "@farcaster/frame-sdk": "0.0.50"
+    "@farcaster/frame-sdk": "^0.1.8"
   }
 }

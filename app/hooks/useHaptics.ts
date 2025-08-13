@@ -1,6 +1,6 @@
 "use client";
 
-// import sdk from '@farcaster/frame-sdk';
+import sdk from '@farcaster/frame-sdk';
 
 import { useSDK } from '../components/providers/FarcasterSDKProvider';
 
@@ -20,7 +20,7 @@ export function useHaptics() {
     }
 
     try {
-      // await sdk.haptics.impactOccurred(style);
+      await sdk.haptics.impactOccurred(style);
     } catch (error) {
       // Silently fail if haptics aren't available
       console.debug('Haptics not available:', error);
@@ -34,7 +34,7 @@ export function useHaptics() {
     }
 
     try {
-      // await sdk.haptics.notificationOccurred(style);
+      await sdk.haptics.notificationOccurred(style);
     } catch (error) {
       // Silently fail if haptics aren't available
       console.debug('Haptics not available:', error);
@@ -48,7 +48,7 @@ export function useHaptics() {
     }
 
     try {
-      // await sdk.haptics.selectionChanged();
+      await sdk.haptics.selectionChanged();
     } catch (error) {
       // Silently fail if haptics aren't available
       console.debug('Haptics not available:', error);
