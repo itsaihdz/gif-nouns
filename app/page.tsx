@@ -11,7 +11,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useSDK } from "./components/providers/SDKProvider";
+import { useSDK } from "./components/providers/FarcasterSDKProvider";
 
 
 interface GalleryItem {
@@ -49,7 +49,7 @@ export default function HomePage() {
   const { setFrameReady, isFrameReady } = miniKitHook || { setFrameReady: null, isFrameReady: false };
 
   // Initialize Farcaster SDK
-  const { isSDKReady, sdkError, initializeSDK, callReady } = useSDK();
+  const { isSDKReady, sdkError } = useSDK();
 
   // Prevent hydration mismatch by only rendering after mount
   useEffect(() => {
@@ -67,48 +67,6 @@ export default function HomePage() {
     }
   }, [setFrameReady, isFrameReady, isMounted]);
 
-  // Initialize Farcaster SDK when component mounts
-  useEffect(() => {
-    if (isMounted && !isSDKReady && !sdkError) {
-      console.log('🔄 Main page: Initializing Farcaster SDK...');
-      initializeSDK();
-    }
-  }, [isMounted, isSDKReady, sdkError, initializeSDK]);
-
-  // Call sdk.actions.ready() as soon as SDK is initialized
-  useEffect(() => {
-    if (isMounted && isSDKReady && !sdkError && typeof window !== 'undefined') {
-      console.log('🔄 Main page: SDK ready, calling sdk.actions.ready() immediately...');
-      // Call ready() immediately without delay
-      callReady().catch(error => {
-        console.error('Failed to call sdk.actions.ready():', error);
-      });
-    }
-  }, [isMounted, isSDKReady, sdkError, callReady]);
-
-  // Additional immediate ready call for Farcaster environments
-  useEffect(() => {
-    if (isMounted && typeof window !== 'undefined') {
-      // Check if we're in a Farcaster environment
-      const isFarcasterEnv = window.location.hostname.includes('warpcast.com') || 
-                             window.location.hostname.includes('farcaster.xyz') ||
-                             window.navigator.userAgent.includes('Farcaster');
-      
-      if (isFarcasterEnv) {
-        console.log('🔄 Main page: In Farcaster environment, calling sdk.actions.ready() immediately...');
-        // Call ready() immediately for Farcaster environments
-        callReady().catch(error => {
-          console.error('Failed to call sdk.actions.ready():', error);
-        });
-      } else {
-        console.log('ℹ️ Main page: Not in Farcaster environment, but still calling ready() for compatibility...');
-        // Call ready() even in non-Farcaster environments as it's required by the SDK
-        callReady().catch(error => {
-          console.error('Failed to call sdk.actions.ready():', error);
-        });
-      }
-    }
-  }, [isMounted, callReady]);
 
 
 

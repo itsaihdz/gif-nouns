@@ -7,7 +7,7 @@ import { Icon } from "../icons";
 import { useFarcasterData } from "../../hooks/useFarcasterData";
 import { useUserVotes } from "../../hooks/useUserVotes";
 import { useHaptics } from "../../hooks/useHaptics";
-import { sdk } from '@farcaster/miniapp-sdk';
+import sdk from '@farcaster/frame-sdk';
 import { Avatar, Identity, Name, Badge } from '@coinbase/onchainkit/identity';
 import { useAccount } from "wagmi";
 
@@ -50,27 +50,27 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
     console.log('🔥 FILTER STATE CHANGED:', { selectedNoggleColor, selectedEyeAnimation, sortBy });
   }, [selectedNoggleColor, selectedEyeAnimation, sortBy]);
 
-      const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
-      try {
-        // Check if wallet is connected
-        if (!isConnected || !address) {
-          console.error('❌ Wallet not connected');
-          await notificationOccurred('error');
-          return;
-        }
+  const handleVote = async (gifUrl: string, voteType: 'upvote' | 'downvote') => {
+    try {
+      // Check if wallet is connected
+      if (!isConnected || !address) {
+        console.error('❌ Wallet not connected');
+        await notificationOccurred('error');
+        return;
+      }
 
-        // Use connected wallet address as user identifier
-        const walletAddress = address;
-        const userFid = parseInt(address.slice(-8), 16); // Convert last 8 hex chars to number for unique FID
-        const username = `${address.slice(0, 6)}...${address.slice(-4)}`;
-        
-        console.log('🔄 Voting with wallet data:', { 
-          gifUrl, 
-          voteType, 
-          userFid, 
-          username, 
-          walletAddress 
-        });
+      // Use connected wallet address as user identifier
+      const walletAddress = address;
+      const userFid = parseInt(address.slice(-8), 16); // Convert last 8 hex chars to number for unique FID
+      const username = `${address.slice(0, 6)}...${address.slice(-4)}`;
+
+      console.log('🔄 Voting with wallet data:', {
+        gifUrl,
+        voteType,
+        userFid,
+        username,
+        walletAddress
+      });
 
       const response = await fetch('/api/gallery/vote-storage', {
         method: 'POST',
@@ -88,20 +88,20 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
       if (response.ok) {
         const result = await response.json();
         console.log('✅ Vote successful:', result);
-        
+
         if (result.success) {
           // Success haptic feedback for voting
           await notificationOccurred('success');
-          
+
           // Update vote tracking - check if vote was removed or changed
           const currentVote = getUserVote(gifUrl);
-          console.log('🔄 Vote state update:', { 
-            currentVote, 
-            newVote: result.userVote, 
-            upvotes: result.upvotes, 
-            downvotes: result.downvotes 
+          console.log('🔄 Vote state update:', {
+            currentVote,
+            newVote: result.userVote,
+            upvotes: result.upvotes,
+            downvotes: result.downvotes
           });
-          
+
           if (result.userVote) {
             // Vote was added or changed
             addVote(gifUrl, result.userVote);
@@ -109,20 +109,20 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
             // Vote was removed (user clicked same button)
             removeVote(gifUrl);
           }
-          
+
           // Update the GIF in the list
-          setGifs(prevGifs => 
-            prevGifs.map(gif => 
-              gif.url === gifUrl 
+          setGifs(prevGifs =>
+            prevGifs.map(gif =>
+              gif.url === gifUrl
                 ? {
-                    ...gif,
-                    upvotes: result.upvotes,
-                    downvotes: result.downvotes,
-                  }
+                  ...gif,
+                  upvotes: result.upvotes,
+                  downvotes: result.downvotes,
+                }
                 : gif
             )
           );
-          
+
           // Note: filterGifs will be called automatically via useEffect when gifs state changes
         } else {
           console.error('❌ Vote failed:', result);
@@ -142,14 +142,14 @@ export function StorageGallery({ className = "" }: StorageGalleryProps) {
   const handleShareToFarcaster = async (gif: StorageGif) => {
     try {
       console.log('🔄 handleShareToFarcaster called with:', gif.title);
-      console.log('🔄 Available MiniKit functions:', { 
+      console.log('🔄 Available MiniKit functions:', {
         sdk: typeof sdk,
         sdkActions: typeof sdk?.actions,
         sdkComposeCast: typeof sdk?.actions?.composeCast,
         sdkOpenUrl: typeof sdk?.actions?.openUrl
       });
       await selectionChanged(); // Haptic feedback
-      
+
       // Use consistent text template from other sharing components
       const shareText = `Check out this animated Noun "${gif.title || 'GIF'}"! 🎨✨
 
@@ -162,7 +162,7 @@ Vote for it in the gallery! 🗳️
 https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${gif.url}`;
-      
+
       // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.composeCast === 'function') {
         console.log('🎯 Using native composeCast function');
@@ -175,21 +175,21 @@ ${gif.url}`;
             window.open(farcasterUrl, '_blank');
             notificationOccurred('success');
           }, 1000);
-          
+
           await sdk.actions.composeCast({
             text: shareText,
             embeds: [gif.url], // Include GIF as embed
           });
-          
+
           // Clear timeout if composeCast actually worked
           clearTimeout(composeTimeout);
           console.log('✅ Native composeCast completed');
-          
+
           // Force fallback to web URL since composeCast might not actually open the interface
           console.log('🔄 composeCast completed but forcing web fallback for reliability');
           const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
           window.open(farcasterUrl, '_blank');
-          
+
           await notificationOccurred('success');
         } catch (sdkError) {
           console.log('SDK composeCast failed, using fallback:', sdkError);
@@ -234,7 +234,7 @@ ${gif.url}`;
         console.log('✅ Fallback sharing completed');
         await notificationOccurred('success');
       }
-      
+
     } catch (error) {
       console.error('❌ Error sharing to Farcaster:', error);
       try {
@@ -248,13 +248,13 @@ ${gif.url}`;
   const handleShareToTwitter = async (gif: StorageGif) => {
     try {
       console.log('🔄 handleShareToTwitter called with:', gif.title);
-      console.log('🔄 Available SDK for Twitter:', { 
+      console.log('🔄 Available SDK for Twitter:', {
         sdk: typeof sdk,
         sdkActions: typeof sdk?.actions,
         sdkOpenUrl: typeof sdk?.actions?.openUrl
       });
       await selectionChanged(); // Haptic feedback
-      
+
       // Use consistent text template from other sharing components
       const shareText = `Check out this animated Noun "${gif.title || 'GIF'}"! 🎨✨
 
@@ -267,7 +267,7 @@ Vote for it in the gallery! 🗳️
 https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${gif.url}`;
-      
+
       // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.openUrl === 'function') {
         try {
@@ -276,12 +276,12 @@ ${gif.url}`;
           const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
           await sdk.actions.openUrl(twitterDeepLink);
           console.log('✅ Twitter deep link completed');
-          
+
           // Force fallback to web URL since SDK might not actually open the interface
           console.log('🔄 Twitter deep link completed but forcing web fallback for reliability');
           const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
           window.open(twitterWebUrl, '_blank');
-          
+
           await notificationOccurred('success');
         } catch (deepLinkError) {
           console.log('🔄 Deep link failed, trying web URL:', deepLinkError);
@@ -291,11 +291,11 @@ ${gif.url}`;
             const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
             await sdk.actions.openUrl(twitterWebUrl);
             console.log('✅ Twitter web URL completed');
-            
+
             // Force fallback to web URL since SDK might not actually open the interface
             console.log('🔄 Twitter web URL via SDK completed but forcing window.open fallback for reliability');
             window.open(twitterWebUrl, '_blank');
-            
+
             await notificationOccurred('success');
           } catch (sdkError) {
             console.log('SDK openUrl failed, using window.open:', sdkError);
@@ -329,21 +329,21 @@ ${gif.url}`;
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('🔄 Fetching GIFs with metadata directly from database...');
-      
+
       // Fetch all GIF metadata directly from the database
       const metadataResponse = await fetch('/api/gallery/metadata');
-      
+
       if (!metadataResponse.ok) {
         throw new Error(`HTTP error! status: ${metadataResponse.status}`);
       }
-      
+
       const metadataResult = await metadataResponse.json();
-      
+
       if (metadataResult.success) {
         console.log(`✅ Fetched ${metadataResult.count} GIF metadata records from database`);
-        
+
         // Transform the metadata into the format expected by the component
         const gifsWithMetadata = metadataResult.data.map((item: any) => ({
           url: item.gifUrl,
@@ -362,7 +362,7 @@ ${gif.url}`;
           downvotes: item.downvotes || 0,
           hasCreatorInfo: true
         }));
-        
+
         console.log('🔥 FINAL PROCESSED GIFS WITH METADATA:', gifsWithMetadata.map((g: any) => ({
           title: g.title,
           noggleColor: g.noggleColor,
@@ -370,7 +370,7 @@ ${gif.url}`;
           upvotes: g.upvotes,
           downvotes: g.downvotes
         })));
-        
+
         setGifs(gifsWithMetadata);
         setFilteredGifs(gifsWithMetadata);
       } else {
@@ -397,25 +397,25 @@ ${gif.url}`;
   const getAvailableNoggleColors = () => {
     const availableColors = new Set<string>();
     const unknownCount = { noggle: 0, eye: 0 };
-    
+
     gifs.forEach(gif => {
       if (gif.noggleColor && gif.noggleColor !== 'unknown') {
         availableColors.add(gif.noggleColor);
       } else if (gif.noggleColor === 'unknown') {
         unknownCount.noggle++;
       }
-      
+
       if (gif.eyeAnimation && gif.eyeAnimation !== 'unknown') {
         // Track eye animations too
       } else if (gif.eyeAnimation === 'unknown') {
         unknownCount.eye++;
       }
     });
-    
+
     console.log('🎨 Available noggle colors from data:', Array.from(availableColors));
     console.log('⚠️ GIFs with unknown noggle colors:', unknownCount.noggle);
     console.log('⚠️ GIFs with unknown eye animations:', unknownCount.eye);
-    
+
     // Convert to array format for the dropdown
     const colorOptions = [
       { name: "All Noggle Colors", value: "all" },
@@ -424,7 +424,7 @@ ${gif.url}`;
         value: color
       }))
     ];
-    
+
     return colorOptions;
   };
 
@@ -436,7 +436,7 @@ ${gif.url}`;
         availableAnimations.add(gif.eyeAnimation);
       }
     });
-    
+
     // Convert to array format for the dropdown
     const animationOptions = [
       { name: "All Eye Animations", value: "all" },
@@ -445,7 +445,7 @@ ${gif.url}`;
         value: animation
       }))
     ];
-    
+
     console.log('👁️ Available eye animations from data:', animationOptions);
     return animationOptions;
   };
@@ -457,38 +457,38 @@ ${gif.url}`;
     console.log('🔥 Available GIFs:', gifs.map(g => ({ title: g.title, noggleColor: g.noggleColor, eyeAnimation: g.eyeAnimation })));
     console.log('🔥 Looking for noggle color:', selectedNoggleColor);
     console.log('🔥 Looking for eye animation:', selectedEyeAnimation);
-    
+
     if (gifs.length > 0) {
       // Call filterGifs directly instead of including it in dependencies
       const filtered = gifs.filter(gif => {
         console.log('🔄 Filtering GIF:', { title: gif.title, noggleColor: gif.noggleColor, eyeAnimation: gif.eyeAnimation });
-        
+
         // Filter by noggle color
         if (selectedNoggleColor !== 'all' && gif.noggleColor !== selectedNoggleColor) {
           console.log('❌ Filtered out by noggle color:', gif.noggleColor, '!==', selectedNoggleColor);
           console.log('❌ GIF title:', gif.title, 'has noggle color:', gif.noggleColor, 'but filter wants:', selectedNoggleColor);
-          
+
           // Skip GIFs with unknown noggle color when filtering by specific color
           if (gif.noggleColor === 'unknown') {
             console.log('⚠️ Skipping GIF with unknown noggle color:', gif.title);
             return false;
           }
-          
+
           return false;
         }
-        
+
         // Filter by eye animation
         if (selectedEyeAnimation !== 'all' && gif.eyeAnimation !== selectedEyeAnimation) {
           console.log('❌ Filtered out by eye animation:', gif.eyeAnimation, '!==', selectedEyeAnimation);
           return false;
         }
-        
+
         console.log('✅ GIF passed filters:', gif.title);
         return true;
       });
-      
+
       console.log('🔥 Filtered results:', filtered.length, 'out of', gifs.length);
-      
+
       // Sort the filtered results
       const sorted = [...filtered].sort((a, b) => {
         switch (sortBy) {
@@ -504,7 +504,7 @@ ${gif.url}`;
             return 0;
         }
       });
-      
+
       setFilteredGifs(sorted);
       console.log('✅ Filtered and sorted GIFs:', sorted.length);
     }
@@ -565,10 +565,10 @@ ${gif.url}`;
             )}
             {sortBy !== 'newest' && (
               <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
-                Sorted: {sortBy === 'most-upvotes' ? 'More Upvotes' : 
-                         sortBy === 'most-downvotes' ? 'More Downvotes' : 
-                         sortBy === 'oldest' ? 'Oldest First' : 
-                         sortBy.replace('-', ' ')}
+                Sorted: {sortBy === 'most-upvotes' ? 'More Upvotes' :
+                  sortBy === 'most-downvotes' ? 'More Downvotes' :
+                    sortBy === 'oldest' ? 'Oldest First' :
+                      sortBy.replace('-', ' ')}
               </span>
             )}
           </div>
@@ -576,31 +576,30 @@ ${gif.url}`;
 
         {/* Filter and Sort Controls */}
         <div className="space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-3 mb-4 sm:mb-6 sm:justify-center">
-          
+
           {/* Warning about unknown metadata */}
 
-                  <select
-          value={selectedNoggleColor}
-          onChange={async (e) => {
-            const newValue = e.target.value;
-            console.log('🔥 DROPDOWN CHANGED - Noggle Color:', newValue, 'Previous:', selectedNoggleColor);
-            console.log('🔥 Available GIFs with noggle colors:', gifs.map(g => ({ title: g.title, noggleColor: g.noggleColor })));
-            console.log('�� Looking for noggle color:', newValue);
-            await selectionChanged();
-            setSelectedNoggleColor(newValue);
-            console.log('🔥 State updated to:', newValue);
-          }}
-          className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-            selectedNoggleColor !== 'all' 
-              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium' 
-              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
-          }`}
-        >
-          {getAvailableNoggleColors().map(color => (
-            <option key={color.value} value={color.value}>{color.name}</option>
-          ))}
-        </select>
-          
+          <select
+            value={selectedNoggleColor}
+            onChange={async (e) => {
+              const newValue = e.target.value;
+              console.log('🔥 DROPDOWN CHANGED - Noggle Color:', newValue, 'Previous:', selectedNoggleColor);
+              console.log('🔥 Available GIFs with noggle colors:', gifs.map(g => ({ title: g.title, noggleColor: g.noggleColor })));
+              console.log('�� Looking for noggle color:', newValue);
+              await selectionChanged();
+              setSelectedNoggleColor(newValue);
+              console.log('🔥 State updated to:', newValue);
+            }}
+            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${selectedNoggleColor !== 'all'
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium'
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
+              }`}
+          >
+            {getAvailableNoggleColors().map(color => (
+              <option key={color.value} value={color.value}>{color.name}</option>
+            ))}
+          </select>
+
           <select
             value={selectedEyeAnimation}
             onChange={async (e) => {
@@ -610,17 +609,16 @@ ${gif.url}`;
               setSelectedEyeAnimation(newValue);
               console.log('🔥 State updated to:', newValue);
             }}
-            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-              selectedEyeAnimation !== 'all' 
-                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium' 
+            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${selectedEyeAnimation !== 'all'
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-900 dark:text-purple-100 font-medium'
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
-            }`}
+              }`}
           >
-                      {getAvailableEyeAnimations().map(animation => (
-            <option key={animation.value} value={animation.value}>{animation.name}</option>
-          ))}
+            {getAvailableEyeAnimations().map(animation => (
+              <option key={animation.value} value={animation.value}>{animation.name}</option>
+            ))}
           </select>
-          
+
           <select
             value={sortBy}
             onChange={async (e) => {
@@ -630,18 +628,17 @@ ${gif.url}`;
               setSortBy(newValue);
               console.log('🔥 State updated to:', newValue);
             }}
-            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-              sortBy !== 'newest' 
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100 font-medium' 
+            className={`w-full sm:w-auto px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${sortBy !== 'newest'
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100 font-medium'
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white'
-            }`}
+              }`}
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
             <option value="most-upvotes">More Upvotes</option>
             <option value="most-downvotes">More Downvotes</option>
           </select>
-          
+
           <Button
             onClick={handleRefresh}
             variant="outline"
@@ -686,7 +683,7 @@ ${gif.url}`;
                       <Badge className="bg-transparent" />
                     </Name>
                   </Identity>
-                  
+
                   {/* Share Buttons - positioned at right, aligned with GIF right margin */}
                   <div className="ml-auto flex gap-1.5 -mr-3 sm:-mr-4">
                     <button
@@ -712,7 +709,7 @@ ${gif.url}`;
                   </div>
                 </div>
               )}
-              
+
               {/* Fallback for GIFs without valid wallet info - Also aligned with left margin */}
               {gif.creator && (!gif.creator.wallet || gif.creator.wallet === 'unknown') && (
                 <div className="flex items-center gap-1.5 mb-2 -ml-3 sm:-ml-4">
@@ -722,7 +719,7 @@ ${gif.url}`;
                   <span className="text-xs text-gray-500 dark:text-gray-500">
                     {gif.creator.username || 'Unknown Creator'}
                   </span>
-                  
+
                   {/* Share Buttons - positioned at right, aligned with GIF right margin */}
                   <div className="ml-auto flex gap-1 -mr-3 sm:-mr-4">
                     <button
@@ -755,21 +752,19 @@ ${gif.url}`;
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleVote(gif.url, 'upvote')}
-                  className={`flex-1 text-xs px-3 py-2 rounded-lg transition-colors ${
-                    getUserVote(gif.url) === 'upvote'
+                  className={`flex-1 text-xs px-3 py-2 rounded-lg transition-colors ${getUserVote(gif.url) === 'upvote'
                       ? 'bg-green-500 text-white font-semibold' // Active state
                       : 'bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300' // Default state
-                  }`}
+                    }`}
                 >
                   👍 {gif.upvotes || 0}
                 </button>
                 <button
                   onClick={() => handleVote(gif.url, 'downvote')}
-                  className={`flex-1 text-xs px-3 py-2 rounded-lg transition-colors ${
-                    getUserVote(gif.url) === 'downvote'
+                  className={`flex-1 text-xs px-3 py-2 rounded-lg transition-colors ${getUserVote(gif.url) === 'downvote'
                       ? 'bg-red-500 text-white font-semibold' // Active state
                       : 'bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300' // Default state
-                  }`}
+                    }`}
                 >
                   👎 {gif.downvotes || 0}
                 </button>
@@ -781,7 +776,7 @@ ${gif.url}`;
 
       {/* Summary */}
       <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        
+
       </div>
     </div>
   );

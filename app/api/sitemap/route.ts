@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { SITE_CONFIG } from "@/app/config/urls";
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://nouns-remix-studio.vercel.app";
+  const baseUrl = SITE_CONFIG.BASE_URL;
   
   // Generate sitemap XML
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

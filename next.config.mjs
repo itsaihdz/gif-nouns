@@ -4,7 +4,8 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@coinbase/onchainkit', 'wagmi', 'viem'],
   },
-  
+  transpilePackages: ['@farcaster/miniapp-sdk'],
+
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
@@ -17,7 +18,7 @@ const nextConfig = {
 
   // Compression
   compress: true,
-  
+
   // Bundle analyzer (optional for production)
   ...(process.env.ANALYZE === 'true' && {
     webpack: (config) => {
@@ -33,14 +34,14 @@ const nextConfig = {
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     // Silence warnings
-    config.externals.push("pino-pretty", "lokijs", "encoding");
-    
+    config.externals.push('pino-pretty', 'lokijs', 'encoding');
+
     // Production optimizations
     if (!dev && !isServer) {
       // Tree shaking
       config.optimization.usedExports = true;
       config.optimization.sideEffects = false;
-      
+
       // Split chunks optimization
       config.optimization.splitChunks = {
         chunks: 'all',
@@ -65,7 +66,7 @@ const nextConfig = {
         },
       };
     }
-    
+
     return config;
   },
 
@@ -77,11 +78,11 @@ const nextConfig = {
         headers: [
           {
             key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            value: 'on',
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
         ],
       },

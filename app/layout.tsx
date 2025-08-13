@@ -3,6 +3,7 @@ import "@coinbase/onchainkit/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { SITE_CONFIG } from "./config/urls";
 // import { ErrorBoundary } from "./components/ui/ErrorBoundary"; // Unused import
 // import { Analytics } from "@vercel/analytics/react"; // Unused import
 
@@ -14,11 +15,11 @@ export const viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const URL = process.env.NEXT_PUBLIC_URL || "https://gifnouns.freezerverse.com";
-  const HERO_IMAGE_URL = "https://gifnouns.freezerverse.com/hero.png";
-  const ICON_URL = "https://gifnouns.freezerverse.com/icon.png";
-  const SPLASH_URL = "https://gifnouns.freezerverse.com/splash.png";
-  const SCREENSHOT_URL = "https://gifnouns.freezerverse.com/screenshot.png";
+  const URL = SITE_CONFIG.BASE_URL;
+  const HERO_IMAGE_URL = SITE_CONFIG.HERO_IMAGE_URL;
+  const ICON_URL = SITE_CONFIG.ICON_URL;
+  const SPLASH_URL = SITE_CONFIG.SPLASH_URL;
+  const SCREENSHOT_URL = SITE_CONFIG.SCREENSHOT_URL;
   
   return {
     title: "GifNouns",
@@ -36,26 +37,25 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [HERO_IMAGE_URL],
     },
     other: {
-      // Farcaster Frame metadata - using proper format to avoid HTML escaping
-      "fc:frame": "1",
-      "fc:frame:image": HERO_IMAGE_URL,
-      "fc:frame:button:1": "Animate your nouns ⌐◨-◨",
-      "fc:frame:post_url": URL,
-      
-      // Farcaster Mini App metadata - using proper format to avoid HTML escaping
-      "fc:miniapp": "1",
-      "fc:miniapp:name": "GifNouns",
-      "fc:miniapp:icon": ICON_URL,
-      "fc:miniapp:home": URL,
-      "fc:miniapp:splash": SPLASH_URL,
-      "fc:miniapp:image": HERO_IMAGE_URL,
-      "fc:miniapp:description": "Create animated Nouns with custom noggles and eye animations",
-      
-      // Additional required embed fields
-      "fc:frame:version": "1",
-      "fc:frame:imageUrl": HERO_IMAGE_URL,
-      "fc:frame:aspectRatio": "1.91:1",
-      "fc:frame:button": "Animate your nouns ⌐◨-◨",
+      // Farcaster Mini App metadata with proper JSON structure
+      "fc:miniapp": JSON.stringify({
+        title: "GifNouns",
+        type: "website", 
+        description: "Create animated Nouns with custom noggles and eye animations",
+        version: "next",
+        url: URL,
+        imageUrl: HERO_IMAGE_URL,
+        button: {
+          title: "Animate your nouns ⌐◨-◨",
+          action: {
+            type: "launch_frame",
+            name: "GifNouns",
+            url: URL,
+            splashImageUrl: SPLASH_URL,
+            splashBackgroundColor: "#8B5CF6"
+          }
+        }
+      }),
     },
   };
 }

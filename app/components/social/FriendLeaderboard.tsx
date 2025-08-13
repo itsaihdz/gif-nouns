@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Icon } from '../icons';
@@ -26,13 +26,7 @@ export function FriendLeaderboard({ className = "" }: FriendLeaderboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'allTime'>('weekly');
 
-  useEffect(() => {
-    if (user) {
-      fetchFriendLeaderboard();
-    }
-  }, [user, timeframe]);
-
-  const fetchFriendLeaderboard = async () => {
+  const fetchFriendLeaderboard = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -96,7 +90,13 @@ export function FriendLeaderboard({ className = "" }: FriendLeaderboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [timeframe, user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchFriendLeaderboard();
+    }
+  }, [user, timeframe, fetchFriendLeaderboard]);
 
   const challengeFriend = async (friendFid: number, friendUsername: string) => {
     try {

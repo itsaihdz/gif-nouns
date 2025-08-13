@@ -4,8 +4,9 @@ import {
   sendNotificationResponseSchema,
 } from "@farcaster/frame-sdk";
 import { getUserNotificationDetails } from "@/lib/notification";
+import { SITE_CONFIG } from "@/app/config/urls";
 
-const appUrl = process.env.NEXT_PUBLIC_URL || "";
+const appUrl = SITE_CONFIG.BASE_URL;
 
 type SendFrameNotificationResult =
   | {

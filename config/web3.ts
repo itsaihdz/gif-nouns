@@ -1,10 +1,12 @@
 // Web3 Configuration for GifNouns
+import { SITE_CONFIG } from "@/app/config/urls";
+
 export const web3Config = {
   // MiniKit Configuration
   onchainKit: {
     apiKey: process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || "",
     projectName: "GifNouns",
-    iconUrl: process.env.NEXT_PUBLIC_ICON_URL || "/icon.png",
+    iconUrl: SITE_CONFIG.ICON_URL,
   },
 
   // WalletConnect Configuration
@@ -39,10 +41,10 @@ export const web3Config = {
 
   // App Configuration
   app: {
-    url: process.env.NEXT_PUBLIC_URL || "https://nouns-remix-studio.vercel.app",
-    heroImage: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || "/hero.png",
-    splashImage: process.env.NEXT_PUBLIC_SPLASH_IMAGE || "/splash.png",
-    splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || "#8B5CF6",
+    url: SITE_CONFIG.BASE_URL,
+    heroImage: SITE_CONFIG.HERO_IMAGE_URL,
+    splashImage: SITE_CONFIG.SPLASH_URL,
+    splashBackgroundColor: SITE_CONFIG.SPLASH_BACKGROUND_COLOR,
   },
 
   // Gas Configuration

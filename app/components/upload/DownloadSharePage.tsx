@@ -11,7 +11,7 @@ import { ShareButton } from "../social/ShareButton";
 import { FarcasterShare } from "../social/FarcasterShare";
 // import { useComposeCast } from '@coinbase/onchainkit/minikit';
 import { useHaptics } from "../../hooks/useHaptics";
-import { sdk } from '@farcaster/miniapp-sdk';
+import sdk from '@farcaster/frame-sdk';
 
 interface DownloadSharePageProps {
   gifUrl: string; // Generated GIF URL for preview/download
@@ -29,16 +29,16 @@ interface DownloadSharePageProps {
   className?: string;
 }
 
-export function DownloadSharePage({ 
-  gifUrl, 
+export function DownloadSharePage({
+  gifUrl,
   shareUrl,
-  title, 
-  noggleColor, 
-  eyeAnimation, 
+  title,
+  noggleColor,
+  eyeAnimation,
   creator,
   onBackToCreate,
   onViewInGallery,
-  className = "" 
+  className = ""
 }: DownloadSharePageProps) {
   console.log('🔄 DownloadSharePage received props:', { gifUrl, shareUrl, title, noggleColor, eyeAnimation, creator });
   console.log('🔄 Share URL type:', typeof shareUrl);
@@ -47,7 +47,7 @@ export function DownloadSharePage({
   console.log('🔄 GIF URL value:', gifUrl);
   const [isSharing, setIsSharing] = useState(false);
   const [, setShareDialogUrl] = useState<string | null>(null);
-  
+
   // Initialize hooks
   // const { composeCast } = useComposeCast(); // Removed as per edit hint
   const { selectionChanged, notificationOccurred } = useHaptics();
@@ -64,14 +64,14 @@ export function DownloadSharePage({
   const handleShareToFarcaster = async () => {
     setIsSharing(true);
     await selectionChanged(); // Haptic feedback
-    
+
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
       console.log('🔄 Sharing to Farcaster with URL:', shareGifUrl);
       console.log('🔄 Share URL available:', !!shareUrl);
       console.log('🔄 Fallback to GIF URL:', !shareUrl);
-      
+
       // Use the same text template from FarcasterShare component
       const shareText = `Check out my animated Noun "${title}"! 🎨✨
 
@@ -84,7 +84,7 @@ Vote for it in the gallery! 🗳️
 https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${shareGifUrl}`;
-      
+
       // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.openUrl === 'function') {
         try {
@@ -118,14 +118,14 @@ ${shareGifUrl}`;
   const handleShareToTwitter = async () => {
     setIsSharing(true);
     await selectionChanged(); // Haptic feedback
-    
+
     try {
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
       console.log('🔄 Sharing to Twitter with URL:', shareGifUrl);
       console.log('🔄 Share URL available:', !!shareUrl);
       console.log('🔄 Fallback to GIF URL:', !shareUrl);
-      
+
       // Use the same text template as Farcaster sharing for consistency
       const shareText = `Check out my animated Noun "${title}"! 🎨✨
 
@@ -138,7 +138,7 @@ Vote for it in the gallery! 🗳️
 https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${shareGifUrl}`;
-      
+
       // Try to use MiniApp SDK if available, otherwise use fallback
       if (typeof sdk?.actions?.openUrl === 'function') {
         try {
@@ -181,13 +181,13 @@ ${shareGifUrl}`;
   const handleCopyLink = async () => {
     try {
       await selectionChanged(); // Haptic feedback
-      
+
       // Use Supabase URL for sharing, fallback to generated GIF URL
       const shareGifUrl = shareUrl || gifUrl;
       console.log('🔄 Copying link to clipboard:', shareGifUrl);
       console.log('🔄 Share URL available:', !!shareUrl);
       console.log('🔄 Fallback to GIF URL:', !shareUrl);
-      
+
       await navigator.clipboard.writeText(shareGifUrl);
       await notificationOccurred('success');
       console.log('Link copied to clipboard');

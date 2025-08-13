@@ -1,6 +1,8 @@
 "use client";
 
-import { useSDK } from '../components/providers/SDKProvider';
+import sdk from '@farcaster/frame-sdk';
+
+import { useSDK } from '../components/providers/FarcasterSDKProvider';
 
 type ImpactStyle = 'light' | 'medium' | 'heavy';
 type NotificationStyle = 'success' | 'warning' | 'error';
@@ -9,7 +11,7 @@ type NotificationStyle = 'success' | 'warning' | 'error';
  * Hook for providing haptic feedback using Farcaster MiniApp SDK
  */
 export function useHaptics() {
-  const { sdk, isSDKReady } = useSDK();
+  const { isSDKReady } = useSDK();
 
   const impactOccurred = async (style: ImpactStyle = 'medium') => {
     if (!isSDKReady) {
