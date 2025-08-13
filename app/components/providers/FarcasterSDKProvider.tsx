@@ -8,7 +8,7 @@ interface FarcasterSDKContextType {
   context: any;
   openUrl: (url: string) => Promise<void>;
   close: () => Promise<void>;
-  sdk: typeof sdk;
+  // sdk: typeof sdk;
 }
 
 const FarcasterSDKContext = createContext<FarcasterSDKContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export function useSDK() {
   return {
     isSDKReady: context.isSDKLoaded,
     sdkError: null,
-    sdk: context.sdk,
+    // sdk: context.sdk,
   };
 }
 
@@ -106,7 +106,7 @@ export function FarcasterSDKProvider({ children }: FarcasterSDKProviderProps) {
 
   const value: FarcasterSDKContextType = {
     ...frameContext,
-    sdk,
+    // sdk,
   };
 
   return (

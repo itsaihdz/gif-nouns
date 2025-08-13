@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useSDK } from "../components/providers/FarcasterSDKProvider";
+import sdk from "@farcaster/miniapp-sdk";
 import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
 
 export default function TestMiniAppPage() {
-  const { isSDKReady, sdkError, sdk } = useSDK();
+  const { isSDKReady, sdkError } = useSDK();
   const [testResults, setTestResults] = useState<string[]>([]);
   const [isTesting, setIsTesting] = useState(false);
   const [sdkImportTest, setSdkImportTest] = useState<string>('Not tested');
@@ -19,10 +19,10 @@ export default function TestMiniAppPage() {
   // Check if we're in Farcaster environment
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const envCheck = window.location.hostname.includes('warpcast.com') || 
-                      window.location.hostname.includes('farcaster.xyz') ||
-                      window.location.hostname.includes('farcaster.app') ||
-                      window.navigator.userAgent.includes('Farcaster');
+      const envCheck = window.location.hostname.includes('warpcast.com') ||
+        window.location.hostname.includes('farcaster.xyz') ||
+        window.location.hostname.includes('farcaster.app') ||
+        window.navigator.userAgent.includes('Farcaster');
       setIsFarcasterEnv(envCheck);
     }
   }, []);
@@ -33,7 +33,7 @@ export default function TestMiniAppPage() {
       try {
         // Only test import in Farcaster environments to prevent Chrome extension errors
         if (typeof window !== 'undefined' && isFarcasterEnv) {
-          
+
           const { sdk } = await import('@farcaster/miniapp-sdk');
           const testResult = `✅ SDK imported successfully. Actions: ${sdk?.actions ? Object.keys(sdk.actions).join(', ') : 'none'}`;
           setSdkImportTest(testResult);
@@ -49,7 +49,7 @@ export default function TestMiniAppPage() {
         addTestResult(testResult);
       }
     };
-    
+
     testSDKImport();
   }, [isFarcasterEnv]);
 
@@ -57,10 +57,10 @@ export default function TestMiniAppPage() {
     addTestResult('Page loaded');
     addTestResult(`SDK Import Test: ${sdkImportTest}`);
     addTestResult(`Environment: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
-    
+
     // Log SDK state immediately
     addTestResult(`SDK state - isSDKReady: ${isSDKReady}, sdkError: ${sdkError}`);
-    
+
     if (!isSDKReady && !sdkError) {
       addTestResult('Waiting for SDK initialization...');
     }
@@ -70,7 +70,7 @@ export default function TestMiniAppPage() {
     if (isSDKReady) {
       addTestResult('✅ SDK is ready!');
     }
-    
+
     if (sdkError) {
       addTestResult(`❌ SDK error: ${sdkError}`);
     }
@@ -89,7 +89,7 @@ export default function TestMiniAppPage() {
 
     setIsTesting(true);
     addTestResult('🧪 Testing SDK functionality...');
-    
+
     try {
       // Test ready() call
       addTestResult('📞 Testing sdk.actions.ready()...');
@@ -99,7 +99,7 @@ export default function TestMiniAppPage() {
       } else {
         addTestResult('❌ sdk.actions.ready() not available');
       }
-      
+
       // Test haptics
       if (sdk && typeof sdk.haptics?.impactOccurred === 'function') {
         addTestResult('🧪 Testing haptics...');
@@ -108,9 +108,9 @@ export default function TestMiniAppPage() {
       } else {
         addTestResult('⚠️ Haptics not available');
       }
-      
+
       addTestResult(`🌍 Environment: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
-      
+
     } catch (error) {
       addTestResult(`❌ Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
@@ -121,7 +121,7 @@ export default function TestMiniAppPage() {
   const testReadyCall = async () => {
     addTestResult('🧪 SUPER AGGRESSIVE READY() TEST STARTING...');
     addTestResult(`🔧 Current state: SDK ready: ${isSDKReady}, Error: ${sdkError}, Env: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
-    
+
     try {
       addTestResult('📞 Method 1: Calling via direct SDK...');
       if (sdk?.actions?.ready) {
@@ -200,32 +200,29 @@ export default function TestMiniAppPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Mini App Embed Test</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">SDK Status</h2>
             <div className="space-y-2">
               <div className="flex items-center">
                 <span className="font-medium">Environment:</span>
-                <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                  isFarcasterEnv ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                }`}>
+                <span className={`ml-2 px-2 py-1 rounded text-sm ${isFarcasterEnv ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
                   {isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}
                 </span>
               </div>
               <div className="flex items-center">
                 <span className="font-medium">SDK Ready:</span>
-                <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                  isSDKReady ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
+                <span className={`ml-2 px-2 py-1 rounded text-sm ${isSDKReady ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
                   {isSDKReady ? 'Yes' : 'No'}
                 </span>
               </div>
               <div className="flex items-center">
                 <span className="font-medium">SDK Error:</span>
-                <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                  sdkError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                }`}>
+                <span className={`ml-2 px-2 py-1 rounded text-sm ${sdkError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                  }`}>
                   {sdkError || 'None'}
                 </span>
               </div>
@@ -236,29 +233,29 @@ export default function TestMiniAppPage() {
                 </span>
               </div>
             </div>
-            
+
             <div className="mt-4 space-y-2">
-              <Button 
+              <Button
                 onClick={forceSDKInit}
                 className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
               >
                 Force SDK Init
               </Button>
-              <Button 
+              <Button
                 onClick={testSDKFunctionality}
                 disabled={!isFarcasterEnv || isTesting}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Test SDK Functionality
               </Button>
-              <Button 
+              <Button
                 onClick={testReadyCall}
                 disabled={!isFarcasterEnv || isTesting}
                 className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Test Ready() Call
               </Button>
-              <Button 
+              <Button
                 onClick={forceReadyCall}
                 disabled={!isFarcasterEnv || isTesting}
                 className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -267,7 +264,7 @@ export default function TestMiniAppPage() {
               </Button>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Test Results</h2>
             <div className="bg-gray-50 rounded p-4 h-64 overflow-y-auto">
@@ -283,7 +280,7 @@ export default function TestMiniAppPage() {
                 </div>
               )}
             </div>
-            <Button 
+            <Button
               onClick={clearResults}
               className="mt-2 text-sm text-gray-600 hover:text-gray-800"
             >
@@ -291,7 +288,7 @@ export default function TestMiniAppPage() {
             </Button>
           </div>
         </div>
-        
+
         <div className="mt-8 bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">SDK Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
