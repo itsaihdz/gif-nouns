@@ -1,7 +1,7 @@
 // Central URL configuration for the entire application
 export const SITE_CONFIG = {
   // The main URL for the application
-  BASE_URL: process.env.NEXT_PUBLIC_URL || "https://gif-nouns-orcin.vercel.app",
+  BASE_URL: process.env.NEXT_PUBLIC_URL || "https://gifnouns.freezerverse.com",
   
   // Asset URLs - use env vars if provided, otherwise derive from base URL
   get ICON_URL() { 
