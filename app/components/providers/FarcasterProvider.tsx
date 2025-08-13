@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 
 interface FarcasterContextType {
   isReady: boolean;
@@ -36,8 +36,13 @@ export function FarcasterProvider({ children }: FarcasterProviderProps) {
     }, 100);
   }, []);
 
+  const value = useMemo(() => ({
+    isReady,
+    error
+  }), [isReady, error]);
+
   return (
-    <FarcasterContext.Provider value={{ isReady, error }}>
+    <FarcasterContext.Provider value={value}>
       {children}
     </FarcasterContext.Provider>
   );

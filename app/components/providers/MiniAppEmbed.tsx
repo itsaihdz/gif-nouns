@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSDK } from './SDKProvider';
 
 interface MiniAppEmbedProps {
@@ -11,27 +11,28 @@ export function MiniAppEmbed({ children }: MiniAppEmbedProps) {
   const { isSDKReady, sdkError, initializeSDK, callReady } = useSDK();
   const [isEmbedReady, setIsEmbedReady] = useState(false);
 
+  // Define immediateReady function outside useEffect
+  const immediateReady = useCallback(async () => {
+    try {
+      // Try to call ready() immediately
+      await callReady();
+      console.log('✅ MiniAppEmbed: Immediate ready() call successful');
+      setIsEmbedReady(true);
+    } catch (error) {
+      console.log('⚠️ MiniAppEmbed: Immediate ready() failed, will retry...', error);
+      // Continue with normal flow
+    }
+  }, [callReady]);
+
   // Immediate ready call when component mounts
   useEffect(() => {
     console.log('🔄 MiniAppEmbed: Component mounted, attempting immediate ready() call...');
     
     // Try to call ready() immediately if SDK is available
     if (typeof window !== 'undefined') {
-      const immediateReady = async () => {
-        try {
-          // Try to call ready() immediately
-          await callReady();
-          console.log('✅ MiniAppEmbed: Immediate ready() call successful');
-          setIsEmbedReady(true);
-        } catch (error) {
-          console.log('⚠️ MiniAppEmbed: Immediate ready() failed, will retry...', error);
-          // Continue with normal flow
-        }
-      };
-      
       immediateReady();
     }
-  }, [callReady]);
+  }, [immediateReady]);
 
   useEffect(() => {
     // Initialize SDK if not already done

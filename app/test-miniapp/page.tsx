@@ -56,7 +56,7 @@ export default function TestMiniAppPage() {
       addTestResult('Initializing SDK...');
       initializeSDK();
     }
-  }, [isFarcasterEnv]);
+  }, [isFarcasterEnv, isSDKReady, sdkError, initializeSDK, sdkImportTest]);
 
   useEffect(() => {
     if (isSDKReady) {

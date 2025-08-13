@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 
 // Only import SDK in Farcaster environments to prevent Chrome extension errors
 let sdk: any = null;
@@ -120,7 +120,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isFarcasterEnv, setIsFarcasterEnv] = useState(false);
 
-  const initializeSDK = async () => {
+  const initializeSDK = useCallback(async () => {
     if (isInitializing || isInitialized) {
       console.log('🔄 SDK already initializing or initialized, skipping...');
       return;
@@ -202,10 +202,10 @@ export function SDKProvider({ children }: SDKProviderProps) {
     } finally {
       setIsInitializing(false);
     }
-  };
+  }, [isInitializing, isInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Function to call ready() - works in all environments
-  const callReady = async (force: boolean = false) => {
+  const callReady = useCallback(async (force: boolean = false) => {
     if (!isInitialized) {
       console.log('⚠️ SDK not initialized yet, cannot call ready()');
       return;
@@ -277,7 +277,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
       setIsSDKReady(true);
       setSdkError(null);
     }
-  };
+  }, [isInitialized, isSDKReady, isFarcasterEnv]);
 
   useEffect(() => {
     // Only initialize in browser environment
@@ -287,7 +287,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
     } else {
       console.log('🖥️ Server environment, skipping SDK initialization');
     }
-  }, []);
+  }, [initializeSDK]);
 
   // Auto-call ready() when SDK is initialized
   useEffect(() => {
@@ -300,7 +300,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
       
       return () => clearTimeout(timer);
     }
-  }, [isInitialized, isSDKReady, sdk, callReady]);
+  }, [isInitialized, isSDKReady, callReady]);
 
   // Additional aggressive ready() calls for reliability
   useEffect(() => {
@@ -329,7 +329,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
       
       return () => timers.forEach(timer => clearTimeout(timer));
     }
-  }, [isInitialized, sdk, callReady]);
+  }, [isInitialized, callReady]);
 
   // Periodic ready() calls to ensure Farcaster client always recognizes the ready state
   useEffect(() => {
@@ -344,16 +344,16 @@ export function SDKProvider({ children }: SDKProviderProps) {
       
       return () => clearInterval(interval);
     }
-  }, [isInitialized, sdk, callReady]);
+  }, [isInitialized, callReady]);
 
-  const value: SDKContextType = {
+  const value: SDKContextType = useMemo(() => ({
     isSDKReady,
     sdkError,
     sdk,
     isFarcasterEnv,
     initializeSDK,
     callReady,
-  };
+  }), [isSDKReady, sdkError, isFarcasterEnv, initializeSDK, callReady]);
 
   return (
     <SDKContext.Provider value={value}>
