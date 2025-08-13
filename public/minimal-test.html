@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Farcaster Test</title>
+    
+    <!-- Farcaster Mini App meta tag -->
+    <meta name="fc:frame" content="{&quot;title&quot;:&quot;Minimal Test&quot;,&quot;type&quot;:&quot;website&quot;,&quot;description&quot;:&quot;Minimal test page for debugging&quot;,&quot;version&quot;:&quot;next&quot;,&quot;url&quot;:&quot;https://gif-nouns-orcin.vercel.app/minimal-test.html&quot;,&quot;imageUrl&quot;:&quot;https://gif-nouns-orcin.vercel.app/hero.png&quot;,&quot;button&quot;:{&quot;title&quot;:&quot;Test App&quot;,&quot;action&quot;:{&quot;type&quot;:&quot;launch_frame&quot;,&quot;name&quot;:&quot;Minimal Test&quot;,&quot;url&quot;:&quot;https://gif-nouns-orcin.vercel.app/minimal-test.html&quot;,&quot;splashImageUrl&quot;:&quot;https://gif-nouns-orcin.vercel.app/splash.png&quot;,&quot;splashBackgroundColor&quot;:&quot;#8B5CF6&quot;}}}" />
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .log {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Minimal Farcaster Test</h1>
+        <p>This is a minimal HTML page to test Farcaster Mini App loading.</p>
+        
+        <div id="logs"></div>
+        
+        <div class="log">
+            <strong>Environment Info:</strong><br>
+            URL: <span id="url"></span><br>
+            User Agent: <span id="userAgent"></span><br>
+            Timestamp: <span id="timestamp"></span><br>
+        </div>
+    </div>
+
+    <script>
+        const log = (message) => {
+            console.log(message);
+            const logsDiv = document.getElementById('logs');
+            const logElement = document.createElement('div');
+            logElement.className = 'log';
+            logElement.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            logsDiv.appendChild(logElement);
+            
+            // Send to webhook
+            fetch('/api/debug-logs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    timestamp: new Date().toISOString(),
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                }),
+            }).catch(err => {
+                console.error('Failed to send webhook log:', err);
+            });
+        };
+
+        // Fill in environment info
+        document.getElementById('url').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+
+        log('🔥 Minimal test page loaded!');
+
+        // Test Farcaster SDK
+        const testFarcasterSDK = async () => {
+            try {
+                log('🔄 Attempting to import Farcaster SDK...');
+                
+                // Try to import the SDK
+                const module = await import('https://unpkg.com/@farcaster/miniapp-sdk@latest/dist/index.js');
+                const sdk = module.sdk || module.default?.sdk || module.default;
+                
+                log('✅ SDK module imported: ' + (!!sdk));
+                
+                if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+                    log('📞 Calling sdk.actions.ready()...');
+                    await sdk.actions.ready();
+                    log('✅ sdk.actions.ready() called successfully!');
+                } else {
+                    log('❌ SDK actions.ready not available');
+                    log('SDK structure: ' + JSON.stringify(sdk ? Object.keys(sdk) : 'null'));
+                }
+                
+            } catch (error) {
+                log('❌ SDK test failed: ' + error.message);
+                console.error('Full error:', error);
+            }
+        };
+
+        // Try multiple times
+        log('Starting SDK tests...');
+        testFarcasterSDK();
+        setTimeout(() => testFarcasterSDK(), 1000);
+        setTimeout(() => testFarcasterSDK(), 3000);
+        setTimeout(() => testFarcasterSDK(), 5000);
+
+        // Also try when page becomes visible (in case it's loaded in background)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                log('🔍 Page became visible, trying SDK again...');
+                testFarcasterSDK();
+            }
+        });
+
+        // Try on user interaction
+        document.addEventListener('click', () => {
+            log('👆 User clicked, trying SDK...');
+            testFarcasterSDK();
+        });
+
+    </script>
+</body>
+</html>
