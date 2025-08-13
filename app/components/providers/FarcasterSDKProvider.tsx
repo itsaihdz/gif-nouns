@@ -62,10 +62,6 @@ function useFrame() {
 
         const context = await sdk.context;
         console.log('✅ FarcasterSDK: Context loaded:', !!context);
-        console.log('🔧 Context details:', {
-          user: context.user ? { fid: context.user.fid, username: context.user.username } : null,
-          location: context.location,
-        });
 
         setContext(context);
         setIsSDKLoaded(true);
