@@ -10,14 +10,14 @@ export async function GET() {
     "frame": {
       "version": "1",
       "name": "GifNouns",
-      "iconUrl": "https://gifnouns.freezerverse.com/icon.png",
-      "homeUrl": "https://gifnouns.freezerverse.com",
-      "splashImageUrl": "https://gifnouns.freezerverse.com/splash.png",
+      "iconUrl": "https://gif-nouns-orcin.vercel.app/icon.png",
+      "homeUrl": "https://gif-nouns-orcin.vercel.app",
+      "splashImageUrl": "https://gif-nouns-orcin.vercel.app/splash.png",
       "splashBackgroundColor": "#8B5CF6",
       "subtitle": "Animate your Nouns PFP",
       "description": "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eyes.",
       "screenshotUrls": [
-        "https://gifnouns.freezerverse.com/screenshot.png"
+        "https://gif-nouns-orcin.vercel.app/screenshot.png"
       ],
       "primaryCategory": "art-creativity",
       "tags": [
@@ -27,17 +27,17 @@ export async function GET() {
         "gif",
         "art"
       ],
-      "heroImageUrl": "https://gifnouns.freezerverse.com/hero.png",
+      "heroImageUrl": "https://gif-nouns-orcin.vercel.app/hero.png",
       "tagline": "Bring your Nouns to life",
       "ogTitle": "GifNouns - Animated Nouns",
       "ogDescription": "Create animated Nouns with custom noggles and eyes animations",
-      "ogImageUrl": "https://gifnouns.freezerverse.com/hero.png",
-      "imageUrl": "https://gifnouns.freezerverse.com/hero.png",
+      "ogImageUrl": "https://gif-nouns-orcin.vercel.app/hero.png",
+      "imageUrl": "https://gif-nouns-orcin.vercel.app/hero.png",
       "button": {
         "title": "Animate your nouns ⌐◨-◨",
         "action": {
           "type": "post_redirect",
-          "url": "https://gifnouns.freezerverse.com"
+          "url": "https://gif-nouns-orcin.vercel.app"
         }
       },
       "buttonTitle": "Animate your nouns ⌐◨-◨",

@@ -17,11 +17,11 @@ export const viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const URL = process.env.NEXT_PUBLIC_URL || "https://gifnouns.freezerverse.com";
-  const HERO_IMAGE_URL = "https://gifnouns.freezerverse.com/hero.png";
-  const ICON_URL = "https://gifnouns.freezerverse.com/icon.png";
-  const SPLASH_URL = "https://gifnouns.freezerverse.com/splash.png";
-  const SCREENSHOT_URL = "https://gifnouns.freezerverse.com/screenshot.png";
+  const URL = process.env.NEXT_PUBLIC_URL || "https://gif-nouns-orcin.vercel.app";
+  const HERO_IMAGE_URL = "https://gif-nouns-orcin.vercel.app/hero.png";
+  const ICON_URL = "https://gif-nouns-orcin.vercel.app/icon.png";
+  const SPLASH_URL = "https://gif-nouns-orcin.vercel.app/splash.png";
+  const SCREENSHOT_URL = "https://gif-nouns-orcin.vercel.app/screenshot.png";
   
   return {
     title: "GifNouns",
