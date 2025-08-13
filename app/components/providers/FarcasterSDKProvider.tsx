@@ -72,7 +72,7 @@ function useFrame() {
 
         // Call ready action - this is the critical part!
         console.log('📞 FarcasterSDK: Calling sdk.actions.ready()...');
-        await sdk.actions.ready({});
+        await sdk.actions.ready();
         console.log('✅ FarcasterSDK: sdk.actions.ready() completed successfully!');
 
       } catch (error) {
