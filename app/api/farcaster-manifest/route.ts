@@ -1,23 +1,24 @@
 import { NextResponse } from 'next/server';
+import { SITE_CONFIG } from '../../config/urls';
 
 export async function GET() {
   const manifest = {
     "accountAssociation": {
       "header": "eyJmaWQiOjQxODY3MSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDFGRGUyN0YwMjM5YmY3OTA5OTdlRjRlNzQ5RWRCRDY2M0Y3NTU4RmIifQ",
-      "payload": "eyJkb21haW4iOiJnaWZub3Vucy5mcmVlemVydmVyc2UuY29tIn0",
+      "payload": "eyJkb21haW4iOiJnaWYtbm91bnMtb3JjaW4udmVyY2VsLmFwcCJ9Cg==",
       "signature": "MHg5Yzg0YjgzNjQxMTUxOTI3OTBhM2E2ZmRkYjViMDE3MjY5YWUwZDc0Y2E4NjgxNzBmZGMxMzMyNmRmODBmZmRlNzFjZGU2MjMwNTJlYjJmNDg3ZDc3NTVlYjJjZDczZTI4MDg0NzJkZmI1Y2FiMmJlNjZlMDE4YTQ0NzQ5YjE5MTFi"
     },
     "frame": {
       "version": "1",
       "name": "GifNouns",
-      "iconUrl": "https://gif-nouns-orcin.vercel.app/icon.png",
-      "homeUrl": "https://gif-nouns-orcin.vercel.app",
-      "splashImageUrl": "https://gif-nouns-orcin.vercel.app/splash.png",
+      "iconUrl": SITE_CONFIG.ICON_URL,
+      "homeUrl": SITE_CONFIG.BASE_URL,
+      "splashImageUrl": SITE_CONFIG.SPLASH_URL,
       "splashBackgroundColor": "#8B5CF6",
       "subtitle": "Animate your Nouns PFP",
       "description": "Create animated Nouns with custom noggles and eye animations. Upload your Noun PFP and transform it into animated art with unique color combinations and dynamic eyes.",
       "screenshotUrls": [
-        "https://gif-nouns-orcin.vercel.app/screenshot.png"
+        SITE_CONFIG.SCREENSHOT_URL
       ],
       "primaryCategory": "art-creativity",
       "tags": [
@@ -27,17 +28,17 @@ export async function GET() {
         "gif",
         "art"
       ],
-      "heroImageUrl": "https://gif-nouns-orcin.vercel.app/hero.png",
+      "heroImageUrl": SITE_CONFIG.HERO_IMAGE_URL,
       "tagline": "Bring your Nouns to life",
       "ogTitle": "GifNouns - Animated Nouns",
       "ogDescription": "Create animated Nouns with custom noggles and eyes animations",
-      "ogImageUrl": "https://gif-nouns-orcin.vercel.app/hero.png",
-      "imageUrl": "https://gif-nouns-orcin.vercel.app/hero.png",
+      "ogImageUrl": SITE_CONFIG.HERO_IMAGE_URL,
+      "imageUrl": SITE_CONFIG.HERO_IMAGE_URL,
       "button": {
         "title": "Animate your nouns ⌐◨-◨",
         "action": {
           "type": "post_redirect",
-          "url": "https://gif-nouns-orcin.vercel.app"
+          "url": SITE_CONFIG.BASE_URL
         }
       },
       "buttonTitle": "Animate your nouns ⌐◨-◨",

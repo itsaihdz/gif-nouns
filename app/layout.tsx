@@ -6,6 +6,7 @@ import { Providers } from "./providers";
 import { ConsoleLogger } from "./components/debug/ConsoleLogger";
 import { LoadingIndicator } from "./components/debug/LoadingIndicator";
 import { EarlyReady } from "./components/debug/EarlyReady";
+import { SITE_CONFIG } from "./config/urls";
 // import { ErrorBoundary } from "./components/ui/ErrorBoundary"; // Unused import
 // import { Analytics } from "@vercel/analytics/react"; // Unused import
 
@@ -17,11 +18,11 @@ export const viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const URL = process.env.NEXT_PUBLIC_URL || "https://gif-nouns-orcin.vercel.app";
-  const HERO_IMAGE_URL = "https://gif-nouns-orcin.vercel.app/hero.png";
-  const ICON_URL = "https://gif-nouns-orcin.vercel.app/icon.png";
-  const SPLASH_URL = "https://gif-nouns-orcin.vercel.app/splash.png";
-  const SCREENSHOT_URL = "https://gif-nouns-orcin.vercel.app/screenshot.png";
+  const URL = SITE_CONFIG.BASE_URL;
+  const HERO_IMAGE_URL = SITE_CONFIG.HERO_IMAGE_URL;
+  const ICON_URL = SITE_CONFIG.ICON_URL;
+  const SPLASH_URL = SITE_CONFIG.SPLASH_URL;
+  const SCREENSHOT_URL = SITE_CONFIG.SCREENSHOT_URL;
   
   return {
     title: "GifNouns",
