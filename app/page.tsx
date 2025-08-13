@@ -11,7 +11,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { WalletConnect } from "./components/ui/WalletConnect";
 import { useAccount } from "wagmi";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useSDK } from "./components/providers/SimplifiedSDKProvider";
+import { useSDK } from "./components/providers/FarcasterSDKProvider";
 
 
 interface GalleryItem {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSDK } from '../components/providers/SimplifiedSDKProvider';
+import { useSDK } from '../components/providers/FarcasterSDKProvider';
 
 type ImpactStyle = 'light' | 'medium' | 'heavy';
 type NotificationStyle = 'success' | 'warning' | 'error';

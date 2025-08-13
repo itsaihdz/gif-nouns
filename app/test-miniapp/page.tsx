@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSDK } from "../components/providers/SimplifiedSDKProvider";
+import { useSDK } from "../components/providers/FarcasterSDKProvider";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useSDK } from './SimplifiedSDKProvider';
+import { useSDK } from './FarcasterSDKProvider';
 
 interface MiniAppEmbedProps {
   children: React.ReactNode;
