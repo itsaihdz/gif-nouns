@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     other: {
       // Farcaster Mini App metadata with proper JSON structure
-      "fc:frame": JSON.stringify({
+      "fc:miniapp": JSON.stringify({
         title: "GifNouns",
         type: "website", 
         description: "Create animated Nouns with custom noggles and eye animations",
