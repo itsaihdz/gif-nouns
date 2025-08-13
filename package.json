@@ -74,5 +74,8 @@
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@farcaster/frame-sdk": "0.0.50"
   }
 }
