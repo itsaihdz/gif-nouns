@@ -166,28 +166,53 @@ export function SDKProvider({ children }: SDKProviderProps) {
         }
       });
 
-      // Immediate test call to sdk.actions.ready() to verify it works
-      console.log('🧪 Testing sdk.actions.ready() immediately after import...');
+      // SUPER AGGRESSIVE ready() calls - try every possible method
+      console.log('🧪 SUPER AGGRESSIVE: Testing sdk.actions.ready() immediately after import...');
+      
+      // Method 1: Direct call on imported SDK
       try {
         if (typeof importedSDK.actions.ready === 'function') {
-          console.log('🚀 Immediate ready() test call...');
+          console.log('🚀 Method 1: Direct ready() call on imported SDK...');
           await importedSDK.actions.ready({ disableNativeGestures: true });
-          console.log('✅ Immediate ready() test call successful!');
+          console.log('✅ Method 1: Direct ready() call successful!');
           setIsSDKReady(true);
         } else {
-          console.error('❌ Immediate ready() test failed - function not available');
+          console.error('❌ Method 1: Direct ready() failed - function not available');
         }
       } catch (immediateError) {
-        console.error('❌ Immediate ready() test failed with error:', immediateError);
+        console.error('❌ Method 1: Direct ready() failed with error:', immediateError);
       }
 
-      // Always call ready() regardless of environment
-      console.log('🔄 Auto-calling sdk.actions.ready() for all environments...');
+      // Method 2: Try without options
+      try {
+        if (typeof importedSDK.actions.ready === 'function') {
+          console.log('🚀 Method 2: Ready() call without options...');
+          await importedSDK.actions.ready();
+          console.log('✅ Method 2: Ready() without options successful!');
+          setIsSDKReady(true);
+        }
+      } catch (noOptionsError) {
+        console.error('❌ Method 2: Ready() without options failed:', noOptionsError);
+      }
+
+      // Method 3: Try sync call
+      try {
+        if (typeof importedSDK.actions.ready === 'function') {
+          console.log('🚀 Method 3: Sync ready() call...');
+          importedSDK.actions.ready({ disableNativeGestures: true });
+          console.log('✅ Method 3: Sync ready() call completed (no await)!');
+          setIsSDKReady(true);
+        }
+      } catch (syncError) {
+        console.error('❌ Method 3: Sync ready() failed:', syncError);
+      }
+
+      // Method 4: Call via callReady function
+      console.log('🔄 Method 4: Auto-calling via callReady() function...');
       try {
         await callReady();
       } catch (readyError) {
-        console.warn('⚠️ Auto-ready() call failed:', readyError);
-        // Don't fail initialization if ready() fails
+        console.warn('⚠️ Method 4: callReady() failed:', readyError);
       }
       
     } catch (error) {
@@ -199,13 +224,31 @@ export function SDKProvider({ children }: SDKProviderProps) {
       // Still allow the app to function without SDK
       console.warn('⚠️ App will continue without Farcaster SDK functionality');
       console.warn('⚠️ This is normal when testing outside of Farcaster environment');
+      
     } finally {
       setIsInitializing(false);
+      
+      // EMERGENCY: One final ready() call after all initialization
+      console.log('🚨 EMERGENCY: Final ready() call after initialization...');
+      setTimeout(async () => {
+        try {
+          if (sdk && typeof sdk.actions.ready === 'function') {
+            console.log('🚨 EMERGENCY: Executing final ready() call...');
+            await sdk.actions.ready({ disableNativeGestures: true });
+            console.log('✅ EMERGENCY: Final ready() call successful!');
+          }
+        } catch (finalError) {
+          console.error('❌ EMERGENCY: Final ready() call failed:', finalError);
+        }
+      }, 100);
     }
   }, [isInitializing, isInitialized]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Function to call ready() - works in all environments
   const callReady = useCallback(async (force: boolean = false) => {
+    console.log('🔄 callReady() invoked with force:', force);
+    console.log('🔧 Current state:', { isInitialized, isSDKReady, isFarcasterEnv, sdkAvailable: !!sdk });
+    
     if (!isInitialized) {
       console.log('⚠️ SDK not initialized yet, cannot call ready()');
       return;
@@ -218,6 +261,7 @@ export function SDKProvider({ children }: SDKProviderProps) {
 
     if (!sdk) {
       console.log('⚠️ SDK not available, cannot call ready()');
+      console.log('🔧 Checking window for SDK presence:', typeof window !== 'undefined' ? !!(window as any).sdk : 'server-side');
       return;
     }
 
@@ -226,7 +270,11 @@ export function SDKProvider({ children }: SDKProviderProps) {
       console.log('🔧 SDK object available:', !!sdk);
       console.log('🔧 SDK actions available:', !!sdk.actions);
       console.log('🔧 SDK ready function available:', typeof sdk.actions.ready);
-      console.log('🔧 Environment:', { isFarcasterEnv, hostname: typeof window !== 'undefined' ? window.location.hostname : 'server' });
+      console.log('🔧 Environment:', { 
+        isFarcasterEnv, 
+        hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent.substring(0, 100) : 'server'
+      });
       
       // Ensure we're calling ready() correctly
       if (typeof sdk.actions.ready === 'function') {
@@ -343,6 +391,34 @@ export function SDKProvider({ children }: SDKProviderProps) {
       }, 10000); // Every 10 seconds
       
       return () => clearInterval(interval);
+    }
+  }, [isInitialized, callReady]);
+
+  // DOM-ready detection and ready() call
+  useEffect(() => {
+    if (isInitialized && sdk && typeof window !== 'undefined') {
+      console.log('🔄 Setting up DOM-ready ready() calls...');
+      
+      const domReadyCall = () => {
+        console.log('🔄 DOM-ready ready() call...');
+        callReady(true); // Force call
+      };
+      
+      // Call immediately if DOM is already ready
+      if (document.readyState === 'complete') {
+        console.log('📄 DOM already complete, calling ready() immediately...');
+        domReadyCall();
+      } else {
+        // Wait for DOM to be ready
+        console.log('📄 Waiting for DOM to be ready...');
+        document.addEventListener('DOMContentLoaded', domReadyCall);
+        window.addEventListener('load', domReadyCall);
+        
+        return () => {
+          document.removeEventListener('DOMContentLoaded', domReadyCall);
+          window.removeEventListener('load', domReadyCall);
+        };
+      }
     }
   }, [isInitialized, callReady]);
 

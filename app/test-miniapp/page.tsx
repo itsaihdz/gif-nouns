@@ -107,17 +107,50 @@ export default function TestMiniAppPage() {
   };
 
   const testReadyCall = async () => {
-    if (!isFarcasterEnv) {
-      addTestResult('⚠️ Cannot test ready() call outside of Farcaster environment');
-      return;
+    addTestResult('🧪 SUPER AGGRESSIVE READY() TEST STARTING...');
+    addTestResult(`🔧 Current state: SDK ready: ${isSDKReady}, Error: ${sdkError}, Env: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
+    
+    try {
+      addTestResult('📞 Method 1: Calling via callReady()...');
+      await callReady();
+      addTestResult('✅ Method 1: callReady() successful');
+    } catch (error) {
+      addTestResult(`❌ Method 1: callReady() failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
+    // Direct SDK call
     try {
-      addTestResult('📞 Manually calling ready()...');
-      await callReady();
-      addTestResult('✅ Ready() call successful');
+      if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+        addTestResult('📞 Method 2: Direct SDK ready() call...');
+        await sdk.actions.ready({ disableNativeGestures: true });
+        addTestResult('✅ Method 2: Direct SDK ready() successful');
+      } else {
+        addTestResult('❌ Method 2: SDK or ready() function not available');
+      }
     } catch (error) {
-      addTestResult(`❌ Ready() call failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      addTestResult(`❌ Method 2: Direct SDK ready() failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    // Try without options
+    try {
+      if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+        addTestResult('📞 Method 3: SDK ready() without options...');
+        await sdk.actions.ready();
+        addTestResult('✅ Method 3: SDK ready() without options successful');
+      }
+    } catch (error) {
+      addTestResult(`❌ Method 3: SDK ready() without options failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    // Try sync call
+    try {
+      if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
+        addTestResult('📞 Method 4: Sync SDK ready() call...');
+        sdk.actions.ready({ disableNativeGestures: true });
+        addTestResult('✅ Method 4: Sync SDK ready() completed');
+      }
+    } catch (error) {
+      addTestResult(`❌ Method 4: Sync SDK ready() failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

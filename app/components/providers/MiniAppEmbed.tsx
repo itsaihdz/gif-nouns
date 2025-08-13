@@ -13,8 +13,12 @@ export function MiniAppEmbed({ children }: MiniAppEmbedProps) {
 
   // Define immediateReady function outside useEffect
   const immediateReady = useCallback(async () => {
+    console.log('🔄 MiniAppEmbed: immediateReady() called');
+    console.log('🔧 MiniAppEmbed state:', { isSDKReady, sdkError, isEmbedReady });
+    
     try {
       // Try to call ready() immediately
+      console.log('🔄 MiniAppEmbed: Calling callReady()...');
       await callReady();
       console.log('✅ MiniAppEmbed: Immediate ready() call successful');
       setIsEmbedReady(true);
@@ -22,7 +26,7 @@ export function MiniAppEmbed({ children }: MiniAppEmbedProps) {
       console.log('⚠️ MiniAppEmbed: Immediate ready() failed, will retry...', error);
       // Continue with normal flow
     }
-  }, [callReady]);
+  }, [callReady, isSDKReady, sdkError, isEmbedReady]);
 
   // Immediate ready call when component mounts
   useEffect(() => {
