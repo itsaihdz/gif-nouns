@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ConsoleLogger } from "./components/debug/ConsoleLogger";
+import { LoadingIndicator } from "./components/debug/LoadingIndicator";
+import { EarlyReady } from "./components/debug/EarlyReady";
 // import { ErrorBoundary } from "./components/ui/ErrorBoundary"; // Unused import
 // import { Analytics } from "@vercel/analytics/react"; // Unused import
 
@@ -69,6 +71,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-montserrat antialiased">
+        <EarlyReady />
+        <LoadingIndicator />
         <ConsoleLogger />
         <Providers>{children}</Providers>
       </body>

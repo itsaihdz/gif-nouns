@@ -72,9 +72,24 @@ export function ConsoleLogger() {
         keepalive: true,
         body
       }).catch((error) => {
-        // on failure, requeue (best-effort)
+        // on failure, requeue (best-effort) and store in localStorage
         console.warn('Failed to send logs to webhook:', error);
         queue.unshift(...batch);
+        
+        // Fallback: store in localStorage for later inspection
+        try {
+          const stored = localStorage.getItem('debug_logs_failed') || '[]';
+          const failedLogs = JSON.parse(stored);
+          failedLogs.push({
+            timestamp: Date.now(),
+            error: error instanceof Error ? error.message : String(error),
+            batch: batch
+          });
+          localStorage.setItem('debug_logs_failed', JSON.stringify(failedLogs.slice(-20))); // Keep last 20 failed batches
+          console.log('📦 Stored failed logs in localStorage');
+        } catch (storageError) {
+          console.error('❌ Failed to store in localStorage:', storageError);
+        }
       }).finally(() => { inflight = false; });
     }
 
@@ -153,6 +168,44 @@ export function ConsoleLogger() {
       url: context.url,
       userAgent: context.userAgent.substring(0, 100)
     });
+
+    // Test fetch capability immediately
+    const testFetch = async () => {
+      try {
+        console.log('🧪 Testing fetch capability to internal API...');
+        const response = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            context: { ...context, test: true },
+            ts: Date.now(),
+            entries: [{ level: 'info', time: Date.now(), args: ['Console Logger Test Message'] }]
+          })
+        });
+        console.log('✅ Fetch test response:', response.status, response.statusText);
+      } catch (fetchError) {
+        console.error('❌ Fetch test failed:', fetchError);
+        // Try to store in localStorage as fallback
+        try {
+          const stored = localStorage.getItem('debug_logs') || '[]';
+          const logs = JSON.parse(stored);
+          logs.push({
+            error: 'Fetch failed',
+            details: fetchError instanceof Error ? fetchError.message : String(fetchError),
+            timestamp: Date.now(),
+            context
+          });
+          localStorage.setItem('debug_logs', JSON.stringify(logs.slice(-50))); // Keep last 50
+          console.log('📦 Stored fetch error in localStorage');
+        } catch (storageError) {
+          console.error('❌ localStorage fallback also failed:', storageError);
+        }
+      }
+    };
+
+    // Test immediately and after a delay
+    testFetch();
+    setTimeout(testFetch, 1000);
 
     // Cleanup function
     return () => {
