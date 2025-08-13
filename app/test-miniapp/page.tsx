@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSDK } from "../components/providers/FarcasterSDKProvider";
-import sdk from "@farcaster/miniapp-sdk";
+import sdk from "@farcaster/frame-sdk";
 import { Button } from "../components/ui/Button";
 
 export default function TestMiniAppPage() {
@@ -33,8 +33,6 @@ export default function TestMiniAppPage() {
       try {
         // Only test import in Farcaster environments to prevent Chrome extension errors
         if (typeof window !== 'undefined' && isFarcasterEnv) {
-
-          const { sdk } = await import('@farcaster/miniapp-sdk');
           const testResult = `✅ SDK imported successfully. Actions: ${sdk?.actions ? Object.keys(sdk.actions).join(', ') : 'none'}`;
           setSdkImportTest(testResult);
           addTestResult(testResult);
@@ -101,13 +99,13 @@ export default function TestMiniAppPage() {
       }
 
       // Test haptics
-      if (sdk && typeof sdk.haptics?.impactOccurred === 'function') {
-        addTestResult('🧪 Testing haptics...');
-        await sdk.haptics.impactOccurred('light');
-        addTestResult('✅ Haptics test successful');
-      } else {
-        addTestResult('⚠️ Haptics not available');
-      }
+      // if (sdk && typeof sdk.haptics?.impactOccurred === 'function') {
+      //   addTestResult('🧪 Testing haptics...');
+      //   await sdk.haptics.impactOccurred('light');
+      //   addTestResult('✅ Haptics test successful');
+      // } else {
+      addTestResult('⚠️ Haptics not available');
+      // }
 
       addTestResult(`🌍 Environment: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
 
@@ -305,7 +303,7 @@ export default function TestMiniAppPage() {
             <div>
               <h3 className="font-medium mb-2">Available Haptics:</h3>
               <ul className="text-sm text-gray-600 space-y-1">
-                {sdk?.haptics ? Object.keys(sdk.haptics).map(haptic => (
+                {(sdk as any)?.haptics ? Object.keys((sdk as any).haptics).map(haptic => (
                   <li key={haptic} className="font-mono">• {haptic}</li>
                 )) : (
                   <li className="text-gray-400">No haptics available (SDK not imported)</li>

@@ -5,7 +5,7 @@ import { Button } from "../ui/Button";
 import { Icon } from "../icons";
 // import { useComposeCast } from '@coinbase/onchainkit/minikit';
 import { useHaptics } from "../../hooks/useHaptics";
-import { sdk } from '@farcaster/miniapp-sdk';
+import sdk from '@farcaster/frame-sdk';
 
 declare global {
   function gtag(...args: any[]): void;
@@ -22,7 +22,7 @@ interface ShareButtonProps {
 export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, className = "" }: ShareButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
-  
+
   // Initialize hooks
   // const { composeCast } = useComposeCast();
   const { selectionChanged, notificationOccurred } = useHaptics();
@@ -31,10 +31,10 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
     try {
       setIsSharing(true);
       await selectionChanged(); // Haptic feedback
-      
+
       // Create share text with GIF URL
       const shareText = `🎨 Just created "${title}" with ${noggleColor} noggle and ${eyeAnimation} eyes!\n\n✨ Check out my animated Noun: ${gifUrl}\n\n#Nouns https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns`;
-      
+
       // Use native composeCast if available, otherwise fallback
       // if (typeof composeCast === 'function') {
       //   await composeCast({
@@ -43,13 +43,13 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
       //   });
       //   await notificationOccurred('success');
       // } else {
-        // Fallback to URL
-        const encodedText = encodeURIComponent(shareText);
-        const url = `https://warpcast.com/~/compose?text=${encodedText}`;
-        setShareUrl(url);
-        await notificationOccurred('warning'); // Different feedback for fallback
+      // Fallback to URL
+      const encodedText = encodeURIComponent(shareText);
+      const url = `https://warpcast.com/~/compose?text=${encodedText}`;
+      setShareUrl(url);
+      await notificationOccurred('warning'); // Different feedback for fallback
       // }
-      
+
       // Track share event
       if (typeof gtag !== 'undefined') {
         gtag('event', 'share', {
@@ -58,7 +58,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
           item_id: title
         });
       }
-      
+
     } catch (error) {
       console.error('Error sharing to Farcaster:', error);
       await notificationOccurred('error');
@@ -71,7 +71,7 @@ export function ShareButton({ gifUrl, title, noggleColor, eyeAnimation, classNam
     try {
       setIsSharing(true);
       await selectionChanged(); // Haptic feedback
-      
+
       // Use consistent text template like Farcaster sharing
       const shareText = `Check out my animated Noun "${title}"! 🎨✨
 
@@ -82,11 +82,11 @@ ${noggleColor} noggle + ${eyeAnimation} eyes = pure magic! 🌟
 Vote for it in the gallery! https://farcaster.xyz/miniapps/SXnRtPs9CWf4/gifnouns
 
 ${gifUrl}`;
-      
+
       // Try Twitter deep link first (for mobile apps)
       const twitterDeepLink = `twitter://post?message=${encodeURIComponent(shareText)}`;
       const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-      
+
       // Try opening with MiniApp SDK openUrl if available, otherwise use fallback
       if (typeof sdk?.actions?.openUrl === 'function') {
         try {
@@ -105,7 +105,7 @@ ${gifUrl}`;
         setShareUrl(twitterWebUrl);
         await notificationOccurred('warning'); // Different feedback for fallback
       }
-      
+
       // Track share event
       if (typeof gtag !== 'undefined') {
         gtag('event', 'share', {
@@ -114,7 +114,7 @@ ${gifUrl}`;
           item_id: title
         });
       }
-      
+
     } catch (error) {
       console.error('Error sharing to Twitter:', error);
       await notificationOccurred('error');
@@ -126,11 +126,11 @@ ${gifUrl}`;
   const copyLink = async () => {
     try {
       await selectionChanged(); // Haptic feedback
-      
+
       // Copy the direct GIF URL instead of the app URL
       await navigator.clipboard.writeText(gifUrl);
       await notificationOccurred('success');
-      
+
       // Track copy event
       if (typeof gtag !== 'undefined') {
         gtag('event', 'copy_link', {
@@ -138,7 +138,7 @@ ${gifUrl}`;
           item_id: title
         });
       }
-      
+
     } catch (error) {
       console.error('Error copying link:', error);
       await notificationOccurred('error');
@@ -178,7 +178,7 @@ ${gifUrl}`;
       >
         {isSharing ? 'Sharing...' : (typeof sdk?.actions?.openUrl === 'function' ? 'Cast to Farcaster' : 'Share to Farcaster')}
       </Button>
-      
+
       <Button
         variant="outline"
         onClick={shareToTwitter}
@@ -188,7 +188,7 @@ ${gifUrl}`;
       >
         {isSharing ? 'Sharing...' : 'Share to Twitter'}
       </Button>
-      
+
       <Button
         variant="outline"
         onClick={copyLink}

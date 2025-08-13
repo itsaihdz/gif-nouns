@@ -1,22 +1,31 @@
 'use client';
 
-import sdk from '@farcaster/miniapp-sdk';
-import { useCallback, useEffect, useState, createContext, useContext, ReactNode } from 'react';
+import sdk from '@farcaster/frame-sdk';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  ReactNode,
+} from 'react';
 
 interface FarcasterSDKContextType {
   isSDKLoaded: boolean;
-  context: any;
   openUrl: (url: string) => Promise<void>;
   close: () => Promise<void>;
-  // sdk: typeof sdk;
 }
 
-const FarcasterSDKContext = createContext<FarcasterSDKContextType | undefined>(undefined);
+const FarcasterSDKContext = createContext<FarcasterSDKContextType | undefined>(
+  undefined
+);
 
 export function useFarcasterSDK() {
   const context = useContext(FarcasterSDKContext);
   if (context === undefined) {
-    throw new Error('useFarcasterSDK must be used within a FarcasterSDKProvider');
+    throw new Error(
+      'useFarcasterSDK must be used within a FarcasterSDKProvider'
+    );
   }
   return context;
 }
@@ -27,7 +36,6 @@ export function useSDK() {
   return {
     isSDKReady: context.isSDKLoaded,
     sdkError: null,
-    // sdk: context.sdk,
   };
 }
 
@@ -68,9 +76,10 @@ function useFrame() {
 
         // Call ready action - this is the critical part!
         console.log('📞 FarcasterSDK: Calling sdk.actions.ready()...');
-        await sdk.actions.ready();
-        console.log('✅ FarcasterSDK: sdk.actions.ready() completed successfully!');
-
+        await sdk.actions.ready({});
+        console.log(
+          '✅ FarcasterSDK: sdk.actions.ready() completed successfully!'
+        );
       } catch (error) {
         console.error('❌ FarcasterSDK: Failed to load SDK:', error);
         // Still mark as loaded to prevent infinite retry
@@ -104,13 +113,8 @@ interface FarcasterSDKProviderProps {
 export function FarcasterSDKProvider({ children }: FarcasterSDKProviderProps) {
   const frameContext = useFrame();
 
-  const value: FarcasterSDKContextType = {
-    ...frameContext,
-    // sdk,
-  };
-
   return (
-    <FarcasterSDKContext.Provider value={value}>
+    <FarcasterSDKContext.Provider value={frameContext}>
       {children}
     </FarcasterSDKContext.Provider>
   );
