@@ -80,25 +80,81 @@
         document.getElementById('timestamp').textContent = new Date().toISOString();
 
         log('🔥 Minimal test page loaded!');
+        
+        // Log detailed environment info
+        log('📋 Environment details:');
+        log('- Referrer: ' + document.referrer);
+        log('- Window parent: ' + (window.parent !== window ? 'iframe' : 'top-level'));
+        log('- Window opener: ' + (window.opener ? 'has opener' : 'no opener'));
+        log('- Document ready state: ' + document.readyState);
+        log('- Available globals: ' + Object.keys(window).filter(k => k.toLowerCase().includes('farcaster') || k.toLowerCase().includes('sdk')).join(', '));
+        
+        // Check for frame/webview indicators
+        const frameIndicators = [
+            'navigator.standalone',
+            'navigator.webdriver', 
+            'window.ReactNativeWebView',
+            'window.webkit',
+            'window.Android'
+        ];
+        
+        frameIndicators.forEach(indicator => {
+            const value = eval(indicator.replace('window.', 'window.').replace('navigator.', 'navigator.'));
+            if (value) {
+                log(`- ${indicator}: ${value}`);
+            }
+        });
 
-        // Test Farcaster SDK
+        // Test Farcaster SDK - check if it's already available globally
         const testFarcasterSDK = async () => {
             try {
-                log('🔄 Attempting to import Farcaster SDK...');
+                log('🔄 Checking for Farcaster SDK...');
                 
-                // Try to import the SDK
-                const module = await import('https://unpkg.com/@farcaster/miniapp-sdk@latest/dist/index.js');
-                const sdk = module.sdk || module.default?.sdk || module.default;
-                
-                log('✅ SDK module imported: ' + (!!sdk));
-                
-                if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-                    log('📞 Calling sdk.actions.ready()...');
-                    await sdk.actions.ready();
-                    log('✅ sdk.actions.ready() called successfully!');
+                // Check if SDK is available globally (injected by Farcaster client)
+                if (window.farcaster) {
+                    log('✅ Found window.farcaster object');
+                    log('Farcaster object keys: ' + Object.keys(window.farcaster).join(', '));
                 } else {
-                    log('❌ SDK actions.ready not available');
-                    log('SDK structure: ' + JSON.stringify(sdk ? Object.keys(sdk) : 'null'));
+                    log('❌ No window.farcaster object found');
+                }
+                
+                // Check for other potential SDK globals
+                const possibleSDKs = ['sdk', 'FarcasterSDK', 'miniappSDK', 'farcasterMiniApp'];
+                for (const name of possibleSDKs) {
+                    if (window[name]) {
+                        log(`✅ Found window.${name} object`);
+                        const obj = window[name];
+                        if (obj.actions && typeof obj.actions.ready === 'function') {
+                            log(`📞 Calling ${name}.actions.ready()...`);
+                            await obj.actions.ready();
+                            log(`✅ ${name}.actions.ready() called successfully!`);
+                        }
+                    }
+                }
+                
+                // Try to detect if we're in a Farcaster environment
+                const userAgent = navigator.userAgent;
+                const isFarcaster = userAgent.includes('Farcaster') || 
+                                  userAgent.includes('Warpcast') ||
+                                  window.location.hostname.includes('warpcast') ||
+                                  window.location.hostname.includes('farcaster');
+                
+                log('Environment detection:');
+                log('- User Agent: ' + userAgent.substring(0, 100));
+                log('- Is Farcaster: ' + isFarcaster);
+                log('- Hostname: ' + window.location.hostname);
+                log('- Protocol: ' + window.location.protocol);
+                
+                // Try to call ready without SDK (sometimes works in Farcaster context)
+                if (isFarcaster) {
+                    try {
+                        log('🔄 Trying to signal ready to Farcaster client directly...');
+                        // Sometimes posting a message works
+                        window.parent.postMessage({ type: 'ready' }, '*');
+                        log('✅ Posted ready message to parent window');
+                    } catch (postError) {
+                        log('❌ Failed to post ready message: ' + postError.message);
+                    }
                 }
                 
             } catch (error) {
