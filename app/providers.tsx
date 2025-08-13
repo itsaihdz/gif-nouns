@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http } from "wagmi";
 import { coinbaseWallet, injected } from "wagmi/connectors";
 import { useEffect } from "react";
-import { SDKProvider } from "./components/providers/SDKProvider";
+import { SimplifiedSDKProvider } from "./components/providers/SimplifiedSDKProvider";
 import { MiniAppEmbed } from "./components/providers/MiniAppEmbed";
 
 // Create a query client
@@ -44,11 +44,11 @@ export function Providers(props: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider chain={base as Chain}>
           <MiniKitProvider chain={base as Chain}>
-            <SDKProvider>
+            <SimplifiedSDKProvider>
               <MiniAppEmbed>
                 {props.children}
               </MiniAppEmbed>
-            </SDKProvider>
+            </SimplifiedSDKProvider>
           </MiniKitProvider>
         </OnchainKitProvider>
       </QueryClientProvider>

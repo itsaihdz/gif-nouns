@@ -1,6 +1,6 @@
 "use client";
 
-import { useSDK } from '../components/providers/SDKProvider';
+import { useSDK } from '../components/providers/SimplifiedSDKProvider';
 
 type ImpactStyle = 'light' | 'medium' | 'heavy';
 type NotificationStyle = 'success' | 'warning' | 'error';

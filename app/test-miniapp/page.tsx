@@ -1,29 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSDK } from "../components/providers/SDKProvider";
+import { useSDK } from "../components/providers/SimplifiedSDKProvider";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 
 export default function TestMiniAppPage() {
-  const { isSDKReady, sdkError, sdk, isFarcasterEnv, initializeSDK, callReady } = useSDK();
+  const { isSDKReady, sdkError, sdk } = useSDK();
   const [testResults, setTestResults] = useState<string[]>([]);
   const [isTesting, setIsTesting] = useState(false);
   const [sdkImportTest, setSdkImportTest] = useState<string>('Not tested');
+  const [isFarcasterEnv, setIsFarcasterEnv] = useState(false);
 
   const addTestResult = (result: string) => {
     setTestResults(prev => [...prev, `${new Date().toLocaleTimeString()}: ${result}`]);
   };
+
+  // Check if we're in Farcaster environment
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const envCheck = window.location.hostname.includes('warpcast.com') || 
+                      window.location.hostname.includes('farcaster.xyz') ||
+                      window.location.hostname.includes('farcaster.app') ||
+                      window.navigator.userAgent.includes('Farcaster');
+      setIsFarcasterEnv(envCheck);
+    }
+  }, []);
 
   // Test SDK import safely
   useEffect(() => {
     const testSDKImport = async () => {
       try {
         // Only test import in Farcaster environments to prevent Chrome extension errors
-        if (typeof window !== 'undefined' && 
-            (window.location.hostname.includes('warpcast.com') || 
-             window.location.hostname.includes('farcaster.xyz') ||
-             window.location.hostname.includes('farcaster.app'))) {
+        if (typeof window !== 'undefined' && isFarcasterEnv) {
           
           const { sdk } = await import('@farcaster/miniapp-sdk');
           const testResult = `✅ SDK imported successfully. Actions: ${sdk?.actions ? Object.keys(sdk.actions).join(', ') : 'none'}`;
@@ -42,7 +51,7 @@ export default function TestMiniAppPage() {
     };
     
     testSDKImport();
-  }, []);
+  }, [isFarcasterEnv]);
 
   useEffect(() => {
     addTestResult('Page loaded');
@@ -53,10 +62,9 @@ export default function TestMiniAppPage() {
     addTestResult(`SDK state - isSDKReady: ${isSDKReady}, sdkError: ${sdkError}`);
     
     if (!isSDKReady && !sdkError) {
-      addTestResult('Initializing SDK...');
-      initializeSDK();
+      addTestResult('Waiting for SDK initialization...');
     }
-  }, [isFarcasterEnv, isSDKReady, sdkError, initializeSDK, sdkImportTest]);
+  }, [isFarcasterEnv, isSDKReady, sdkError, sdkImportTest]);
 
   useEffect(() => {
     if (isSDKReady) {
@@ -84,9 +92,13 @@ export default function TestMiniAppPage() {
     
     try {
       // Test ready() call
-      addTestResult('📞 Calling sdk.actions.ready()...');
-      await callReady();
-      addTestResult('✅ sdk.actions.ready() called successfully');
+      addTestResult('📞 Testing sdk.actions.ready()...');
+      if (sdk?.actions?.ready) {
+        await sdk.actions.ready();
+        addTestResult('✅ sdk.actions.ready() called successfully');
+      } else {
+        addTestResult('❌ sdk.actions.ready() not available');
+      }
       
       // Test haptics
       if (sdk && typeof sdk.haptics?.impactOccurred === 'function') {
@@ -111,11 +123,15 @@ export default function TestMiniAppPage() {
     addTestResult(`🔧 Current state: SDK ready: ${isSDKReady}, Error: ${sdkError}, Env: ${isFarcasterEnv ? 'Farcaster' : 'Non-Farcaster'}`);
     
     try {
-      addTestResult('📞 Method 1: Calling via callReady()...');
-      await callReady();
-      addTestResult('✅ Method 1: callReady() successful');
+      addTestResult('📞 Method 1: Calling via direct SDK...');
+      if (sdk?.actions?.ready) {
+        await sdk.actions.ready();
+        addTestResult('✅ Method 1: Direct SDK ready() successful');
+      } else {
+        addTestResult('❌ Method 1: SDK actions not available');
+      }
     } catch (error) {
-      addTestResult(`❌ Method 1: callReady() failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      addTestResult(`❌ Method 1: Direct SDK failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
     // Direct SDK call
@@ -155,13 +171,8 @@ export default function TestMiniAppPage() {
   };
 
   const forceSDKInit = async () => {
-    addTestResult('🔄 Force initializing SDK...');
-    try {
-      await initializeSDK();
-      addTestResult('✅ SDK initialization completed');
-    } catch (error) {
-      addTestResult(`❌ SDK initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    addTestResult('🔄 SDK should be auto-initialized by provider...');
+    addTestResult(`Current state: isSDKReady: ${isSDKReady}, sdkError: ${sdkError || 'none'}`);
   };
 
   const forceReadyCall = async () => {
@@ -172,7 +183,9 @@ export default function TestMiniAppPage() {
 
     addTestResult('🚀 Force calling ready()...');
     try {
-      await callReady();
+      if (sdk?.actions?.ready) {
+        await sdk.actions.ready();
+      }
       addTestResult('✅ Force ready() call successful');
     } catch (error) {
       addTestResult(`❌ Force ready() call failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
